@@ -1,0 +1,10 @@
+/* Homepage-specific styles for index.html */
+.hero-badge { animation: fadeUp 0.8s ease both; }
+.hero h1 { animation: fadeUp 0.9s ease 0.1s both; }
+.hero-sub { animation: fadeUp 1s ease 0.2s both; }
+.hero-actions { animation: fadeUp 1s ease 0.35s both; }
+.hero-stats { animation: fadeUp 1s ease 0.5s both; }
+
+@media (min-width: 768px) {
+  .section-pad { padding: 100px 0; }
+}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>TechMinds Institute - Python . Robotics . Drones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles/home.css">
+</head>
+<body>
+
+<!-- === NAVIGATION === -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon logo-svg">TM</div>
+    <div class="logo-text">Tech<span>Minds</span></div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#courses">Courses</a></li>
+    <li><a href="#simulator">Simulator</a></li>
+    <li><a href="#videos">Videos</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Enroll Now</a>
+  <button class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div id="mobileMenuBackdrop" class="mobile-menu-backdrop"></div>
+<div id="mobileMenu" class="mobile-menu"></div>
+
+<!-- === HERO SECTION === -->
+<section class="hero" id="home">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div style="position:relative; z-index:2; max-width:600px;">
+    <div class="hero-badge">// Next-Gen Tech Education</div>
+    <h1>Learn <em>Python</em>, <span class="line2">Build <em>Robots</em>, Pilot <em>Drones</em></span></h1>
+    <p class="hero-sub">Master cutting-edge technology through hands-on projects, real hardware, and mentorship from industry professionals. No fluff. Just real skills.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">Start Learning <span class="arrow">-&gt;</span></a>
+      <a href="#videos" class="btn-outline">Watch Free Lessons</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat reveal">
+        <div class="stat-num">500+</div>
+        <div class="stat-label">Students</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-num">8+</div>
+        <div class="stat-label">Years</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-num">95%</div>
+        <div class="stat-label">Success</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === COURSES SECTION === -->
+<section id="courses" class="section-pad">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">// Learn Hands-On</div>
+      <h2 class="section-title">Master <span>Three</span> Critical Skills</h2>
+      <p class="section-sub">From Python basics to advanced robotics - each course is designed to build real, portfolio-ready projects.</p>
+    </div>
+    <div class="courses-grid">
+      <div class="course-card reveal">
+        <div class="course-icon course-python">Py</div>
+        <h3>Python Mastery</h3>
+        <p>From variables to OOP to API integration. Build real projects: web scrapers, automation tools, data analysis dashboards, and more.</p>
+        <div class="course-meta">
+          <span>8 Weeks</span>
+          <span>All Levels</span>
+        </div>
+      </div>
+      <div class="course-card reveal">
+        <div class="course-icon course-robot">RB</div>
+        <h3>Robotics Lab</h3>
+        <p>Design and build with Arduino, sensors, and motors. Create line-followers, obstacle avoiders, and smart home prototypes.</p>
+        <div class="course-meta">
+          <span>10 Weeks</span>
+          <span>Hands-On Lab</span>
+        </div>
+      </div>
+      <div class="course-card reveal">
+        <div class="course-icon course-drone">DR</div>
+        <h3>Drone Piloting & Programming</h3>
+        <p>Fly real drones, write flight algorithms, and create autonomous missions. Industry-standard certifications included.</p>
+        <div class="course-meta">
+          <span>6 Weeks</span>
+          <span>Certification</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- === VIDEOS SECTION === -->
+<section id="videos" class="section-pad">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">// Free Learning</div>
+      <h2 class="section-title">Watch Free <span>Lessons</span></h2>
+      <p class="section-sub">Get a taste of our teaching style. Click any video below to start learning.</p>
+    </div>
+    <div class="videos-grid">
+      <div class="video-card reveal" onclick="loadVideo(this, 'https://www.youtube.com/embed/kqtD5dpn9C0')"></div>
+      <div class="video-card reveal" onclick="loadVideo(this, 'https://www.youtube.com/embed/jNQXAC9IVRw')"></div>
+      <div class="video-card reveal" onclick="loadVideo(this, 'https://www.youtube.com/embed/dQw4w9WgXcQ')"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- === ABOUT SECTION === -->
+<section id="about" class="section-pad">
+  <div class="container">
+    <div class="about-wrapper">
+      <div>
+        <div class="reveal">
+          <div class="section-label">// Who We Are</div>
+          <h2 class="section-title">Education That <span>Actually Works</span></h2>
+          <p class="section-sub" style="margin-bottom:32px;">Our philosophy is simple - learn by doing. Every session includes hands-on lab time, real hardware, and a project you can show in your portfolio.</p>
+          <div class="pillars">
+            <div class="pillar reveal">
+              <div class="pillar-icon pillar-project">PR</div>
+              <div>
+                <h4>Project-First Curriculum</h4>
+                <p>Every module ends with a working project - not just a quiz. Real output, real learning.</p>
+              </div>
+            </div>
+            <div class="pillar reveal">
+              <div class="pillar-icon pillar-lab">LB</div>
+              <div>
+                <h4>Fully Equipped Lab</h4>
+                <p>Robots, drones, Arduino kits, sensors - everything is available in-house, no extra cost.</p>
+              </div>
+            </div>
+            <div class="pillar reveal">
+              <div class="pillar-icon pillar-mentor">MT</div>
+              <div>
+                <h4>Industry Mentors</h4>
+                <p>All instructors are working professionals with 5+ years of field experience.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="about-visual reveal">
+        <div class="about-box">
+          <div class="about-big-num">8+</div>
+          <div class="about-big-text">Years of teaching technology</div>
+          <div class="features-grid" style="margin-top:24px;">
+            <div class="feat-card"><h5 class="feat-cert">Certifications</h5><p>Industry-recognized certificates included</p></div>
+            <div class="feat-card"><h5 class="feat-lab">On-Site Lab</h5><p>Hardware lab available 6 days a week</p></div>
+            <div class="feat-card"><h5 class="feat-place">Placement Help</h5><p>Resume reviews, mock interviews</p></div>
+            <div class="feat-card"><h5 class="feat-ages">All Ages</h5><p>School, college, and professionals</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- === SIMULATOR SECTION (mount point) === -->
+<section id="simulator" class="section-pad">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">// Simulator</div>
+      <h2 class="section-title">Try Our <span>Drone Simulator</span></h2>
+      <p class="section-sub">Experience hands-on flight and mission planning in your browser.</p>
+    </div>
+    <div id="runner-panel"></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- === CONTACT SECTION === -->
+<section id="contact" class="section-pad">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <div class="section-label">// Get In Touch</div>
+      <h2 class="section-title">Ready to <span>Start</span>?</h2>
+      <p class="section-sub" style="margin:16px auto 0;">Fill in the form and our team will reach out within 24 hours.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        <div class="contact-item"><div class="contact-ic contact-loc">Address</div><div><h4>Visit Us</h4><p>123, Tech Park Road<br>Anna Nagar, Chennai 600 040</p></div></div>
+        <div class="contact-item"><div class="contact-ic contact-phone">Phone</div><div><h4>Call / WhatsApp</h4><p>+91 98765 43210</p></div></div>
+        <div class="contact-item"><div class="contact-ic contact-mail">Email</div><div><h4>Email Us</h4><p>hello@techminds.institute</p></div></div>
+        <div class="contact-item"><div class="contact-ic contact-hours">Hours</div><div><h4>Office Hours</h4><p>Mon-Sat: 9 AM-7 PM<br>Sun: 10 AM-2 PM</p></div></div>
+      </div>
+      <div class="contact-form reveal" id="contactForm">
+        <div id="formContent">
+          <div class="form-row">
+            <div class="field"><label>First Name</label><input type="text" placeholder="Arjun" id="fname"></div>
+            <div class="field"><label>Last Name</label><input type="text" placeholder="Kumar" id="lname"></div>
+          </div>
+          <div class="field"><label>Phone / WhatsApp</label><input type="tel" placeholder="+91 98765 43210" id="phone"></div>
+          <div class="field"><label>Email</label><input type="email" placeholder="you@email.com" id="email"></div>
+          <div class="field"><label>Interested Course</label><select id="course"><option value="">-- Select a program --</option><option>Python Mastery</option><option>Robotics Lab</option><option>Drone Piloting & Programming</option><option>All 3 Programs (Bundle)</option></select></div>
+          <div class="field"><label>Message (Optional)</label><textarea placeholder="Any questions?" id="message"></textarea></div>
+          <button class="submit-btn">Send Enquiry <span class="arrow">-&gt;</span></button>
+        </div>
+        <div class="form-success" id="formSuccess"><div class="check">OK</div><h3>Enquiry Received!</h3><p>Thank you! Our team will contact you within 24 hours to discuss your course details.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === FOOTER SECTION === -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo">
+        <div class="logo-icon logo-svg">TM</div>
+        <div class="logo-text">Tech<span>Minds</span> Institute</div>
+      </div>
+      <p>Empowering the next generation with practical technology skills - Python, Robotics, and Drone engineering.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Programs</h5>
+      <ul>
+        <li><a href="#courses">Python Mastery</a></li>
+        <li><a href="#courses">Robotics Lab</a></li>
+        <li><a href="#courses">Drone Programming</a></li>
+        <li><a href="#contact">Enroll Now</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Institute</h5>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#videos">Free Lessons</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#contact">Schedule a Visit</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright 2025 TechMinds Institute. All rights reserved.</span>
+    <span>Built for education &middot; Powered by passion</span>
+  </div>
+</footer>
+
+<script src="utils.js"></script>
+<script src="scripts/home.js?v=cloud-single-port"></script>
+
+</body>
+</html>
