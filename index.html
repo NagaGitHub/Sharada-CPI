@@ -78,6 +78,23 @@
       mix-blend-mode: normal;
     }
 
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -56px;
+      z-index: 50;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--panel-strong);
+      color: var(--text);
+      border: 1px solid var(--line);
+      transition: top 180ms ease;
+    }
+
+    .skip-link:focus {
+      top: 14px;
+    }
+
     a {
       color: inherit;
       text-decoration: none;
@@ -108,6 +125,13 @@
       justify-content: space-between;
       gap: 20px;
       min-height: 78px;
+    }
+
+    .nav-shell {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-left: auto;
     }
 
     .brand {
@@ -151,9 +175,36 @@
       font-size: 0.95rem;
     }
 
+    .nav-links a {
+      position: relative;
+      padding: 8px 0;
+      transition: color 180ms ease;
+    }
+
+    .nav-links a.active {
+      color: var(--text);
+    }
+
+    .nav-links a.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #7bbcff);
+    }
+
     .nav-links a:hover,
     .nav-links a:focus-visible {
       color: var(--text);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .nav-cta {
@@ -167,6 +218,60 @@
       background: rgba(127, 255, 212, 0.12);
       color: var(--text);
       font-weight: 700;
+    }
+
+    .nav-cta.whatsapp {
+      border-color: rgba(240, 199, 122, 0.32);
+      background: rgba(240, 199, 122, 0.14);
+    }
+
+    .nav-toggle {
+      display: none;
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .nav-toggle span,
+    .nav-toggle::before,
+    .nav-toggle::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+
+    .nav-toggle::before {
+      top: 16px;
+    }
+
+    .nav-toggle span {
+      top: 23px;
+    }
+
+    .nav-toggle::after {
+      top: 30px;
+    }
+
+    .nav-toggle[aria-expanded="true"]::before {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .nav-toggle[aria-expanded="true"]::after {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .nav-toggle[aria-expanded="true"] span {
+      opacity: 0;
     }
 
     .nav-cta:hover,
@@ -237,7 +342,9 @@
       justify-content: center;
       min-height: 54px;
       padding: 0 22px;
+      border: 0;
       border-radius: 999px;
+      cursor: pointer;
       font-weight: 800;
       letter-spacing: 0.01em;
       transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
@@ -388,7 +495,7 @@
     }
 
     .section {
-      padding: 34px 0;
+      padding: 64px 0;
     }
 
     .section-heading {
@@ -717,7 +824,7 @@
     }
 
     .video-link::before {
-      content: "▶";
+      content: ">";
       display: inline-grid;
       place-items: center;
       width: 26px;
@@ -1074,6 +1181,179 @@
       margin: 2px 0 0;
     }
 
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .status-message {
+      min-height: 24px;
+      margin: 0;
+      color: var(--accent);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .support-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .support-card {
+      padding: 22px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .support-card strong {
+      display: inline-flex;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(104, 230, 219, 0.12);
+      color: var(--accent);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .support-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .support-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    .price-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(240, 199, 122, 0.24);
+      background: rgba(240, 199, 122, 0.12);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: 0.98fr 1.02fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .timeline-board,
+    .pricing-board {
+      padding: 28px;
+    }
+
+    .week-plan {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .week-item {
+      display: grid;
+      grid-template-columns: 74px minmax(0, 1fr);
+      gap: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .week-item strong {
+      display: inline-grid;
+      place-items: center;
+      min-height: 52px;
+      border-radius: 16px;
+      background: rgba(123, 188, 255, 0.14);
+      color: #b5d7ff;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .week-item h3 {
+      margin: 0 0 8px;
+      font-size: 1.03rem;
+    }
+
+    .week-item p,
+    .week-item span {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.68;
+      font-size: 0.93rem;
+    }
+
+    .track-map {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .track-map-item {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .track-map-item h3 {
+      margin: 0 0 8px;
+      font-size: 1.04rem;
+    }
+
+    .track-map-item p,
+    .track-map-item span {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.68;
+      font-size: 0.93rem;
+    }
+
+    .pricing-highlight {
+      margin-top: 18px;
+      padding: 22px;
+      border-radius: 20px;
+      background:
+        linear-gradient(180deg, rgba(19, 30, 45, 0.96), rgba(8, 12, 18, 0.95)),
+        linear-gradient(135deg, rgba(240, 199, 122, 0.06), transparent 48%);
+      border: 1px solid rgba(240, 199, 122, 0.22);
+    }
+
+    .pricing-highlight strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+
+    .pricing-highlight span,
+    .pricing-list {
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    .pricing-list {
+      margin: 16px 0 0;
+      padding-left: 18px;
+    }
+
     .footer {
       padding: 28px 0 44px;
       color: #92a9c7;
@@ -1102,7 +1382,9 @@
       .stack-grid,
       .journey-band,
       .track-grid,
-      .media-grid {
+      .media-grid,
+      .support-grid,
+      .timeline-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1114,16 +1396,58 @@
 
     @media (max-width: 860px) {
       .nav {
-        flex-wrap: wrap;
-        padding: 16px 0;
+        min-height: 76px;
+      }
+
+      .nav-toggle {
+        display: inline-flex;
+      }
+
+      .nav-shell {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 16px;
+        right: 16px;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(7, 10, 15, 0.96);
+        box-shadow: var(--shadow);
+      }
+
+      .nav-shell.open {
+        display: flex;
       }
 
       .nav-links {
-        order: 3;
         width: 100%;
-        flex-wrap: wrap;
-        gap: 12px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
       }
+
+      .nav-links a {
+        width: 100%;
+        padding: 10px 0;
+      }
+
+      .nav-links a.active::after {
+        bottom: 2px;
+      }
+
+      .nav-actions {
+        width: 100%;
+        flex-direction: column;
+        margin-top: 10px;
+      }
+
+      .nav-cta {
+        width: 100%;
+      }
+
 
       .hero {
         padding-top: 56px;
@@ -1151,6 +1475,10 @@
         width: min(calc(100% - 20px), var(--max));
       }
 
+      .section {
+        padding: 48px 0;
+      }
+
       .hero-panel,
       .contact-panel,
       .spotlight,
@@ -1171,29 +1499,38 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="site-header">
     <div class="container nav">
-      <a class="brand" href="#top" aria-label="Sharada Institute home">
+      <a class="brand" href="#main-content" aria-label="Sharada Institute home">
         <div class="brand-mark">SI</div>
         <div class="brand-copy">
           <strong>Sharada Institute</strong>
           <span>SAP CPI Training with room to expand into more technologies</span>
         </div>
       </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a href="#program">Why This Track</a>
-        <a href="#journey">Journey</a>
-        <a href="#stack">Stack</a>
-        <a href="#simulations">Simulations</a>
-        <a href="#outcomes">Outcomes</a>
-        <a href="#tracks">Tracks</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <a class="nav-cta" href="#contact">Get Batch Details</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open navigation">
+        <span></span>
+      </button>
+      <div class="nav-shell" id="primary-nav">
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#program">Why This Track</a>
+          <a href="#journey">Journey</a>
+          <a href="#stack">Stack</a>
+          <a href="#simulations">Simulations</a>
+          <a href="resource-lab.html">Resource Lab</a>
+          <a href="#tracks">Tracks</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="nav-cta whatsapp" href="https://wa.me/918095655009?text=Hello%20Sharada%20Institute%2C%20I%20want%20SAP%20CPI%20batch%20details." target="_blank" rel="noreferrer">Ask on WhatsApp</a>
+          <a class="nav-cta" href="#contact">Get Batch Details</a>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main id="top">
+  <main id="main-content">
     <section class="hero">
       <div class="container hero-grid">
         <div>
@@ -1206,6 +1543,10 @@
           <div class="hero-actions">
             <a class="btn btn-primary" href="#tracks">See Your Learning Track</a>
             <a class="btn btn-secondary" href="#simulations">View Live Simulations</a>
+          </div>
+          <div class="price-chip">
+            <span>Program Fee</span>
+            <strong>INR 35,000</strong>
           </div>
           <div class="hero-tags" aria-label="Topics covered">
             <span class="tag">SAP Integration Suite</span>
@@ -1276,8 +1617,8 @@
             <h2>Why this track hits differently</h2>
           </div>
           <p>
-            This is not presented like a generic institute page. It is structured like a practical launch track for learners who want
-            to understand the technology, the delivery workflow, and how to speak confidently in project and interview settings.
+            This track is designed for learners who want to understand the technology, the delivery workflow, and how to speak confidently
+            in project discussions and interview settings.
           </p>
         </div>
         <div class="bento-grid">
@@ -1285,8 +1626,8 @@
             <div class="card-kicker">01</div>
             <h3>Move from learner mode into delivery mode.</h3>
             <p>
-              Younger learners respond to environments that look like the real thing. This page now frames the program around enterprise work:
-              requirement analysis, integration design, tracking, issue handling, mock standups, and interview discussion.
+              Learn in a setup that mirrors enterprise work: requirement analysis, integration design, tracking, issue handling,
+              mock standups, and interview discussion.
             </p>
             <div class="bento-list">
               <span>Understand the stack</span>
@@ -1387,12 +1728,29 @@
               <p>Short challenge sessions before interview drills to make learners think faster and respond with more confidence.</p>
             </div>
           </div>
+          <div class="support-grid">
+            <article class="support-card">
+              <strong>Peer Energy</strong>
+              <h3>WhatsApp cohort support</h3>
+              <p>Each live batch can be paired with a focused discussion group for class reminders, quick blockers, quiz updates, and peer momentum.</p>
+            </article>
+            <article class="support-card">
+              <strong>Revision Loop</strong>
+              <h3>Kahoot plus recap prompts</h3>
+              <p>Fast quiz rounds and recap prompts help mobile-first learners retain adapter names, routing patterns, and support language without passive note-taking.</p>
+            </article>
+            <article class="support-card">
+              <strong>Community Signal</strong>
+              <h3>Built for live cohort learning</h3>
+              <p>The track is positioned as a cohort experience with project simulations, guided discussion, and shared problem-solving instead of isolated recorded study.</p>
+            </article>
+          </div>
         </div>
 
         <div class="surface video-board">
           <div class="eyebrow">Resource Lab</div>
           <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
-            Explore a refined learning page, not raw outbound links.
+            Explore the deeper architecture notes.
           </h2>
           <p style="margin: 0; color: var(--muted); line-height: 1.75;">
             Instead of sending learners directly to scattered SAP pages, this site now routes them to a separate in-project page
@@ -1402,7 +1760,7 @@
             <div class="video-item">
               <h3>iFlow and SuccessFactors learning notes</h3>
               <p>
-                SAP Learning’s Cloud Integration basics lesson explains the integration flow process and references the
+                SAP Learning's Cloud Integration basics lesson explains the integration flow process and references the
                 SAP SuccessFactors Employee Central integration package as example context for iFlow-oriented learning.
               </p>
               <a class="video-link" href="resource-lab.html">
@@ -1412,7 +1770,7 @@
             <div class="video-item">
               <h3>BTP architecture across SAP and third-party systems</h3>
               <p>
-                SAP’s official BTP Integration explainer shows how SAP Integration Suite connects SAP applications,
+                SAP's official BTP Integration explainer shows how SAP Integration Suite connects SAP applications,
                 data, and third-party systems in a broader architecture view.
               </p>
               <a class="video-link" href="resource-lab.html">
@@ -1490,7 +1848,7 @@
               <h3>Message processing, mapping, Groovy practice, and AI troubleshooting</h3>
               <p>
                 Work on transformations and message enrichment using graphical mapping, value mapping, content-based routing,
-                payload handling, scripting patterns, and AI-assisted troubleshooting approaches that frequently appear in project delivery and support.
+                payload handling, payload versioning awareness, scripting patterns, and AI-assisted troubleshooting approaches that frequently appear in project delivery and support.
               </p>
               <div class="skill-list">
                 <span>Message mapping</span>
@@ -1498,6 +1856,7 @@
                 <span>Groovy scripts</span>
                 <span>Content modifier</span>
                 <span>Router patterns</span>
+                <span>Payload versioning basics</span>
                 <span>AI troubleshooting prompts</span>
                 <span>Exception subprocess</span>
               </div>
@@ -1518,7 +1877,10 @@
                 <span>AI receiver adapter basics</span>
                 <span>GenAI Hub connectivity overview</span>
                 <span>Security artifacts</span>
+                <span>OAuth2 and credential artifacts</span>
+                <span>Payload contract versioning</span>
                 <span>Keystore and certificates</span>
+                <span>X.509 basics</span>
                 <span>Monitoring and MPL analysis</span>
                 <span>Dev to prod transport strategy</span>
                 <span>Operational support basics</span>
@@ -1549,6 +1911,121 @@
             </div>
           </article>
         </div>
+      </div>
+    </section>
+
+    <section class="section" id="trainer-depth">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>Trainer depth for architect-style interviews</h2>
+          </div>
+          <p>
+            These are the areas experienced interviewers and delivery leads often probe after the basic adapter and mapping questions.
+          </p>
+        </div>
+        <div class="cards-3">
+          <article class="card">
+            <div class="card-kicker">SA</div>
+            <h3>Security artifacts and access control</h3>
+            <p>
+              Learn the interview-critical basics of OAuth2 flows, credential artifacts, keystore usage, certificates, X.509 concepts,
+              and how secure outbound connectivity is described in SAP CPI projects.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">PT</div>
+            <h3>iFlow pattern taxonomy</h3>
+            <p>
+              Practice when to use content-based routing, splitter-gather, recipient list, exception subprocess, validation, and reusable routing logic
+              instead of placing every step into one oversized flow.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">LB</div>
+            <h3>Hands-on tenant and lab guidance</h3>
+            <p>
+              The track explains how learners can set up a BTP trial tenant path, understand sandbox limits, and use lab-style exercises
+              to practice design, deployment, troubleshooting, and transport thinking more realistically.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="plan">
+      <div class="container timeline-grid">
+        <div class="surface timeline-board">
+          <div class="eyebrow">49-Day Delivery Plan</div>
+          <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+            A 7-week path from fundamentals to project simulation.
+          </h2>
+          <p style="margin: 0; color: var(--muted); line-height: 1.75;">
+            The core curriculum runs across 49 calendar days. The flow below shows how the 5 modules are sequenced so learners and reviewers can see the delivery plan clearly.
+          </p>
+          <div class="week-plan">
+            <article class="week-item">
+              <strong>Week 1</strong>
+              <div><h3>Module 1 foundations</h3><p>Integration Suite overview, tenant orientation, packages, artifacts, and cloud technology grounding.</p></div>
+            </article>
+            <article class="week-item">
+              <strong>Week 2</strong>
+              <div><h3>Module 2 connectivity</h3><p>Sender and receiver setup, adapters, API shapes, routing basics, and interface design flow.</p></div>
+            </article>
+            <article class="week-item">
+              <strong>Week 3</strong>
+              <div><h3>Module 3 mappings</h3><p>Graphical mapping, value mapping, content modifiers, Groovy, and payload handling.</p></div>
+            </article>
+            <article class="week-item">
+              <strong>Week 4</strong>
+              <div><h3>Module 3 extended</h3><p>Payload versioning, exception subprocesses, AI-assisted troubleshooting, and support-style debugging practice.</p></div>
+            </article>
+            <article class="week-item">
+              <strong>Week 5</strong>
+              <div><h3>Module 4 security and APIs</h3><p>API exposure, OAuth2, credential artifacts, certificates, keystore handling, and monitoring habits.</p></div>
+            </article>
+            <article class="week-item">
+              <strong>Week 6</strong>
+              <div><h3>Module 4 deployment</h3><p>Dev to test to prod movement, transport discipline, operational checks, and release vocabulary.</p></div>
+            </article>
+            <article class="week-item">
+              <strong>Week 7</strong>
+              <div><h3>Module 5 simulation and interviews</h3><p>FSD walkthroughs, SuccessFactors and Ariba cases, Jira workflow, mock interviews, and final recap.</p></div>
+            </article>
+          </div>
+        </div>
+
+        <aside class="surface pricing-board">
+          <div class="eyebrow">Track Mapping and Fee</div>
+          <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+            One curriculum, three pacing styles.
+          </h2>
+          <p style="margin: 0; color: var(--muted); line-height: 1.75;">
+            The same 49-day curriculum is paced differently depending on the learner profile and available study window.
+          </p>
+          <div class="track-map">
+            <article class="track-map-item">
+              <h3>Weekend Career Track</h3>
+              <p>14 live sessions across 7 weeks. Best for working professionals who want the full 49-day path with project simulation depth.</p>
+            </article>
+            <article class="track-map-item">
+              <h3>Evening Fast Progress Batch</h3>
+              <p>21 shorter live sessions across 7 weeks. Covers the same modules with more frequent weekday practice touchpoints.</p>
+            </article>
+            <article class="track-map-item">
+              <h3>Interview Sprint Cohort</h3>
+              <p>Runs as a condensed overlay for learners who already know the basics and want the final simulation, support, and interview layers.</p>
+            </article>
+          </div>
+          <div class="pricing-highlight">
+            <strong>INR 35,000</strong>
+            <span>Full program fee for the 49-day SAP CPI track.</span>
+            <ul class="pricing-list">
+              <li>Includes live delivery, project simulations, Kahoot-based revision, and Resource Lab access.</li>
+              <li>Direct WhatsApp guidance and admissions follow-up are available for batch joining questions.</li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -1632,8 +2109,7 @@
             Learn from requirement to deployed iFlow.
           </h2>
           <p style="margin: 0; color: var(--muted); line-height: 1.75;">
-            The program is now positioned around realistic integration delivery work, not generic placement wording.
-            Learners practice how to read a requirement, shape a solution, build the integration, track work, and explain it clearly.
+            Learners practice how to read a requirement, shape a solution, build the integration, track work, and explain it clearly in a project-style flow.
           </p>
 
           <div class="flow-strip">
@@ -1705,8 +2181,7 @@
               What you become by the end of the track.
             </h2>
             <p>
-              The page is now built around transformation, not just topics. The result is a clearer promise:
-              you learn the technical stack, the delivery workflow, and the communication style expected in real SAP CPI work.
+              You learn the technical stack, the delivery workflow, and the communication style expected in real SAP CPI work.
             </p>
           </div>
           <div class="checklist">
@@ -1835,30 +2310,32 @@
               Best for working professionals who want SAP CPI training plus project simulations, scrum exposure, Jira tracking, and interview preparation.
             </p>
             <div class="schedule-meta">
-              <div><span>Start Date</span><strong>To be announced</strong></div>
+              <div><span>Duration</span><strong>49 days / 7 weeks</strong></div>
+              <div><span>Start Window</span><strong>Rolling admissions</strong></div>
               <div><span>Class Days</span><strong>Saturday and Sunday</strong></div>
-              <div><span>Time</span><strong>Placeholder: 8:00 AM - 10:00 AM IST</strong></div>
+              <div><span>Time</span><strong>Final live slot shared after fit check</strong></div>
               <div><span>Mode</span><strong>Online live instructor-led</strong></div>
             </div>
             <p class="schedule-note">
-              Includes technical curriculum, cloud technology foundations, assignments, scrum and Jira discussions, Kahoot revision rounds, interview practice, and mock checkpoints.
+              Includes technical curriculum, deeper cloud technology coverage, security artifacts, hands-on labs, scrum and Jira discussions, Kahoot revision rounds, interview practice, and mock checkpoints.
             </p>
           </article>
 
           <article class="track-card">
             <span class="track-label">Weekday</span>
-            <h3>Evening Fast Progress Batch</h3>
+            <h3>Weekday Dual Session Batch</h3>
             <p>
-              Structured for learners who prefer shorter sessions during weekdays with a steady practice rhythm and delivery-process coverage.
+              Built for learners who want a faster weekday rhythm with both morning and evening sessions across all five working days at the same program fee.
             </p>
             <div class="schedule-meta">
-              <div><span>Start Date</span><strong>To be announced</strong></div>
-              <div><span>Class Days</span><strong>Monday, Wednesday, Friday</strong></div>
-              <div><span>Time</span><strong>Placeholder: 8:30 PM - 10:00 PM IST</strong></div>
+              <div><span>Duration</span><strong>49 days / 7 weeks</strong></div>
+              <div><span>Start Window</span><strong>Rolling admissions</strong></div>
+              <div><span>Class Days</span><strong>Monday to Friday</strong></div>
+              <div><span>Sessions</span><strong>Morning and evening sessions every weekday</strong></div>
               <div><span>Mode</span><strong>Online live with Q&amp;A support</strong></div>
             </div>
             <p class="schedule-note">
-              Suitable for professionals balancing office work, cloud technology learning, ticket handling practice, Kahoot-based recaps, and upskilling goals.
+              Covers the same 49-day curriculum at the same INR 35,000 fee, with a denser weekday pattern for faster practice and revision.
             </p>
           </article>
 
@@ -1869,9 +2346,10 @@
               Designed for learners who already know the basics and want revision, scenario practice, mock interviews, and communication polishing.
             </p>
             <div class="schedule-meta">
-              <div><span>Start Date</span><strong>To be announced</strong></div>
+              <div><span>Duration</span><strong>14-day finishing layer</strong></div>
+              <div><span>Start Window</span><strong>Short rolling cohort</strong></div>
               <div><span>Class Days</span><strong>Custom short cohort</strong></div>
-              <div><span>Time</span><strong>Placeholder: Evening slot</strong></div>
+              <div><span>Time</span><strong>Slot shared after profile screening</strong></div>
               <div><span>Mode</span><strong>Interview-focused live sessions</strong></div>
             </div>
             <p class="schedule-note">
@@ -1890,26 +2368,25 @@
             Get your best-fit track.
           </h2>
           <p style="margin: 0; color: var(--muted); line-height: 1.75;">
-            Replace these placeholders with your final admissions contacts. The structure is already ready for phone, WhatsApp,
-            email, and location details.
+            Use the enquiry form to receive batch fit guidance, timing details, and the admissions reply path. You can also message directly on WhatsApp for a faster batch discussion.
           </p>
 
           <div class="contact-stack">
             <div class="contact-item">
-              <span>Phone</span>
-              <strong>+91 XXXXX XXXXX</strong>
+              <span>Admissions Flow</span>
+              <strong>Share your details through the enquiry form</strong>
             </div>
             <div class="contact-item">
-              <span>WhatsApp</span>
-              <strong>+91 XXXXX XXXXX</strong>
+              <span>WhatsApp Support</span>
+              <strong><a href="https://wa.me/918095655009?text=Hello%20Sharada%20Institute%2C%20I%20want%20SAP%20CPI%20batch%20details." target="_blank" rel="noreferrer">+91 80956 55009</a></strong>
             </div>
             <div class="contact-item">
-              <span>Email</span>
-              <strong>admissions@your-domain.in</strong>
+              <span>Email Route</span>
+              <strong>admissions@sharadainstitute.in</strong>
             </div>
             <div class="contact-item">
-              <span>Location</span>
-              <p>Sharada Institute address placeholder<br>City, State, India</p>
+              <span>Delivery Model</span>
+              <p>India-based live online training with cohort support, simulation reviews, and resource-lab follow-through.</p>
             </div>
           </div>
         </div>
@@ -1917,27 +2394,27 @@
         <div class="surface contact-panel">
           <div class="eyebrow">Enquiry Form</div>
           <h3 style="margin: 18px 0 12px; font-size: 1.6rem;">Get batch details</h3>
-          <form>
+          <form id="enquiry-form">
             <div class="field-row">
               <div>
                 <label for="full-name">Full Name</label>
-                <input id="full-name" type="text" placeholder="Your name">
+                <input id="full-name" name="full-name" type="text" placeholder="Your name" required>
               </div>
               <div>
                 <label for="email">Email</label>
-                <input id="email" type="email" placeholder="yourname@example.com">
+                <input id="email" name="email" type="email" placeholder="yourname@example.com" required>
               </div>
             </div>
             <div class="field-row">
               <div>
                 <label for="phone">Phone / WhatsApp</label>
-                <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX">
+                <input id="phone" name="phone" type="tel" placeholder="+91 98765 43210" required>
               </div>
               <div>
                 <label for="track">Interested Track</label>
-                <select id="track">
+                <select id="track" name="track">
                   <option>Weekend Career Track</option>
-                  <option>Evening Fast Progress Batch</option>
+                  <option>Weekday Dual Session Batch</option>
                   <option>Interview Sprint Cohort</option>
                   <option>SAP CPI + Scrum + Jira Track</option>
                   <option>Need guidance to choose</option>
@@ -1946,11 +2423,15 @@
             </div>
             <div>
               <label for="message">What do you need help with?</label>
-              <textarea id="message" placeholder="Example: I want SAP CPI training with interview preparation and mock interviews."></textarea>
+              <textarea id="message" name="message" placeholder="Example: I want SAP CPI training with interview preparation, real project simulations, and mock interviews."></textarea>
             </div>
-            <a class="btn btn-primary" href="mailto:admissions@your-domain.in">Send Enquiry</a>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Send Enquiry</button>
+              <button class="btn btn-secondary" type="button" id="copy-enquiry">Copy Enquiry Summary</button>
+            </div>
+            <p class="status-message" id="form-status" aria-live="polite"></p>
             <p class="form-note">
-              Connect this form to your preferred backend or form handler when contact details are finalized.
+              Submitting opens your mail app with the enquiry details already filled in. Copy mode gives you the same summary if you want to paste it into WhatsApp.
             </p>
           </form>
         </div>
@@ -1964,5 +2445,90 @@
       <span>Focused website for SAP CPI training today, with room to expand into other technologies.</span>
     </div>
   </footer>
+  <script>
+    const navToggle = document.querySelector(".nav-toggle");
+    const navShell = document.querySelector(".nav-shell");
+    const navLinks = Array.from(document.querySelectorAll(".nav-links a[href^='#']"));
+    const sections = navLinks
+      .map((link) => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+
+    if (navToggle && navShell) {
+      navToggle.addEventListener("click", () => {
+        const expanded = navToggle.getAttribute("aria-expanded") === "true";
+        navToggle.setAttribute("aria-expanded", String(!expanded));
+        navShell.classList.toggle("open", !expanded);
+      });
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          navToggle.setAttribute("aria-expanded", "false");
+          navShell.classList.remove("open");
+        });
+      });
+    }
+
+    if ("IntersectionObserver" in window && sections.length) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          navLinks.forEach((link) => {
+            const active = link.getAttribute("href") === "#" + entry.target.id;
+            link.classList.toggle("active", active);
+          });
+        });
+      }, { rootMargin: "-35% 0px -45% 0px", threshold: 0.1 });
+
+      sections.forEach((section) => observer.observe(section));
+    }
+
+    const enquiryForm = document.getElementById("enquiry-form");
+    const copyButton = document.getElementById("copy-enquiry");
+    const status = document.getElementById("form-status");
+
+    const buildEnquirySummary = () => {
+      const formData = new FormData(enquiryForm);
+      return [
+        "Sharada Institute Enquiry",
+        "",
+        "Name: " + (formData.get("full-name") || ""),
+        "Email: " + (formData.get("email") || ""),
+        "Phone / WhatsApp: " + (formData.get("phone") || ""),
+        "Interested Track: " + (formData.get("track") || ""),
+        "",
+        "Message:",
+        formData.get("message") || "Need guidance on the best-fit SAP CPI track."
+      ].join("\n");
+    };
+
+    enquiryForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (!enquiryForm.reportValidity()) {
+        return;
+      }
+
+      const subject = encodeURIComponent("Sharada Institute SAP CPI Enquiry");
+      const body = encodeURIComponent(buildEnquirySummary());
+      status.textContent = "Opening your mail app with the enquiry summary.";
+      window.location.href = "mailto:admissions@sharadainstitute.in?subject=" + subject + "&body=" + body;
+    });
+
+    copyButton.addEventListener("click", async () => {
+      if (!enquiryForm.reportValidity()) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(buildEnquirySummary());
+        status.textContent = "Enquiry summary copied. You can paste it into WhatsApp or email.";
+      } catch (error) {
+        status.textContent = "Clipboard access was blocked. Please use the send button instead.";
+      }
+    });
+  </script>
 </body>
 </html>

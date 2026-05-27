@@ -76,6 +76,23 @@
         linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 25%);
     }
 
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -56px;
+      z-index: 50;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      transition: top 180ms ease;
+    }
+
+    .skip-link:focus {
+      top: 14px;
+    }
+
     a {
       color: inherit;
       text-decoration: none;
@@ -101,6 +118,13 @@
       align-items: center;
       justify-content: space-between;
       gap: 20px;
+    }
+
+    .nav-shell {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-left: auto;
     }
 
     .brand {
@@ -135,6 +159,34 @@
       font-size: 0.82rem;
     }
 
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .nav-links a {
+      position: relative;
+      padding: 8px 0;
+    }
+
+    .nav-links a.active {
+      color: var(--text);
+    }
+
+    .nav-links a.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-blue));
+    }
+
     .back-link {
       display: inline-flex;
       align-items: center;
@@ -145,6 +197,55 @@
       border: 1px solid rgba(104, 230, 219, 0.28);
       background: rgba(104, 230, 219, 0.11);
       font-weight: 700;
+    }
+
+    .nav-toggle {
+      display: none;
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .nav-toggle span,
+    .nav-toggle::before,
+    .nav-toggle::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+
+    .nav-toggle::before {
+      top: 16px;
+    }
+
+    .nav-toggle span {
+      top: 23px;
+    }
+
+    .nav-toggle::after {
+      top: 30px;
+    }
+
+    .nav-toggle[aria-expanded="true"]::before {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .nav-toggle[aria-expanded="true"]::after {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .nav-toggle[aria-expanded="true"] span {
+      opacity: 0;
     }
 
     .back-link:hover,
@@ -256,7 +357,7 @@
     }
 
     .section {
-      padding: 30px 0;
+      padding: 60px 0;
     }
 
     .section-head {
@@ -452,15 +553,25 @@
       gap: 18px;
     }
 
-    .source-list a {
-      color: var(--accent);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
     ul {
       margin: 12px 0 0;
       padding-left: 18px;
+    }
+
+    .footer {
+      padding: 20px 0 44px;
+      color: #92a9c7;
+    }
+
+    .footer-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.035);
     }
 
     @media (max-width: 1080px) {
@@ -486,6 +597,10 @@
         width: min(calc(100% - 20px), var(--max));
       }
 
+      .section {
+        padding: 46px 0;
+      }
+
       .hero-panel,
       .panel,
       .card,
@@ -502,13 +617,52 @@
       }
 
       .nav {
-        flex-wrap: wrap;
-        padding: 16px 0;
+        min-height: 76px;
+      }
+
+      .nav-toggle {
+        display: inline-flex;
+      }
+
+      .nav-shell {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 16px;
+        right: 16px;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: rgba(7, 10, 15, 0.96);
+        box-shadow: var(--shadow);
+      }
+
+      .nav-shell.open {
+        display: flex;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      .nav-links a,
+      .back-link {
+        width: 100%;
+      }
+
+      .footer-panel {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#resource-main">Skip to main content</a>
   <header class="header">
     <div class="container nav">
       <a class="brand" href="index.html">
@@ -518,11 +672,25 @@
           <span>Resource Lab</span>
         </div>
       </a>
-      <a class="back-link" href="index.html">Back to Homepage</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="resource-nav" aria-label="Open navigation">
+        <span></span>
+      </button>
+      <div class="nav-shell" id="resource-nav">
+        <nav class="nav-links" aria-label="Resource navigation">
+          <a href="index.html#program">Homepage</a>
+          <a href="#mindset">Mindset</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#cases">Cases</a>
+          <a href="#security">Security</a>
+          <a href="#deployment">Deployment</a>
+          <a href="#advanced">Advanced</a>
+        </nav>
+        <a class="back-link" href="index.html#contact">Talk to Admissions</a>
+      </div>
     </div>
   </header>
 
-  <main>
+  <main id="resource-main">
     <section class="hero">
       <div class="container hero-grid">
         <div>
@@ -537,8 +705,8 @@
         <aside class="hero-panel">
           <h2>What this page adds beyond the homepage</h2>
           <p>
-            The homepage sells the track. This page teaches the mindset behind it: architecture decisions, troubleshooting discipline,
-            deployment strategy, governance awareness, and trainer-ready explanation patterns.
+            Use this page to go deeper into architecture decisions, troubleshooting discipline, deployment strategy,
+            governance awareness, and trainer-ready explanation patterns.
           </p>
           <div class="hero-meta">
             <div class="meta-chip">
@@ -562,13 +730,13 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="mindset">
       <div class="container arch-grid">
         <div class="panel">
           <div class="card-tag">iFlow Mindset</div>
           <h2 style="margin: 0 0 12px;">How to think about an iFlow</h2>
           <p>
-            SAP’s Cloud Integration learning content treats an integration flow as the runtime path between a sender and one or more receivers.
+            SAP's Cloud Integration learning content treats an integration flow as the runtime path between a sender and one or more receivers.
             A serious learner should treat it as a sequence of design choices: trigger, connectivity, transformation, routing, error path,
             logging strategy, and operational follow-up.
           </p>
@@ -622,12 +790,12 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="architecture">
       <div class="container">
         <div class="section-head">
           <h2>BTP Architecture in Plain Terms</h2>
           <p>
-            SAP’s BTP integration explainer positions SAP Integration Suite as the layer that connects applications, data, and AI across SAP and third-party landscapes.
+            SAP's BTP integration explainer positions SAP Integration Suite as the layer that connects applications, data, and AI across SAP and third-party landscapes.
           </p>
         </div>
         <div class="diagram">
@@ -660,7 +828,7 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="cases">
       <div class="container trainer-grid">
         <div class="panel">
           <div class="card-tag">SuccessFactors Context</div>
@@ -695,7 +863,53 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="security">
+      <div class="container grid-3">
+        <div class="panel">
+          <div class="card-tag">Security Artifacts</div>
+          <h2 style="margin: 0 0 12px;">Interview-critical security topics</h2>
+          <p>
+            A trainer should explicitly prepare learners for OAuth2 client credentials, credential artifacts, keystore usage,
+            certificate handling, and the role of X.509 when secured connectivity comes up in integration interviews.
+          </p>
+          <ul>
+            <li>Explain where credentials are stored and why hard-coding is avoided.</li>
+            <li>Differentiate keystore content from simple user credential artifacts.</li>
+            <li>Describe OAuth2 at a practical level, not only as a theoretical term.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="card-tag">Pattern Taxonomy</div>
+          <h2 style="margin: 0 0 12px;">Patterns worth naming correctly</h2>
+          <p>
+            Learners benefit when a course names the classic iFlow patterns clearly instead of leaving them hidden inside demo steps.
+          </p>
+          <ul>
+            <li>Content-based routing for branch decisions.</li>
+            <li>Splitter-gather for breaking and recombining payload work.</li>
+            <li>Recipient list for multi-target delivery logic.</li>
+            <li>Exception subprocess for structured error handling.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="card-tag">Lab Access</div>
+          <h2 style="margin: 0 0 12px;">Hands-on tenant guidance</h2>
+          <p>
+            A strong training path should explain how learners can use a BTP trial tenant or guided sandbox flow for practice,
+            what the limits are, and how to keep exercises close to real delivery constraints.
+          </p>
+          <ul>
+            <li>Guide learners through tenant orientation before the first full iFlow build.</li>
+            <li>Teach what can be practiced safely in trial-style environments.</li>
+            <li>Use lab checkpoints so deployment and troubleshooting are not left theoretical.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="troubleshooting">
       <div class="container grid-2">
         <div class="panel">
           <div class="card-tag">AI Troubleshooting</div>
@@ -742,13 +956,13 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="deployment">
       <div class="container grid-2">
         <div class="panel">
           <div class="card-tag">Deployment Strategy</div>
           <h2 style="margin: 0 0 12px;">From dev to test to prod</h2>
           <p>
-            SAP’s content transport documentation emphasizes reusing tested integration content instead of rebuilding manually in production.
+            SAP's content transport documentation emphasizes reusing tested integration content instead of rebuilding manually in production.
             Learners should understand deployment as a controlled promotion path, not as copy-paste work.
           </p>
           <div class="flow">
@@ -792,7 +1006,7 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="advanced">
       <div class="container">
         <div class="section-head">
           <h2>Capabilities Worth Mentioning in Advanced Training</h2>
@@ -836,5 +1050,54 @@
     </section>
 
   </main>
+  <footer class="footer">
+    <div class="container footer-panel">
+      <div>
+        <strong style="display: block; margin-bottom: 6px; font-family: 'Space Grotesk', sans-serif;">Turn the notes into project practice.</strong>
+        <span>Go back to the main site to review the track options, simulations, and admissions flow.</span>
+      </div>
+      <a class="back-link" href="index.html#contact">Return to homepage and enquire</a>
+    </div>
+  </footer>
+  <script>
+    const navToggle = document.querySelector(".nav-toggle");
+    const navShell = document.querySelector(".nav-shell");
+    const resourceLinks = Array.from(document.querySelectorAll(".nav-links a[href^='#']"));
+    const resourceSections = resourceLinks
+      .map((link) => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+
+    if (navToggle && navShell) {
+      navToggle.addEventListener("click", () => {
+        const expanded = navToggle.getAttribute("aria-expanded") === "true";
+        navToggle.setAttribute("aria-expanded", String(!expanded));
+        navShell.classList.toggle("open", !expanded);
+      });
+
+      resourceLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          navToggle.setAttribute("aria-expanded", "false");
+          navShell.classList.remove("open");
+        });
+      });
+    }
+
+    if ("IntersectionObserver" in window && resourceSections.length) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          resourceLinks.forEach((link) => {
+            const active = link.getAttribute("href") === "#" + entry.target.id;
+            link.classList.toggle("active", active);
+          });
+        });
+      }, { rootMargin: "-35% 0px -45% 0px", threshold: 0.1 });
+
+      resourceSections.forEach((section) => observer.observe(section));
+    }
+  </script>
 </body>
 </html>
