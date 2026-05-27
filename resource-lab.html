@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sharada Institute Resource Lab | SAP CPI Architecture, Troubleshooting, and Delivery Notes</title>
+  <meta
+    name="description"
+    content="Sharada Institute Resource Lab distills SAP CPI architecture, SuccessFactors iFlow context, AI troubleshooting, deployment flow, governance, and trainer-ready notes into a learner-friendly internal page."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #040507;
+      --bg-2: #090e15;
+      --panel: rgba(10, 15, 24, 0.94);
+      --panel-soft: rgba(255, 255, 255, 0.045);
+      --line: rgba(255, 255, 255, 0.09);
+      --text: #eef5ff;
+      --muted: #aebfd5;
+      --accent: #68e6db;
+      --accent-blue: #82aefc;
+      --accent-warm: #f0c77a;
+      --danger: #ff8678;
+      --shadow: 0 28px 88px rgba(0, 0, 0, 0.42);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1220px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(104, 230, 219, 0.09), transparent 18%),
+        radial-gradient(circle at 86% 10%, rgba(130, 174, 252, 0.11), transparent 18%),
+        linear-gradient(180deg, #020304 0%, #040507 52%, #000000 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.042) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.042) 1px, transparent 1px),
+        linear-gradient(rgba(104, 230, 219, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(104, 230, 219, 0.025) 1px, transparent 1px);
+      background-size: 44px 44px, 44px 44px, 11px 11px, 11px 11px;
+      background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.35) 76%, transparent 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.38) 100%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 25%);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--max));
+      margin: 0 auto;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(5, 8, 12, 0.82);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .mark {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: #04101d;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-blue) 100%);
+      box-shadow: 0 16px 34px rgba(130, 174, 252, 0.18);
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .brand-copy span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(104, 230, 219, 0.28);
+      background: rgba(104, 230, 219, 0.11);
+      font-weight: 700;
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible {
+      border-color: rgba(104, 230, 219, 0.5);
+      background: rgba(104, 230, 219, 0.16);
+    }
+
+    .hero {
+      padding: 66px 0 36px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--accent);
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    h1 {
+      margin: 20px 0 14px;
+      max-width: 10.5ch;
+      font-size: clamp(2.7rem, 6vw, 5rem);
+      line-height: 0.94;
+    }
+
+    .hero-copy {
+      max-width: 62ch;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 1.02rem;
+    }
+
+    .panel,
+    .card,
+    .hero-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(15, 21, 32, 0.97), rgba(8, 11, 16, 0.95)),
+        linear-gradient(135deg, rgba(104, 230, 219, 0.03), transparent 44%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-panel,
+    .panel {
+      padding: 28px;
+    }
+
+    .hero-panel h2 {
+      margin: 0 0 12px;
+      font-size: 1.65rem;
+    }
+
+    .hero-panel p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .meta-chip {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+    }
+
+    .meta-chip strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 0.98rem;
+    }
+
+    .meta-chip span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .section {
+      padding: 30px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.95rem, 4vw, 3rem);
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .arch-grid,
+    .trainer-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1.08fr 0.92fr;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .arch-grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: stretch;
+    }
+
+    .trainer-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      padding: 22px;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(104, 230, 219, 0.22);
+      background:
+        linear-gradient(180deg, rgba(18, 25, 37, 0.98), rgba(8, 11, 16, 0.96)),
+        linear-gradient(135deg, rgba(104, 230, 219, 0.04), transparent 45%);
+    }
+
+    .card-tag {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(104, 230, 219, 0.12);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .card p,
+    .panel p,
+    li {
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .flow {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      gap: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+    }
+
+    .flow-no {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(104, 230, 219, 0.16), rgba(130, 174, 252, 0.18));
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .flow-step h4 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .diagram {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .diagram-node {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      position: relative;
+      min-height: 140px;
+    }
+
+    .diagram-node strong {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      background: rgba(130, 174, 252, 0.14);
+      color: #c9daff;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .diagram-node h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .diagram-node p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.9rem;
+    }
+
+    .check-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .check-row {
+      display: flex;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+    }
+
+    .check-row strong {
+      min-width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(240, 199, 122, 0.16);
+      color: var(--accent-warm);
+      font-size: 0.82rem;
+    }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .source-list a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .arch-grid,
+      .trainer-grid,
+      .diagram,
+      .note-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        width: min(calc(100% - 20px), var(--max));
+      }
+
+      .hero-panel,
+      .panel,
+      .card,
+      .diagram-node {
+        padding: 20px;
+      }
+
+      .hero-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-step {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        flex-wrap: wrap;
+        padding: 16px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a class="brand" href="index.html">
+        <div class="mark">SI</div>
+        <div class="brand-copy">
+          <strong>Sharada Institute</strong>
+          <span>Resource Lab</span>
+        </div>
+      </a>
+      <a class="back-link" href="index.html">Back to Homepage</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Architect and Trainer Notes</div>
+          <h1>Distilled SAP CPI content for people who need more than surface-level training.</h1>
+          <p class="hero-copy">
+            This page converts official SAP material into a training-friendly internal resource. It is written with an architect and trainer lens:
+            learners should understand not only what an iFlow is, but also how integration landscapes are shaped, monitored, transported, debugged,
+            and explained in real projects.
+          </p>
+        </div>
+        <aside class="hero-panel">
+          <h2>What this page adds beyond the homepage</h2>
+          <p>
+            The homepage sells the track. This page teaches the mindset behind it: architecture decisions, troubleshooting discipline,
+            deployment strategy, governance awareness, and trainer-ready explanation patterns.
+          </p>
+          <div class="hero-meta">
+            <div class="meta-chip">
+              <strong>Architect Lens</strong>
+              <span>Landscape thinking, integration styles, promotion strategy, and governance concerns.</span>
+            </div>
+            <div class="meta-chip">
+              <strong>Trainer Lens</strong>
+              <span>How to teach concepts in sequence so learners can explain them under pressure.</span>
+            </div>
+            <div class="meta-chip">
+              <strong>Ops Lens</strong>
+              <span>MPL, trace, custom logging, runtime checks, and issue-analysis habits.</span>
+            </div>
+            <div class="meta-chip">
+              <strong>Future Lens</strong>
+              <span>AI troubleshooting, API governance, event thinking, and non-SAP connectivity.</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container arch-grid">
+        <div class="panel">
+          <div class="card-tag">iFlow Mindset</div>
+          <h2 style="margin: 0 0 12px;">How to think about an iFlow</h2>
+          <p>
+            SAP’s Cloud Integration learning content treats an integration flow as the runtime path between a sender and one or more receivers.
+            A serious learner should treat it as a sequence of design choices: trigger, connectivity, transformation, routing, error path,
+            logging strategy, and operational follow-up.
+          </p>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="flow-no">1</div>
+              <div>
+                <h4>Sender and trigger</h4>
+                <p>Identify what starts the interaction: API invocation, scheduled job, inbound file, event, or partner document.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-no">2</div>
+              <div>
+                <h4>Processing and shaping</h4>
+                <p>Use mapping, modifiers, routers, script steps, validation, and exception subprocesses only where they solve a defined need.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-no">3</div>
+              <div>
+                <h4>Receiver and outcome</h4>
+                <p>Deliver to the target, observe the result, and capture enough runtime evidence to support later troubleshooting.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="card-tag">Trainer Positioning</div>
+          <h2 style="margin: 0 0 12px;">How to teach this well</h2>
+          <p>
+            A trainer should not start with every adapter and artifact at once. The better teaching order is:
+            landscape first, then flow logic, then mapping and routing, then monitoring and troubleshooting, then transport and governance.
+          </p>
+          <div class="check-grid">
+            <div class="check-row">
+              <strong>1</strong>
+              <div>Show the business flow before the tool screen so learners know why the integration exists.</div>
+            </div>
+            <div class="check-row">
+              <strong>2</strong>
+              <div>Use one realistic case repeatedly so learners connect every feature to the same business scenario.</div>
+            </div>
+            <div class="check-row">
+              <strong>3</strong>
+              <div>Make learners explain their design choices out loud after each exercise, not only submit a working flow.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>BTP Architecture in Plain Terms</h2>
+          <p>
+            SAP’s BTP integration explainer positions SAP Integration Suite as the layer that connects applications, data, and AI across SAP and third-party landscapes.
+          </p>
+        </div>
+        <div class="diagram">
+          <article class="diagram-node">
+            <strong>Systems</strong>
+            <h3>SAP business apps</h3>
+            <p>S/4HANA, SuccessFactors, Ariba, and other SAP products often become the main source or target systems.</p>
+          </article>
+          <article class="diagram-node">
+            <strong>Bridge</strong>
+            <h3>Integration Suite</h3>
+            <p>Cloud Integration handles transformation, routing, orchestration, security artifacts, and runtime monitoring.</p>
+          </article>
+          <article class="diagram-node">
+            <strong>APIs</strong>
+            <h3>API layer</h3>
+            <p>API Management sits in front of services when governance, traffic control, or secure exposure is required.</p>
+          </article>
+          <article class="diagram-node">
+            <strong>Partners</strong>
+            <h3>Third-party and B2B</h3>
+            <p>External HR systems, partner apps, and non-SAP cloud services join through adapters, Open Connectors, or B2B patterns.</p>
+          </article>
+          <article class="diagram-node">
+            <strong>Events</strong>
+            <h3>Event-driven extension</h3>
+            <p>Event Mesh supports publish/consume patterns when asynchronous business events matter more than synchronous request flows.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container trainer-grid">
+        <div class="panel">
+          <div class="card-tag">SuccessFactors Context</div>
+          <h2 style="margin: 0 0 12px;">Why SuccessFactors is a strong teaching example</h2>
+          <p>
+            SAP Learning content references SuccessFactors Employee Central package context in Cloud Integration training.
+            That is useful for instruction because it combines business meaning with middleware mechanics: employee objects, field ownership,
+            OData patterns, monitoring, and error conversations.
+          </p>
+          <ul>
+            <li>Read the FSD and identify which employee or onboarding data is moving.</li>
+            <li>Choose the adapter and payload transformation approach that fits the requirement.</li>
+            <li>Track issues through MPL logs, retries, and business impact discussion.</li>
+            <li>Explain the final flow in project language, not only in tool language.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="card-tag">Architect Enhancement</div>
+          <h2 style="margin: 0 0 12px;">What an architect would add to training</h2>
+          <p>
+            A solid CPI course should not stop at building iFlows. It should introduce the surrounding decisions that separate a working demo from a production-ready integration.
+          </p>
+          <ul>
+            <li>Interface inventory and ownership thinking.</li>
+            <li>Payload contract stability and versioning conversations.</li>
+            <li>Monitoring strategy, alerting, and custom log enrichment.</li>
+            <li>Transport and release discipline across landscapes.</li>
+            <li>When to use APIs, when to use events, and when to use partner-document patterns.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid-2">
+        <div class="panel">
+          <div class="card-tag">AI Troubleshooting</div>
+          <h2 style="margin: 0 0 12px;">How to use AI responsibly for integration issues</h2>
+          <p>
+            AI should not replace runtime evidence. It should help the learner inspect a problem faster by organizing facts, suggesting hypotheses,
+            and improving the quality of debugging questions.
+          </p>
+          <ul>
+            <li>Start with message processing log status, run steps, and the exact failing point.</li>
+            <li>Capture payload shape, adapter used, error text, correlation identifiers, and trace availability.</li>
+            <li>Ask AI to summarize probable causes, not to guess without runtime facts.</li>
+            <li>Use AI to propose next checks: mapping mismatch, credential issue, endpoint failure, payload issue, or script defect.</li>
+            <li>Validate every AI suggestion against MPL evidence, trace content, and actual tenant configuration.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="card-tag">Monitoring Habits</div>
+          <h2 style="margin: 0 0 12px;">The troubleshooting routine to teach repeatedly</h2>
+          <p>
+            SAP Help emphasizes MPL details, failed run steps, and tracing when the initial error detail is not enough.
+            A trainer should make this a fixed routine instead of a one-time demo.
+          </p>
+          <div class="check-grid">
+            <div class="check-row">
+              <strong>1</strong>
+              <div>Check the message status, time, flow name, and first error text.</div>
+            </div>
+            <div class="check-row">
+              <strong>2</strong>
+              <div>Drill into run steps and inspect where the error surfaced in the flow model.</div>
+            </div>
+            <div class="check-row">
+              <strong>3</strong>
+              <div>Use trace only when required and explain the storage and data-volume tradeoff.</div>
+            </div>
+            <div class="check-row">
+              <strong>4</strong>
+              <div>Log business identifiers only where they support later root-cause analysis.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid-2">
+        <div class="panel">
+          <div class="card-tag">Deployment Strategy</div>
+          <h2 style="margin: 0 0 12px;">From dev to test to prod</h2>
+          <p>
+            SAP’s content transport documentation emphasizes reusing tested integration content instead of rebuilding manually in production.
+            Learners should understand deployment as a controlled promotion path, not as copy-paste work.
+          </p>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="flow-no">DEV</div>
+              <div>
+                <h4>Build and unit check</h4>
+                <p>Create the iFlow, validate mappings, test connectivity, define properties, and prepare deployment notes.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-no">TST</div>
+              <div>
+                <h4>Transport and validate</h4>
+                <p>Promote through a transport path, test controlled data, verify configuration, and confirm runtime behavior.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-no">PRD</div>
+              <div>
+                <h4>Promote with discipline</h4>
+                <p>Deploy the tested version, monitor first productive runs, and keep rollback and support ownership clear.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="card-tag">Release Thinking</div>
+          <h2 style="margin: 0 0 12px;">What learners should know about promotion</h2>
+          <p>
+            Even at training level, learners benefit from hearing the release vocabulary they will face in projects.
+          </p>
+          <ul>
+            <li>Differentiate design changes from environment-specific configuration changes.</li>
+            <li>Understand why transport integrity matters more than rebuilding in each tenant.</li>
+            <li>Know that test evidence is part of deployment readiness, not an optional extra.</li>
+            <li>Recognize that monitoring after go-live is part of deployment, not something that starts later.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Capabilities Worth Mentioning in Advanced Training</h2>
+          <p>
+            A trainer or architect does not need to teach every capability deeply in the first track, but learners should at least know these names and why they exist.
+          </p>
+        </div>
+        <div class="note-grid">
+          <article class="card">
+            <div class="card-tag">B2B</div>
+            <h3>Integration Advisor</h3>
+            <p>Useful when B2B/A2A/B2G integration requires message implementation guidelines, mapping guidelines, and faster content creation.</p>
+          </article>
+          <article class="card">
+            <div class="card-tag">API</div>
+            <h3>API Management</h3>
+            <p>Important when APIs need security, traffic governance, proxying, analytics, and a consistent consumer-facing layer.</p>
+          </article>
+          <article class="card">
+            <div class="card-tag">Events</div>
+            <h3>Event Mesh</h3>
+            <p>Relevant when event-driven design is needed instead of request-response integration.</p>
+          </article>
+          <article class="card">
+            <div class="card-tag">Non-SAP</div>
+            <h3>Open Connectors</h3>
+            <p>Helpful for connecting many non-SAP applications through a connector catalog instead of building each integration from scratch.</p>
+          </article>
+          <article class="card">
+            <div class="card-tag">Content</div>
+            <h3>Prepackaged Assets</h3>
+            <p>Learners should know to look for standard content before inventing everything manually.</p>
+          </article>
+          <article class="card">
+            <div class="card-tag">Ops</div>
+            <h3>Custom Logging</h3>
+            <p>Adding targeted business identifiers to logs can significantly improve supportability when used with discipline.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

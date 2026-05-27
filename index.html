@@ -1,263 +1,1968 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>TechMinds Institute - Python . Robotics . Drones</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sharada Institute | SAP CPI Training, AI Adapter, and Interview Preparation</title>
+  <meta
+    name="description"
+    content="Sharada Institute offers SAP CPI training, AI adapter coverage, real project simulations, interview preparation, and mock interviews for professionals targeting SAP Integration Suite roles."
+  >
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="styles/home.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #040507;
+      --panel: rgba(9, 14, 22, 0.9);
+      --panel-strong: #0b1119;
+      --panel-soft: #101825;
+      --card: rgba(255, 255, 255, 0.05);
+      --line: rgba(255, 255, 255, 0.1);
+      --text: #eef5ff;
+      --muted: #afc0d5;
+      --accent: #68e6db;
+      --accent-2: #f0c77a;
+      --danger: #ff8174;
+      --shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(104, 230, 219, 0.08), transparent 18%),
+        radial-gradient(circle at 84% 8%, rgba(130, 174, 252, 0.1), transparent 16%),
+        radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.02), transparent 24%),
+        linear-gradient(180deg, #020304 0%, #040507 52%, #000000 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(rgba(127, 255, 212, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(127, 255, 212, 0.03) 1px, transparent 1px);
+      background-size: 44px 44px, 44px 44px, 11px 11px, 11px 11px;
+      background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.2) 72%, transparent 100%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, transparent 45%, rgba(0, 0, 0, 0.42) 100%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 28%);
+      pointer-events: none;
+      mix-blend-mode: normal;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--max));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(6, 14, 26, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 78px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: #04101e;
+      background: linear-gradient(135deg, var(--accent) 0%, #7bbcff 100%);
+      box-shadow: 0 16px 36px rgba(127, 255, 212, 0.18);
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .brand-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      color: var(--text);
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(127, 255, 212, 0.28);
+      background: rgba(127, 255, 212, 0.12);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .nav-cta:hover,
+    .nav-cta:focus-visible {
+      border-color: rgba(127, 255, 212, 0.55);
+      background: rgba(127, 255, 212, 0.18);
+    }
+
+    .hero {
+      position: relative;
+      padding: 80px 0 52px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.42);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      color: var(--accent);
+      font-size: 0.86rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hero h1 {
+      margin: 22px 0 18px;
+      max-width: 10.5ch;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(2.8rem, 6vw, 5.4rem);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+    }
+
+    .hero h1 .accent {
+      color: var(--accent);
+    }
+
+    .hero-copy {
+      color: var(--muted);
+      font-size: 1.03rem;
+      line-height: 1.72;
+      max-width: 58ch;
+      margin: 0 0 26px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: 0 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #7bbcff 100%);
+      color: #07111f;
+      box-shadow: 0 20px 48px rgba(123, 188, 255, 0.24);
+    }
+
+    .btn-secondary {
+      border: 1px solid rgba(130, 174, 252, 0.32);
+      background: rgba(130, 174, 252, 0.14);
+      color: var(--text);
+      box-shadow: 0 18px 40px rgba(130, 174, 252, 0.14);
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-proof {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .proof-pill {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .proof-pill strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .proof-pill span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .tag {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hero-panel,
+    .surface {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(14, 18, 26, 0.96), rgba(7, 10, 15, 0.94)),
+        linear-gradient(90deg, rgba(127, 255, 212, 0.04), transparent 35%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-panel {
+      padding: 28px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 18px;
+    }
+
+    .panel-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-label {
+      color: var(--accent-2);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .availability {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(127, 255, 212, 0.12);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.7rem;
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .panel-copy {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .metric {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.94rem;
+    }
+
+    .section {
+      padding: 34px 0;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      letter-spacing: -0.04em;
+    }
+
+    .section-heading p {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .cards-3,
+    .cards-4,
+    .schedule-grid,
+    .contact-grid,
+    .project-grid,
+    .flow-strip,
+    .architect-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .cards-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cards-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .project-grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: stretch;
+    }
+
+    .architect-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.16);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      animation: rise-in 520ms ease both;
+    }
+
+    .card:hover,
+    .card:focus-within {
+      transform: translateY(-4px);
+      border-color: rgba(127, 255, 212, 0.24);
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .card-kicker {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(127, 255, 212, 0.18), rgba(123, 188, 255, 0.18));
+      color: var(--accent);
+      font-size: 0.86rem;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .card ul {
+      margin: 14px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1fr;
+      gap: 18px;
+    }
+
+    .bento-card {
+      min-height: 100%;
+    }
+
+    .bento-feature {
+      grid-row: span 2;
+      padding: 28px;
+      background:
+        linear-gradient(180deg, rgba(19, 30, 45, 0.96), rgba(8, 12, 18, 0.95)),
+        linear-gradient(135deg, rgba(127, 255, 212, 0.05), transparent 48%);
+    }
+
+    .bento-feature h3 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 2rem;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      margin: 18px 0 12px;
+    }
+
+    .bento-feature p {
+      max-width: 36ch;
+    }
+
+    .bento-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .bento-list span {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .stack-tile {
+      padding: 22px;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.035);
+      min-height: 170px;
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .stack-tile:hover {
+      transform: translateY(-4px);
+      border-color: rgba(123, 188, 255, 0.26);
+    }
+
+    .stack-tile strong {
+      display: inline-flex;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(127, 255, 212, 0.12);
+      color: var(--accent);
+      font-size: 0.83rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .stack-tile h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .stack-tile p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.94rem;
+    }
+
+    .journey-band {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .journey-step {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .journey-step span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: rgba(123, 188, 255, 0.14);
+      color: #b5d7ff;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .journey-step h4 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+    }
+
+    .journey-step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.9rem;
+    }
+
+    .track-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .track-card {
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.16);
+    }
+
+    .track-card.featured {
+      background:
+        linear-gradient(180deg, rgba(20, 34, 51, 0.96), rgba(8, 12, 18, 0.95)),
+        linear-gradient(135deg, rgba(127, 255, 212, 0.05), transparent 45%);
+      border-color: rgba(127, 255, 212, 0.24);
+      transform: translateY(-4px);
+    }
+
+    .track-card h3 {
+      margin: 18px 0 8px;
+      font-size: 1.28rem;
+    }
+
+    .track-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .track-label {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(244, 201, 107, 0.16);
+      color: var(--accent-2);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .fun-board,
+    .video-board {
+      padding: 28px;
+    }
+
+    .game-list,
+    .video-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .game-item,
+    .video-item {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .game-item h3,
+    .video-item h3 {
+      margin: 0 0 8px;
+      font-size: 1.04rem;
+    }
+
+    .game-item p,
+    .video-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .video-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.93rem;
+    }
+
+    .video-link::before {
+      content: "▶";
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(127, 255, 212, 0.14);
+      color: var(--accent);
+      font-size: 0.74rem;
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .curriculum {
+      display: grid;
+      gap: 18px;
+    }
+
+    .curriculum-item {
+      display: grid;
+      grid-template-columns: 90px minmax(0, 1fr);
+      gap: 18px;
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .module-no {
+      width: 90px;
+      height: 90px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(127, 255, 212, 0.16), rgba(123, 188, 255, 0.18));
+      color: var(--accent);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+    }
+
+    .curriculum-item h3 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+    }
+
+    .curriculum-item p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .skill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .skill-list span {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 0.88rem;
+    }
+
+    .spotlight {
+      padding: 28px;
+    }
+
+    .project-board {
+      padding: 28px;
+    }
+
+    .project-stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .project-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .project-code {
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(127, 255, 212, 0.16), rgba(123, 188, 255, 0.18));
+      color: var(--accent);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      min-height: 72px;
+    }
+
+    .project-row h3 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .project-row p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .flow-strip {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 20px;
+    }
+
+    .flow-step {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .flow-step strong {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: rgba(127, 255, 212, 0.14);
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    .flow-step h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .flow-step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.93rem;
+    }
+
+    .spotlight-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .spotlight p {
+      color: var(--muted);
+      line-height: 1.75;
+      margin: 0;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 12px;
+    }
+
+    .check-item {
+      display: flex;
+      gap: 12px;
+      align-items: start;
+      color: var(--text);
+    }
+
+    .check-item strong {
+      min-width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(127, 255, 212, 0.14);
+      color: var(--accent);
+      font-size: 0.86rem;
+    }
+
+    .schedule-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .schedule-card {
+      position: relative;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(15, 30, 55, 0.96), rgba(9, 19, 35, 0.94));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .schedule-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -30px -30px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(127, 255, 212, 0.22), transparent 70%);
+    }
+
+    .schedule-card.featured {
+      border-color: rgba(127, 255, 212, 0.28);
+      transform: translateY(-8px);
+    }
+
+    .schedule-badge {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(244, 201, 107, 0.16);
+      color: var(--accent-2);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .schedule-card h3 {
+      margin: 18px 0 10px;
+      font-size: 1.35rem;
+    }
+
+    .schedule-meta {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0 0;
+    }
+
+    .schedule-meta div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+    }
+
+    .schedule-meta strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .schedule-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    .contact-grid {
+      grid-template-columns: 0.95fr 1.05fr;
+      align-items: stretch;
+    }
+
+    .contact-panel {
+      padding: 28px;
+    }
+
+    .contact-stack {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .contact-item {
+      padding: 18px 0 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .contact-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .contact-item strong,
+    .contact-item p {
+      margin: 0;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #88a2c4;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(127, 255, 212, 0.4);
+      box-shadow: 0 0 0 4px rgba(127, 255, 212, 0.08);
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .form-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      margin: 2px 0 0;
+    }
+
+    .footer {
+      padding: 28px 0 44px;
+      color: #92a9c7;
+      font-size: 0.92rem;
+    }
+
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .spotlight-grid,
+      .contact-grid,
+      .cards-4,
+      .cards-3,
+      .schedule-grid,
+      .project-grid,
+      .flow-strip,
+      .architect-grid,
+      .bento-grid,
+      .stack-grid,
+      .journey-band,
+      .track-grid,
+      .media-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .nav {
+        flex-wrap: wrap;
+        padding: 16px 0;
+      }
+
+      .nav-links {
+        order: 3;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+      }
+
+      .hero {
+        padding-top: 56px;
+      }
+
+      .hero-proof {
+        grid-template-columns: 1fr;
+      }
+
+      .curriculum-item,
+      .field-row,
+      .project-row {
+        grid-template-columns: 1fr;
+      }
+
+      .module-no {
+        width: 74px;
+        height: 74px;
+        border-radius: 18px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: min(calc(100% - 20px), var(--max));
+      }
+
+      .hero-panel,
+      .contact-panel,
+      .spotlight,
+      .card,
+      .schedule-card,
+      .curriculum-item {
+        padding: 20px;
+      }
+
+      .hero h1 {
+        max-width: none;
+      }
+
+      .footer-bar {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<!-- === NAVIGATION === -->
-<nav>
-  <div class="nav-logo">
-    <div class="logo-icon logo-svg">TM</div>
-    <div class="logo-text">Tech<span>Minds</span></div>
-  </div>
-  <ul class="nav-links">
-    <li><a href="#home">Home</a></li>
-    <li><a href="#courses">Courses</a></li>
-    <li><a href="#simulator">Simulator</a></li>
-    <li><a href="#videos">Videos</a></li>
-    <li><a href="#about">About</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-  <a href="#contact" class="nav-cta">Enroll Now</a>
-  <button class="hamburger" id="hamburger">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-<div id="mobileMenuBackdrop" class="mobile-menu-backdrop"></div>
-<div id="mobileMenu" class="mobile-menu"></div>
-
-<!-- === HERO SECTION === -->
-<section class="hero" id="home">
-  <div class="hero-orb orb1"></div>
-  <div class="hero-orb orb2"></div>
-  <div style="position:relative; z-index:2; max-width:600px;">
-    <div class="hero-badge">// Next-Gen Tech Education</div>
-    <h1>Learn <em>Python</em>, <span class="line2">Build <em>Robots</em>, Pilot <em>Drones</em></span></h1>
-    <p class="hero-sub">Master cutting-edge technology through hands-on projects, real hardware, and mentorship from industry professionals. No fluff. Just real skills.</p>
-    <div class="hero-actions">
-      <a href="#contact" class="btn-primary">Start Learning <span class="arrow">-&gt;</span></a>
-      <a href="#videos" class="btn-outline">Watch Free Lessons</a>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#top" aria-label="Sharada Institute home">
+        <div class="brand-mark">SI</div>
+        <div class="brand-copy">
+          <strong>Sharada Institute</strong>
+          <span>SAP CPI Training with room to expand into more technologies</span>
+        </div>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#program">Why This Track</a>
+        <a href="#journey">Journey</a>
+        <a href="#stack">Stack</a>
+        <a href="#simulations">Simulations</a>
+        <a href="#outcomes">Outcomes</a>
+        <a href="#tracks">Tracks</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="nav-cta" href="#contact">Get Batch Details</a>
     </div>
-    <div class="hero-stats">
-      <div class="stat reveal">
-        <div class="stat-num">500+</div>
-        <div class="stat-label">Students</div>
-      </div>
-      <div class="stat reveal">
-        <div class="stat-num">8+</div>
-        <div class="stat-label">Years</div>
-      </div>
-      <div class="stat reveal">
-        <div class="stat-num">95%</div>
-        <div class="stat-label">Success</div>
-      </div>
-    </div>
-  </div>
-</section>
+  </header>
 
-<!-- === COURSES SECTION === -->
-<section id="courses" class="section-pad">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-label">// Learn Hands-On</div>
-      <h2 class="section-title">Master <span>Three</span> Critical Skills</h2>
-      <p class="section-sub">From Python basics to advanced robotics - each course is designed to build real, portfolio-ready projects.</p>
-    </div>
-    <div class="courses-grid">
-      <div class="course-card reveal">
-        <div class="course-icon course-python">Py</div>
-        <h3>Python Mastery</h3>
-        <p>From variables to OOP to API integration. Build real projects: web scrapers, automation tools, data analysis dashboards, and more.</p>
-        <div class="course-meta">
-          <span>8 Weeks</span>
-          <span>All Levels</span>
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Sharada Institute for SAP Integration Careers</div>
+          <h1>Learn <span class="accent">SAP CPI</span> the way real delivery teams actually work.</h1>
+          <p class="hero-copy">
+            Learn SAP CPI with real project simulations, a deeper dive into cloud technology, Jira workflow, scrum process, mock interviews,
+            enterprise scenarios like SuccessFactors and Ariba, and the communication skills needed in real project calls.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#tracks">See Your Learning Track</a>
+            <a class="btn btn-secondary" href="#simulations">View Live Simulations</a>
+          </div>
+          <div class="hero-tags" aria-label="Topics covered">
+            <span class="tag">SAP Integration Suite</span>
+            <span class="tag">Cloud Integration</span>
+            <span class="tag">Cloud Technology</span>
+            <span class="tag">iFlows</span>
+            <span class="tag">Adapters</span>
+            <span class="tag">Scrum + Jira</span>
+            <span class="tag">Kahoot Quizzes</span>
+            <span class="tag">Groovy</span>
+            <span class="tag">AI Adapter</span>
+            <span class="tag">OData / REST / SOAP</span>
+          </div>
+          <div class="hero-proof" aria-label="Program highlights">
+            <div class="proof-pill">
+              <strong>FSD to iFlow</strong>
+              <span>Work from requirement document to flow design, testing, and explanation.</span>
+            </div>
+            <div class="proof-pill">
+              <strong>Jira + Scrum</strong>
+              <span>Understand how delivery teams track, discuss, and close work in real projects.</span>
+            </div>
+            <div class="proof-pill">
+              <strong>Enterprise Cases</strong>
+              <span>Practice with SuccessFactors, Ariba, B2B, API, and support-style scenarios.</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-panel" aria-label="Program summary">
+          <div class="panel-top">
+            <span class="panel-label">Career-Focused Program</span>
+            <span class="availability">Applications Open</span>
+          </div>
+          <div>
+            <h2 class="panel-title">From cloud technology foundations to delivery-ready execution</h2>
+            <p class="panel-copy">
+              The program focuses on the exact skill mix project teams and interview panels look for: integration flow design, adapters,
+              mappings, troubleshooting, Jira-style collaboration, and clear communication in review calls.
+            </p>
+          </div>
+          <div class="metric-grid">
+            <div class="metric">
+              <strong>Hands-On</strong>
+              <span>Practice-oriented coverage of integration artifacts, flows, APIs, message processing, AI-assisted troubleshooting, and emerging adapter use cases.</span>
+            </div>
+            <div class="metric">
+              <strong>Interview Prep</strong>
+              <span>Scenario-based questions, mock interviews, and answer framing for SAP CPI roles.</span>
+            </div>
+            <div class="metric">
+              <strong>Project Sims</strong>
+              <span>FSD-driven exercises, enterprise use cases, and implementation vocabulary taken from project-style scenarios.</span>
+            </div>
+            <div class="metric">
+              <strong>Delivery Ready</strong>
+              <span>Scrum process, Jira-based ticket handling, cloud technology foundations, crucial communication skills, and game-based revision.</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="program">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>Why this track hits differently</h2>
+          </div>
+          <p>
+            This is not presented like a generic institute page. It is structured like a practical launch track for learners who want
+            to understand the technology, the delivery workflow, and how to speak confidently in project and interview settings.
+          </p>
+        </div>
+        <div class="bento-grid">
+          <article class="card bento-card bento-feature">
+            <div class="card-kicker">01</div>
+            <h3>Move from learner mode into delivery mode.</h3>
+            <p>
+              Younger learners respond to environments that look like the real thing. This page now frames the program around enterprise work:
+              requirement analysis, integration design, tracking, issue handling, mock standups, and interview discussion.
+            </p>
+            <div class="bento-list">
+              <span>Understand the stack</span>
+              <span>Build realistic integration flows</span>
+              <span>Track work in Jira-style workflows</span>
+              <span>Explain decisions in mock calls</span>
+            </div>
+          </article>
+          <article class="card bento-card">
+            <div class="card-kicker">02</div>
+            <h3>Technology depth</h3>
+            <p>
+              SAP CPI, Cloud Integration, APIs, mappings, adapters, Groovy, AI adapter, and cloud technology foundations.
+            </p>
+          </article>
+          <article class="card bento-card">
+            <div class="card-kicker">03</div>
+            <h3>Enterprise scenarios</h3>
+            <p>
+              SuccessFactors, Ariba, B2B, API-led integrations, support and monitoring situations.
+            </p>
+          </article>
+          <article class="card bento-card">
+            <div class="card-kicker">04</div>
+            <h3>Team workflow skills</h3>
+            <p>
+              Scrum ceremonies, ticket handling, clarifications, defect updates, and crucial conversations.
+            </p>
+          </article>
         </div>
       </div>
-      <div class="course-card reveal">
-        <div class="course-icon course-robot">RB</div>
-        <h3>Robotics Lab</h3>
-        <p>Design and build with Arduino, sensors, and motors. Create line-followers, obstacle avoiders, and smart home prototypes.</p>
-        <div class="course-meta">
-          <span>10 Weeks</span>
-          <span>Hands-On Lab</span>
+    </section>
+
+    <section class="section" id="journey">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>Your learning journey</h2>
+          </div>
+          <p>
+            Instead of reading like a syllabus only, the journey below shows how a learner grows from fundamentals into project simulation,
+            communication, and interview performance.
+          </p>
+        </div>
+
+        <div class="journey-band">
+          <div class="journey-step">
+            <span>1</span>
+            <h4>Learn the platform</h4>
+            <p>Start with SAP Integration Suite, Cloud Integration, and a stronger dive into cloud technology needed to follow project discussions.</p>
+          </div>
+          <div class="journey-step">
+            <span>2</span>
+            <h4>Build integrations</h4>
+            <p>Use adapters, mappings, APIs, and scripts to create realistic iFlows.</p>
+          </div>
+          <div class="journey-step">
+            <span>3</span>
+            <h4>Read requirements</h4>
+            <p>Break down FSD-style inputs, fields, interfaces, transformations, and error paths.</p>
+          </div>
+          <div class="journey-step">
+            <span>4</span>
+            <h4>Work like a team</h4>
+            <p>Practice scrum ceremonies, Jira updates, ticket movement, and status communication.</p>
+          </div>
+          <div class="journey-step">
+            <span>5</span>
+            <h4>Clear interviews</h4>
+            <p>Use project stories, mock questions, and confident delivery to explain what you built.</p>
+          </div>
         </div>
       </div>
-      <div class="course-card reveal">
-        <div class="course-icon course-drone">DR</div>
-        <h3>Drone Piloting & Programming</h3>
-        <p>Fly real drones, write flight algorithms, and create autonomous missions. Industry-standard certifications included.</p>
-        <div class="course-meta">
-          <span>6 Weeks</span>
-          <span>Certification</span>
+    </section>
+
+    <section class="section" id="engagement">
+      <div class="container media-grid">
+        <div class="surface fun-board">
+          <div class="eyebrow">Learning That Stays Engaging</div>
+          <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+            Serious training does not have to feel dry.
+          </h2>
+          <p style="margin: 0; color: var(--muted); line-height: 1.75;">
+            Learning here can stay active and fun through Kahoot-based quizzes and sprint-style challenge rounds that reinforce
+            adapters, APIs, mappings, cloud technology concepts, Scrum vocabulary, and interview concepts.
+          </p>
+          <div class="game-list">
+            <div class="game-item">
+              <h3>Kahoot concept battles</h3>
+              <p>Quick quiz rounds after core topics like adapters, mappings, cloud technology concepts, and API exposure to improve recall.</p>
+            </div>
+            <div class="game-item">
+              <h3>Sprint-end challenge rounds</h3>
+              <p>Game-based revision at the end of a module to recap FSD terms, Jira workflow steps, and troubleshooting logic.</p>
+            </div>
+            <div class="game-item">
+              <h3>Mock interview warm-ups</h3>
+              <p>Short challenge sessions before interview drills to make learners think faster and respond with more confidence.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface video-board">
+          <div class="eyebrow">Resource Lab</div>
+          <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+            Explore a refined learning page, not raw outbound links.
+          </h2>
+          <p style="margin: 0; color: var(--muted); line-height: 1.75;">
+            Instead of sending learners directly to scattered SAP pages, this site now routes them to a separate in-project page
+            that distills the key ideas around iFlows, SuccessFactors context, BTP architecture, AI troubleshooting, and deployment flow.
+          </p>
+          <div class="video-list">
+            <div class="video-item">
+              <h3>iFlow and SuccessFactors learning notes</h3>
+              <p>
+                SAP Learning’s Cloud Integration basics lesson explains the integration flow process and references the
+                SAP SuccessFactors Employee Central integration package as example context for iFlow-oriented learning.
+              </p>
+              <a class="video-link" href="resource-lab.html">
+                Open resource page
+              </a>
+            </div>
+            <div class="video-item">
+              <h3>BTP architecture across SAP and third-party systems</h3>
+              <p>
+                SAP’s official BTP Integration explainer shows how SAP Integration Suite connects SAP applications,
+                data, and third-party systems in a broader architecture view.
+              </p>
+              <a class="video-link" href="resource-lab.html">
+                Open resource page
+              </a>
+            </div>
+            <div class="video-item">
+              <h3>AI troubleshooting and deployment flow</h3>
+              <p>
+                Use this official short video as a high-level intro before going deeper into iFlows, adapters,
+                enterprise scenarios, and project simulations.
+              </p>
+              <a class="video-link" href="resource-lab.html">
+                Open resource page
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<hr class="divider">
+    <section class="section" id="curriculum">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>What you will actually work on</h2>
+          </div>
+          <p>
+            The curriculum uses current SAP Integration Suite terminology and focuses on areas most frequently needed in project work:
+            design, connectivity, mapping, APIs, operations, simulations, and delivery communication.
+          </p>
+        </div>
 
-<!-- === VIDEOS SECTION === -->
-<section id="videos" class="section-pad">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-label">// Free Learning</div>
-      <h2 class="section-title">Watch Free <span>Lessons</span></h2>
-      <p class="section-sub">Get a taste of our teaching style. Click any video below to start learning.</p>
-    </div>
-    <div class="videos-grid">
-      <div class="video-card reveal" onclick="loadVideo(this, 'https://www.youtube.com/embed/kqtD5dpn9C0')"></div>
-      <div class="video-card reveal" onclick="loadVideo(this, 'https://www.youtube.com/embed/jNQXAC9IVRw')"></div>
-      <div class="video-card reveal" onclick="loadVideo(this, 'https://www.youtube.com/embed/dQw4w9WgXcQ')"></div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- === ABOUT SECTION === -->
-<section id="about" class="section-pad">
-  <div class="container">
-    <div class="about-wrapper">
-      <div>
-        <div class="reveal">
-          <div class="section-label">// Who We Are</div>
-          <h2 class="section-title">Education That <span>Actually Works</span></h2>
-          <p class="section-sub" style="margin-bottom:32px;">Our philosophy is simple - learn by doing. Every session includes hands-on lab time, real hardware, and a project you can show in your portfolio.</p>
-          <div class="pillars">
-            <div class="pillar reveal">
-              <div class="pillar-icon pillar-project">PR</div>
-              <div>
-                <h4>Project-First Curriculum</h4>
-                <p>Every module ends with a working project - not just a quiz. Real output, real learning.</p>
+        <div class="curriculum">
+          <article class="curriculum-item">
+            <div class="module-no">01</div>
+            <div>
+              <h3>Foundations of SAP Integration Suite, Cloud Integration, and cloud technology</h3>
+              <p>
+                Understand the SAP BTP context, the role of Cloud Integration inside SAP Integration Suite,
+                integration packages, design-time artifacts, runtime concepts, cloud technology foundations, and how enterprise integrations are modeled end to end.
+              </p>
+              <div class="skill-list">
+                <span>Integration Suite overview</span>
+                <span>Cloud Integration basics</span>
+                <span>Cloud technology foundations</span>
+                <span>Packages and artifacts</span>
+                <span>Tenant and landscape concepts</span>
               </div>
             </div>
-            <div class="pillar reveal">
-              <div class="pillar-icon pillar-lab">LB</div>
-              <div>
-                <h4>Fully Equipped Lab</h4>
-                <p>Robots, drones, Arduino kits, sensors - everything is available in-house, no extra cost.</p>
+          </article>
+
+          <article class="curriculum-item">
+            <div class="module-no">02</div>
+            <div>
+              <h3>Integration flow design and connectivity</h3>
+              <p>
+                Build iFlows with senders, receivers, adapters, routing logic, content modifier usage, and process patterns
+                that are commonly asked in training assignments and interview rounds.
+              </p>
+              <div class="skill-list">
+                <span>HTTPS</span>
+                <span>SFTP</span>
+                <span>SOAP</span>
+                <span>REST</span>
+                <span>OData</span>
+                <span>IDoc and JDBC concepts</span>
               </div>
             </div>
-            <div class="pillar reveal">
-              <div class="pillar-icon pillar-mentor">MT</div>
+          </article>
+
+          <article class="curriculum-item">
+            <div class="module-no">03</div>
+            <div>
+              <h3>Message processing, mapping, Groovy practice, and AI troubleshooting</h3>
+              <p>
+                Work on transformations and message enrichment using graphical mapping, value mapping, content-based routing,
+                payload handling, scripting patterns, and AI-assisted troubleshooting approaches that frequently appear in project delivery and support.
+              </p>
+              <div class="skill-list">
+                <span>Message mapping</span>
+                <span>Value mapping</span>
+                <span>Groovy scripts</span>
+                <span>Content modifier</span>
+                <span>Router patterns</span>
+                <span>AI troubleshooting prompts</span>
+                <span>Exception subprocess</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="curriculum-item">
+            <div class="module-no">04</div>
+            <div>
+              <h3>API exposure, security, AI adapter, operations, and deployment strategy</h3>
+              <p>
+                Cover service exposure patterns, deployment activities, security artifacts, certificates, keystore handling,
+                monitoring flows, AI adapter basics, issue analysis using message processing insights, and the path from dev to test to prod.
+              </p>
+              <div class="skill-list">
+                <span>OData API concepts</span>
+                <span>REST and SOAP exposure</span>
+                <span>AI receiver adapter basics</span>
+                <span>GenAI Hub connectivity overview</span>
+                <span>Security artifacts</span>
+                <span>Keystore and certificates</span>
+                <span>Monitoring and MPL analysis</span>
+                <span>Dev to prod transport strategy</span>
+                <span>Operational support basics</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="curriculum-item">
+            <div class="module-no">05</div>
+            <div>
+              <h3>Real project simulations, scrum process, ticket handling, and interview readiness</h3>
+              <p>
+                Translate technical learning into project and interview readiness through FSD-based scenario walkthroughs,
+                scrum-based execution, Jira ticket handling, real-time requirement interpretation, and confidence-building mock discussions.
+              </p>
+              <div class="skill-list">
+                <span>Mock interviews</span>
+                <span>Scenario-based questions</span>
+                <span>FSD breakdown</span>
+                <span>Project storytelling</span>
+                <span>Scrum ceremonies</span>
+                <span>Jira ticket handling</span>
+                <span>Crucial conversations</span>
+                <span>SuccessFactors scenarios</span>
+                <span>Ariba scenarios</span>
+                <span>Simple B2B flows</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="stack">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>The stack you will touch</h2>
+          </div>
+          <p>
+            This makes the training feel grounded in a real delivery environment rather than in abstract theory.
+          </p>
+        </div>
+        <div class="stack-grid">
+          <article class="stack-tile">
+            <strong>Platform</strong>
+            <h3>SAP Integration Suite</h3>
+            <p>Cloud Integration concepts, packages, runtime thinking, tenant awareness, and design-time artifacts.</p>
+          </article>
+          <article class="stack-tile">
+            <strong>Connectivity</strong>
+            <h3>Adapters and APIs</h3>
+            <p>HTTPS, SFTP, SOAP, REST, OData, JDBC-style concepts, and enterprise integration patterns.</p>
+          </article>
+          <article class="stack-tile">
+            <strong>Build</strong>
+            <h3>Mappings and scripts</h3>
+            <p>Message mapping, value mapping, Groovy usage, routing logic, exception design, and AI-assisted troubleshooting.</p>
+          </article>
+          <article class="stack-tile">
+            <strong>Delivery</strong>
+            <h3>Cloud technology and Jira</h3>
+            <p>Cloud technology foundations, scrum process, Jira work tracking, ticket handling, support communication, and dev-to-prod deployment flow.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="architect-view">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>How an architect would frame this training</h2>
+          </div>
+          <p>
+            A serious SAP CPI trainer should introduce not just feature usage, but also the production mindset behind landscape decisions,
+            monitoring discipline, and release control.
+          </p>
+        </div>
+        <div class="architect-grid">
+          <article class="card">
+            <div class="card-kicker">AR-1</div>
+            <h3>Governance and interface thinking</h3>
+            <p>
+              Learners should understand interface ownership, payload contracts, adapter choice, and when to prefer API, event, or B2B patterns.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">AR-2</div>
+            <h3>Monitoring and support discipline</h3>
+            <p>
+              Message Processing Log analysis, trace usage, custom logging, alerting ideas, and AI-assisted troubleshooting should be taught as habits.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">AR-3</div>
+            <h3>Release and transport control</h3>
+            <p>
+              A production-minded track should teach why content moves from dev to test to prod through controlled transport paths instead of manual rebuilds.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="simulations">
+      <div class="container project-grid">
+        <div class="surface project-board">
+          <div class="eyebrow">Real-Time Simulation Tracks</div>
+          <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+            Learn from requirement to deployed iFlow.
+          </h2>
+          <p style="margin: 0; color: var(--muted); line-height: 1.75;">
+            The program is now positioned around realistic integration delivery work, not generic placement wording.
+            Learners practice how to read a requirement, shape a solution, build the integration, track work, and explain it clearly.
+          </p>
+
+          <div class="flow-strip">
+            <div class="flow-step">
+              <strong>1</strong>
+              <h4>Read the FSD</h4>
+              <p>Identify systems, fields, triggers, payloads, and business rules from a functional specification document.</p>
+            </div>
+            <div class="flow-step">
+              <strong>2</strong>
+              <h4>Design the flow</h4>
+              <p>Choose sender and receiver adapters, map interfaces, and define routing, exceptions, and security needs.</p>
+            </div>
+            <div class="flow-step">
+              <strong>3</strong>
+              <h4>Build and test</h4>
+              <p>Create mappings, Groovy logic, and API interactions, then validate payloads and expected outcomes.</p>
+            </div>
+            <div class="flow-step">
+              <strong>4</strong>
+              <h4>Track and communicate</h4>
+              <p>Review MPL logs, update Jira-style work items, explain blockers, and present the solution as if discussing it in a project call.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface project-board">
+          <div class="eyebrow">Sample Enterprise Cases</div>
+          <div class="project-stack">
+            <div class="project-row">
+              <div class="project-code">SF</div>
               <div>
-                <h4>Industry Mentors</h4>
-                <p>All instructors are working professionals with 5+ years of field experience.</p>
+                <h3>SuccessFactors integration scenario</h3>
+                <p>Simulate employee-data or event-driven integration patterns with field mapping, transformation, and monitoring discussions.</p>
+              </div>
+            </div>
+            <div class="project-row">
+              <div class="project-code">AR</div>
+              <div>
+                <h3>Ariba document or process integration</h3>
+                <p>Practice integration flow thinking around partner communication, payload exchange, validations, and downstream processing.</p>
+              </div>
+            </div>
+            <div class="project-row">
+              <div class="project-code">B2B</div>
+              <div>
+                <h3>Simple B2B integration flow</h3>
+                <p>Model a lightweight business-to-business scenario with routing, format conversion, partner-specific data handling, and exception paths.</p>
+              </div>
+            </div>
+            <div class="project-row">
+              <div class="project-code">API</div>
+              <div>
+                <h3>API-led enterprise interface case</h3>
+                <p>Cover OData, REST, or SOAP-based interface patterns where requirements, security, mappings, and troubleshooting matter.</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="about-visual reveal">
-        <div class="about-box">
-          <div class="about-big-num">8+</div>
-          <div class="about-big-text">Years of teaching technology</div>
-          <div class="features-grid" style="margin-top:24px;">
-            <div class="feat-card"><h5 class="feat-cert">Certifications</h5><p>Industry-recognized certificates included</p></div>
-            <div class="feat-card"><h5 class="feat-lab">On-Site Lab</h5><p>Hardware lab available 6 days a week</p></div>
-            <div class="feat-card"><h5 class="feat-place">Placement Help</h5><p>Resume reviews, mock interviews</p></div>
-            <div class="feat-card"><h5 class="feat-ages">All Ages</h5><p>School, college, and professionals</p></div>
+    </section>
+
+    <section class="section" id="outcomes">
+      <div class="container surface spotlight">
+        <div class="spotlight-grid">
+          <div>
+            <div class="eyebrow">Outcome Focus</div>
+            <h2 style="margin: 18px 0 14px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+              What you become by the end of the track.
+            </h2>
+            <p>
+              The page is now built around transformation, not just topics. The result is a clearer promise:
+              you learn the technical stack, the delivery workflow, and the communication style expected in real SAP CPI work.
+            </p>
+          </div>
+          <div class="checklist">
+            <div class="check-item">
+              <strong>1</strong>
+              <div>Explain iFlow structure, adapter choices, and processing logic clearly.</div>
+            </div>
+            <div class="check-item">
+              <strong>2</strong>
+              <div>Handle mappings, scripts, APIs, cloud technology concepts, and troubleshooting discussions with confidence.</div>
+            </div>
+            <div class="check-item">
+              <strong>3</strong>
+              <div>Prepare for project delivery, scrum ceremonies, ticket handling, support responsibilities, and technical interviews.</div>
+            </div>
+            <div class="check-item">
+              <strong>4</strong>
+              <div>Build crucial conversation skills for standups, status updates, clarifications, and defect discussions.</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<hr class="divider">
-
-<!-- === SIMULATOR SECTION (mount point) === -->
-<section id="simulator" class="section-pad">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-label">// Simulator</div>
-      <h2 class="section-title">Try Our <span>Drone Simulator</span></h2>
-      <p class="section-sub">Experience hands-on flight and mission planning in your browser.</p>
-    </div>
-    <div id="runner-panel"></div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- === CONTACT SECTION === -->
-<section id="contact" class="section-pad">
-  <div class="container">
-    <div class="reveal" style="text-align:center;">
-      <div class="section-label">// Get In Touch</div>
-      <h2 class="section-title">Ready to <span>Start</span>?</h2>
-      <p class="section-sub" style="margin:16px auto 0;">Fill in the form and our team will reach out within 24 hours.</p>
-    </div>
-    <div class="contact-grid">
-      <div class="contact-info reveal">
-        <div class="contact-item"><div class="contact-ic contact-loc">Address</div><div><h4>Visit Us</h4><p>123, Tech Park Road<br>Anna Nagar, Chennai 600 040</p></div></div>
-        <div class="contact-item"><div class="contact-ic contact-phone">Phone</div><div><h4>Call / WhatsApp</h4><p>+91 98765 43210</p></div></div>
-        <div class="contact-item"><div class="contact-ic contact-mail">Email</div><div><h4>Email Us</h4><p>hello@techminds.institute</p></div></div>
-        <div class="contact-item"><div class="contact-ic contact-hours">Hours</div><div><h4>Office Hours</h4><p>Mon-Sat: 9 AM-7 PM<br>Sun: 10 AM-2 PM</p></div></div>
-      </div>
-      <div class="contact-form reveal" id="contactForm">
-        <div id="formContent">
-          <div class="form-row">
-            <div class="field"><label>First Name</label><input type="text" placeholder="Arjun" id="fname"></div>
-            <div class="field"><label>Last Name</label><input type="text" placeholder="Kumar" id="lname"></div>
+    <section class="section" id="delivery-skills">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>Project delivery skills</h2>
           </div>
-          <div class="field"><label>Phone / WhatsApp</label><input type="tel" placeholder="+91 98765 43210" id="phone"></div>
-          <div class="field"><label>Email</label><input type="email" placeholder="you@email.com" id="email"></div>
-          <div class="field"><label>Interested Course</label><select id="course"><option value="">-- Select a program --</option><option>Python Mastery</option><option>Robotics Lab</option><option>Drone Piloting & Programming</option><option>All 3 Programs (Bundle)</option></select></div>
-          <div class="field"><label>Message (Optional)</label><textarea placeholder="Any questions?" id="message"></textarea></div>
-          <button class="submit-btn">Send Enquiry <span class="arrow">-&gt;</span></button>
+          <p>
+            The program also covers how real project work gets organized and communicated so learners understand not only the integration,
+            but also the delivery environment around it.
+          </p>
         </div>
-        <div class="form-success" id="formSuccess"><div class="check">OK</div><h3>Enquiry Received!</h3><p>Thank you! Our team will contact you within 24 hours to discuss your course details.</p></div>
+        <div class="cards-4">
+          <article class="card">
+            <div class="card-kicker">DS-1</div>
+            <h3>Scrum process</h3>
+            <p>
+              Understand sprint planning, daily standups, backlog flow, review discussions, and how integration tasks move across a sprint.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">DS-2</div>
+            <h3>Jira work tracking</h3>
+            <p>
+              Learn how work is tracked through user stories, subtasks, defects, comments, priorities, and status transitions in Jira-style workflows.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">DS-3</div>
+            <h3>Ticket handling</h3>
+            <p>
+              Practice triaging issues, clarifying requirements, documenting updates, and communicating blockers during build and support work.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">DS-4</div>
+            <h3>Crucial conversation skills</h3>
+            <p>
+              Build confidence for requirement calls, status reporting, defect explanation, stakeholder clarification, and polite escalation.
+            </p>
+          </article>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- === FOOTER SECTION === -->
-<footer>
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <div class="nav-logo">
-        <div class="logo-icon logo-svg">TM</div>
-        <div class="logo-text">Tech<span>Minds</span> Institute</div>
+    <section class="section" id="ai-adapter">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>AI adapter coverage</h2>
+          </div>
+          <p>
+            SAP documents the AI adapter in Integration Suite as a receiver adapter that supports connectivity to Generative AI Hub
+            in SAP AI Core and other AI providers. This is included here as an advanced topic so the institute stays current with newer integration patterns.
+          </p>
+        </div>
+        <div class="cards-3">
+          <article class="card">
+            <div class="card-kicker">AI-1</div>
+            <h3>Where it fits</h3>
+            <p>
+              Learn where the AI receiver adapter fits inside SAP Integration Suite, how it is used in outbound integration scenarios,
+              and how to describe its role correctly in project and interview conversations.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">AI-2</div>
+            <h3>What learners will cover</h3>
+            <p>
+              Understand the basics of prompt payload handling, model selection concepts, request and response exchange,
+              and how AI calls can be framed inside integration design exercises.
+            </p>
+          </article>
+          <article class="card">
+            <div class="card-kicker">AI-3</div>
+            <h3>Why it matters</h3>
+            <p>
+              AI-related adapter awareness helps learners stay relevant as SAP integration landscapes evolve beyond classic
+              interface scenarios into AI-assisted and AI-connected workflows.
+            </p>
+          </article>
+        </div>
       </div>
-      <p>Empowering the next generation with practical technology skills - Python, Robotics, and Drone engineering.</p>
-    </div>
-    <div class="footer-col">
-      <h5>Programs</h5>
-      <ul>
-        <li><a href="#courses">Python Mastery</a></li>
-        <li><a href="#courses">Robotics Lab</a></li>
-        <li><a href="#courses">Drone Programming</a></li>
-        <li><a href="#contact">Enroll Now</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h5>Institute</h5>
-      <ul>
-        <li><a href="#about">About Us</a></li>
-        <li><a href="#videos">Free Lessons</a></li>
-        <li><a href="#contact">Contact</a></li>
-        <li><a href="#contact">Schedule a Visit</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>Copyright 2025 TechMinds Institute. All rights reserved.</span>
-    <span>Built for education &middot; Powered by passion</span>
-  </div>
-</footer>
+    </section>
 
-<script src="utils.js"></script>
-<script src="scripts/home.js?v=cloud-single-port"></script>
+    <section class="section" id="schedule">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>Choose your track</h2>
+          </div>
+          <p>
+            Pick the learning rhythm that fits your current level and your schedule. This section is framed like a product choice,
+            not a static timetable.
+          </p>
+        </div>
 
+        <div class="track-grid" id="tracks">
+          <article class="track-card featured">
+            <span class="track-label">Most Popular</span>
+            <h3>Weekend Career Track</h3>
+            <p>
+              Best for working professionals who want SAP CPI training plus project simulations, scrum exposure, Jira tracking, and interview preparation.
+            </p>
+            <div class="schedule-meta">
+              <div><span>Start Date</span><strong>To be announced</strong></div>
+              <div><span>Class Days</span><strong>Saturday and Sunday</strong></div>
+              <div><span>Time</span><strong>Placeholder: 8:00 AM - 10:00 AM IST</strong></div>
+              <div><span>Mode</span><strong>Online live instructor-led</strong></div>
+            </div>
+            <p class="schedule-note">
+              Includes technical curriculum, cloud technology foundations, assignments, scrum and Jira discussions, Kahoot revision rounds, interview practice, and mock checkpoints.
+            </p>
+          </article>
+
+          <article class="track-card">
+            <span class="track-label">Weekday</span>
+            <h3>Evening Fast Progress Batch</h3>
+            <p>
+              Structured for learners who prefer shorter sessions during weekdays with a steady practice rhythm and delivery-process coverage.
+            </p>
+            <div class="schedule-meta">
+              <div><span>Start Date</span><strong>To be announced</strong></div>
+              <div><span>Class Days</span><strong>Monday, Wednesday, Friday</strong></div>
+              <div><span>Time</span><strong>Placeholder: 8:30 PM - 10:00 PM IST</strong></div>
+              <div><span>Mode</span><strong>Online live with Q&amp;A support</strong></div>
+            </div>
+            <p class="schedule-note">
+              Suitable for professionals balancing office work, cloud technology learning, ticket handling practice, Kahoot-based recaps, and upskilling goals.
+            </p>
+          </article>
+
+          <article class="track-card">
+            <span class="track-label">Intensive</span>
+            <h3>Interview Sprint Cohort</h3>
+            <p>
+              Designed for learners who already know the basics and want revision, scenario practice, mock interviews, and communication polishing.
+            </p>
+            <div class="schedule-meta">
+              <div><span>Start Date</span><strong>To be announced</strong></div>
+              <div><span>Class Days</span><strong>Custom short cohort</strong></div>
+              <div><span>Time</span><strong>Placeholder: Evening slot</strong></div>
+              <div><span>Mode</span><strong>Interview-focused live sessions</strong></div>
+            </div>
+            <p class="schedule-note">
+              Best for implementation storytelling, crucial conversation practice, quick revision games, and technical confidence building.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="container contact-grid">
+        <div class="surface contact-panel">
+          <div class="eyebrow">Admissions Contact</div>
+          <h2 style="margin: 18px 0 12px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em;">
+            Get your best-fit track.
+          </h2>
+          <p style="margin: 0; color: var(--muted); line-height: 1.75;">
+            Replace these placeholders with your final admissions contacts. The structure is already ready for phone, WhatsApp,
+            email, and location details.
+          </p>
+
+          <div class="contact-stack">
+            <div class="contact-item">
+              <span>Phone</span>
+              <strong>+91 XXXXX XXXXX</strong>
+            </div>
+            <div class="contact-item">
+              <span>WhatsApp</span>
+              <strong>+91 XXXXX XXXXX</strong>
+            </div>
+            <div class="contact-item">
+              <span>Email</span>
+              <strong>admissions@your-domain.in</strong>
+            </div>
+            <div class="contact-item">
+              <span>Location</span>
+              <p>Sharada Institute address placeholder<br>City, State, India</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface contact-panel">
+          <div class="eyebrow">Enquiry Form</div>
+          <h3 style="margin: 18px 0 12px; font-size: 1.6rem;">Get batch details</h3>
+          <form>
+            <div class="field-row">
+              <div>
+                <label for="full-name">Full Name</label>
+                <input id="full-name" type="text" placeholder="Your name">
+              </div>
+              <div>
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="yourname@example.com">
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <label for="phone">Phone / WhatsApp</label>
+                <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX">
+              </div>
+              <div>
+                <label for="track">Interested Track</label>
+                <select id="track">
+                  <option>Weekend Career Track</option>
+                  <option>Evening Fast Progress Batch</option>
+                  <option>Interview Sprint Cohort</option>
+                  <option>SAP CPI + Scrum + Jira Track</option>
+                  <option>Need guidance to choose</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="message">What do you need help with?</label>
+              <textarea id="message" placeholder="Example: I want SAP CPI training with interview preparation and mock interviews."></textarea>
+            </div>
+            <a class="btn btn-primary" href="mailto:admissions@your-domain.in">Send Enquiry</a>
+            <p class="form-note">
+              Connect this form to your preferred backend or form handler when contact details are finalized.
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-bar">
+      <span>Copyright 2026 Sharada Institute. All rights reserved.</span>
+      <span>Focused website for SAP CPI training today, with room to expand into other technologies.</span>
+    </div>
+  </footer>
 </body>
 </html>
