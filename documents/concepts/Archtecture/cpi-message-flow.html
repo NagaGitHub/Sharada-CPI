@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Flow | SAP CPI Architecture</title>
+  <meta name="description" content="Animated SAP CPI message flow page showing how a message travels from sender through CPI to receiver and monitoring.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/cpi-architecture.css">
+</head>
+<body data-scene="message">
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="cpi-architecture.html">
+        <div class="brand-mark">CPI</div>
+        <div>
+          <h1>SAP Cloud Integration Architecture</h1>
+          <p>05 message flow // sender // iFlow // receiver</p>
+        </div>
+      </a>
+      <div class="header-meta">
+        <span class="meta-pill"><span class="meta-light"></span> Animated runtime map</span>
+        <span class="meta-pill">Use left/right arrows</span>
+      </div>
+    </header>
+    <nav class="section-nav" id="section-nav" aria-label="SAP CPI architecture sections"></nav>
+    <main class="workspace" aria-label="Message flow animated lesson">
+      <section>
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-title">
+              <h2 id="scene-title">Message Flow</h2>
+              <p id="scene-subtitle">How a message travels through CPI step by step</p>
+            </div>
+            <div class="step-controls">
+              <button class="arrow-btn" id="prev-step" type="button" aria-label="Previous step">&lt;</button>
+              <div class="step-counter" id="step-counter">Step 1 / 7</div>
+              <button class="arrow-btn" id="next-step" type="button" aria-label="Next step">&gt;</button>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="architecture-canvas" aria-label="Animated SAP CPI message flow diagram"></canvas>
+            <div class="canvas-status"><span class="pulse"></span><span id="canvas-status-text">message.exchange.in.flight</span></div>
+          </div>
+          <div class="progress" id="progress-dots" aria-label="Step progress"></div>
+        </div>
+        <div class="history">
+          <h3>History Log</h3>
+          <ol class="history-list" id="history-list"></ol>
+        </div>
+      </section>
+      <aside class="inspector" aria-live="polite">
+        <div class="step-card">
+          <span class="kicker" id="step-kicker">Message Flow // step 01</span>
+          <h2 id="step-title">A sender triggers the integration flow</h2>
+          <p id="step-body">A sender system can call an endpoint, upload a file, publish an event, or be polled on schedule.</p>
+        </div>
+        <h3>Architecture Notes</h3>
+        <div class="note-list" id="note-list"></div>
+        <h3>Key Terms</h3>
+        <ul class="component-list" id="component-list"></ul>
+      </aside>
+    </main>
+    <footer class="page-footer">
+      <a class="footer-link" id="prev-page" href="cpi-iflow-lifecycle.html">&lt; 04 iFlow Lifecycle</a>
+      <a class="footer-link" href="cpi-architecture.html">Back to index</a>
+      <a class="footer-link" id="next-page" href="cpi-btp-cockpit.html">06 Cockpit & Access &gt;</a>
+    </footer>
+  </div>
+  <script src="assets/cpi-section.js"></script>
+</body>
+</html>

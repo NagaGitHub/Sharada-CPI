@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SAP BTP Subaccount Components</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0d0d;
+    color: #e8e6df;
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+  h1 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #a8a49e;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* Canvas wrapper */
+  #canvas-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; }
+
+  /* Step label overlay */
+  #step-label {
+    position: absolute;
+    top: 12px; right: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #555;
+    pointer-events: none;
+  }
+
+  /* Controls */
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+  }
+  button {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #ccc;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button:hover:not(:disabled) { background: #2a2a2a; border-color: #555; }
+  button:disabled { opacity: 0.3; cursor: default; }
+
+  /* Dots */
+  #dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .dot.active { background: #6b9fff; transform: scale(1.3); }
+  .dot.done   { background: #3d5a99; }
+
+  /* Description card */
+  #desc-card {
+    width: 100%;
+    max-width: 720px;
+    margin-top: 16px;
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 14px 18px;
+    min-height: 64px;
+  }
+  #desc-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #7db3ff;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 5px;
+  }
+  #desc-text {
+    font-size: 13px;
+    color: #8a8680;
+    line-height: 1.55;
+  }
+
+  /* History log */
+  #history-wrap {
+    width: 100%; max-width: 720px;
+    margin-top: 16px;
+  }
+  #history-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #3a3a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  #history-log {
+    background: #0a0a0a;
+    border: 1px solid #1e1e1e;
+    border-radius: 8px;
+    padding: 10px 14px;
+    max-height: 120px;
+    overflow-y: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #444;
+  }
+  #history-log .entry { margin-bottom: 3px; }
+  #history-log .entry span { color: #2e5a9e; margin-right: 6px; }
+  #history-log .entry.latest { color: #7db3ff; }
+  #history-log .entry.latest span { color: #4a7fd4; }
+
+  /* Keyboard hint */
+  #hint {
+    margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #2e2e2e;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<h1>SAP BTP Subaccount — Components</h1>
+
+<div id="canvas-wrap">
+  <canvas id="c" width="720" height="640"></canvas>
+  <div id="step-label"></div>
+</div>
+
+<div id="controls">
+  <button id="btn-prev">← Prev</button>
+  <div id="dots"></div>
+  <button id="btn-next">Next →</button>
+</div>
+
+<div id="desc-card">
+  <div id="desc-title"></div>
+  <div id="desc-text"></div>
+</div>
+
+<div id="history-wrap">
+  <div id="history-label">// step log</div>
+  <div id="history-log"></div>
+</div>
+
+<div id="hint">← → arrow keys to navigate</div>
+
+<script>
+// ─── Palette ───────────────────────────────────────────────
+const P = {
+  bg:        '#141414',
+  outerFill: '#181c1f',
+  outerBorder:'#2d3a47',
+  outerText: '#7a9bbf',
+  outerSub:  '#3d5a72',
+
+  blueFill:  '#0e2235',
+  blueBorder:'#1e5fa8',
+  blueTitle: '#4d9aff',
+  blueText:  '#2d73c4',
+
+  orangeFill: '#231410',
+  orangeBorder:'#8b3a1c',
+  orangeTitle:'#d4713a',
+  orangeText: '#9e4a22',
+
+  greenFill:  '#0b1e18',
+  greenBorder:'#0e6e56',
+  greenTitle: '#2ecb9a',
+  greenText:  '#0f8f6a',
+
+  purpleFill: '#121128',
+  purpleBorder:'#4a3eb5',
+  purpleTitle:'#8b7ff0',
+  purpleText: '#5a52c4',
+
+  arrow:     '#4a7fd4',
+  arrowGlow: 'rgba(74,127,212,0.25)',
+};
+
+// ─── Steps ─────────────────────────────────────────────────
+// Each step has: id, draw instructions, title, description
+const steps = [
+  {
+    id: 'subaccount',
+    title: 'SAP BTP Subaccount',
+    desc: 'The top-level isolation boundary within a global account. Every resource, service, and environment lives inside a subaccount. It defines region, provider, and billing context.',
+    boxes: ['subaccount'],
+    arrows: [],
+  },
+  {
+    id: 'cf',
+    title: 'CF Environment',
+    desc: 'Cloud Foundry runtime — polyglot app hosting for Node.js, Java, Python and more. Provides XSUAA for auth, Destination service, and Connectivity. Organized as Org → Spaces → Custom apps.',
+    boxes: ['subaccount', 'cf'],
+    arrows: [],
+  },
+  {
+    id: 'kyma',
+    title: 'Kyma Environment',
+    desc: 'Kubernetes-based runtime managed by SAP. Supports containerized workloads, serverless functions, and event-driven microservices at scale. Backed by managed K8s cluster.',
+    boxes: ['subaccount', 'cf', 'kyma'],
+    arrows: ['cf-kyma'],
+  },
+  {
+    id: 'integration',
+    title: 'Integration Suite',
+    desc: 'A subscribed SaaS tenant providing Cloud Integration (CPI), API Management, Open Connectors, Integration Advisor, and Trading Partner Management — all middleware capabilities in one.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration'],
+    arrows: ['cf-kyma'],
+  },
+  {
+    id: 'subscriptions',
+    title: 'Subscriptions',
+    desc: 'Other subscribed SaaS applications provisioned to this subaccount: SAP Build (low-code), Business Application Studio (BAS), Launchpad Service, Work Zone, and any third-party SaaS apps.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration', 'subscriptions'],
+    arrows: ['cf-kyma', 'int-sub'],
+  },
+  {
+    id: 'security',
+    title: 'Security',
+    desc: 'Manages role collections, role assignments, and trust configuration. You connect custom Identity Providers (IdPs) here via SAML or OIDC. Controls who can access what in the subaccount.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration', 'subscriptions', 'security'],
+    arrows: ['cf-kyma', 'int-sub', 'sec-arrow'],
+  },
+  {
+    id: 'entitlements',
+    title: 'Entitlements',
+    desc: 'Defines which BTP services and plans are allocated to this subaccount and at what quota. Must be configured before you can create service instances or subscribe to applications.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration', 'subscriptions', 'security', 'entitlements'],
+    arrows: ['cf-kyma', 'int-sub', 'sec-arrow', 'ent-arrow'],
+  },
+  {
+    id: 'members',
+    title: 'Members',
+    desc: 'User management at the subaccount level. Assign platform users and business users subaccount-level roles (Administrator, Developer, Viewer). Separate from CF org membership.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration', 'subscriptions', 'security', 'entitlements', 'members'],
+    arrows: ['cf-kyma', 'int-sub', 'sec-arrow', 'ent-arrow', 'mem-arrow'],
+  },
+  {
+    id: 'connectivity',
+    title: 'Connectivity & Destinations',
+    desc: 'Cloud Connector bridges on-premise systems to BTP over a secure tunnel. Destination service stores HTTP, RFC, and LDAP connection configs consumed by CF apps, Kyma, and Integration Suite.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration', 'subscriptions', 'security', 'entitlements', 'members', 'connectivity'],
+    arrows: ['cf-kyma', 'int-sub', 'conn-arrow'],
+  },
+  {
+    id: 'marketplace',
+    title: 'Service Marketplace',
+    desc: 'Catalog of all entitled BTP services visible in the subaccount. From here you create service instances (e.g. HANA Cloud, Workflow, Document Management) and bind them to applications.',
+    boxes: ['subaccount', 'cf', 'kyma', 'integration', 'subscriptions', 'security', 'entitlements', 'members', 'connectivity', 'marketplace'],
+    arrows: ['cf-kyma', 'int-sub', 'conn-arrow', 'mkt-arrow'],
+  },
+];
+
+// ─── Layout config (scaled to 720×640 canvas) ──────────────
+const SCALE = 720 / 680;  // original SVG was 680 wide
+
+function sc(v) { return v * SCALE; }
+
+const layout = {
+  subaccount:   { x: sc(20),  y: sc(16),  w: sc(640), h: sc(600), rx: sc(20), color: 'outer' },
+  cf:           { x: sc(44),  y: sc(84),  w: sc(284), h: sc(120), rx: sc(12), color: 'blue'  },
+  kyma:         { x: sc(352), y: sc(84),  w: sc(284), h: sc(120), rx: sc(12), color: 'blue'  },
+  integration:  { x: sc(44),  y: sc(228), w: sc(284), h: sc(120), rx: sc(12), color: 'orange'},
+  subscriptions:{ x: sc(352), y: sc(228), w: sc(284), h: sc(120), rx: sc(12), color: 'orange'},
+  security:     { x: sc(44),  y: sc(372), w: sc(180), h: sc(100), rx: sc(12), color: 'green' },
+  entitlements: { x: sc(250), y: sc(372), w: sc(180), h: sc(100), rx: sc(12), color: 'green' },
+  members:      { x: sc(456), y: sc(372), w: sc(180), h: sc(100), rx: sc(12), color: 'green' },
+  connectivity: { x: sc(44),  y: sc(496), w: sc(284), h: sc(84),  rx: sc(12), color: 'purple'},
+  marketplace:  { x: sc(352), y: sc(496), w: sc(284), h: sc(84),  rx: sc(12), color: 'purple'},
+};
+
+const labels = {
+  subaccount:    { title: 'SAP BTP subaccount',         sub: ['Isolated unit within a global account'] },
+  cf:            { title: 'CF environment',              sub: ['Polyglot app runtime', 'XSUAA · Destination · Connectivity', 'Org → Spaces → Custom apps'] },
+  kyma:          { title: 'Kyma environment',            sub: ['Kubernetes-based runtime', 'Containers · Serverless functions', 'Microservices at scale'] },
+  integration:   { title: 'Integration Suite',           sub: ['Subscribed service / tenant', 'CPI · API Mgmt · Open Connectors', 'Integration Advisor · Trading Partner'] },
+  subscriptions: { title: 'Subscriptions',               sub: ['Other subscribed services', 'SAP Build · BAS · Launchpad', 'Work Zone · other SaaS apps'] },
+  security:      { title: 'Security',                    sub: ['Role collections', 'Trust config · IdP'] },
+  entitlements:  { title: 'Entitlements',                sub: ['Service quotas', 'Plan allocations'] },
+  members:       { title: 'Members',                     sub: ['User management', 'Subaccount roles'] },
+  connectivity:  { title: 'Connectivity & destinations', sub: ['On-premise via Cloud Connector', 'HTTP / RFC / LDAP destinations'] },
+  marketplace:   { title: 'Service marketplace',         sub: ['BTP services catalog', 'Create service instances'] },
+};
+
+// ─── Color map ─────────────────────────────────────────────
+const colorMap = {
+  outer:  { fill: P.outerFill,  border: P.outerBorder,  title: P.outerText,  text: P.outerSub   },
+  blue:   { fill: P.blueFill,   border: P.blueBorder,   title: P.blueTitle,  text: P.blueText   },
+  orange: { fill: P.orangeFill, border: P.orangeBorder, title: P.orangeTitle,text: P.orangeText },
+  green:  { fill: P.greenFill,  border: P.greenBorder,  title: P.greenTitle, text: P.greenText  },
+  purple: { fill: P.purpleFill, border: P.purpleBorder, title: P.purpleTitle,text: P.purpleText },
+};
+
+// ─── Arrow paths (from→to center points) ───────────────────
+function arrowDef(name) {
+  const L = layout;
+  const cx = b => b.x + b.w / 2;
+  const cy = b => b.y + b.h / 2;
+  const right = b => b.x + b.w;
+  const bot   = b => b.y + b.h;
+
+  const defs = {
+    'cf-kyma':   { x1: right(L.cf),           y1: cy(L.cf),           x2: L.kyma.x,           y2: cy(L.kyma),           label: 'parallel runtimes' },
+    'int-sub':   { x1: right(L.integration),  y1: cy(L.integration),  x2: L.subscriptions.x,  y2: cy(L.subscriptions),  label: 'subscribed services' },
+    'sec-arrow': { x1: cx(L.security),        y1: L.security.y,       x2: cx(L.integration),  y2: bot(L.integration),   label: 'role-based access' },
+    'ent-arrow': { x1: cx(L.entitlements),    y1: L.entitlements.y,   x2: cx(L.subscriptions),y2: bot(L.subscriptions), label: 'quota allocation' },
+    'mem-arrow': { x1: cx(L.members),         y1: L.members.y,        x2: right(L.kyma),       y2: bot(L.kyma),          label: 'user access' },
+    'conn-arrow':{ x1: cx(L.connectivity),    y1: L.connectivity.y,   x2: cx(L.cf),            y2: bot(L.cf),            label: 'on-prem tunnel' },
+    'mkt-arrow': { x1: cx(L.marketplace),     y1: L.marketplace.y,    x2: cx(L.subscriptions), y2: bot(L.subscriptions), label: 'service instances' },
+  };
+  return defs[name];
+}
+
+// ─── Canvas setup ──────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ─── Animation state ───────────────────────────────────────
+let current = 0;
+let progress = {};  // boxId → 0..1 alpha
+let arrowProgress = {}; // arrowId → 0..1
+let raf;
+
+function getTargetBoxes() { return new Set(steps[current].boxes); }
+function getTargetArrows(){ return new Set(steps[current].arrows); }
+
+function animateTo(idx) {
+  current = idx;
+  const targets = getTargetBoxes();
+  const arrowTargets = getTargetArrows();
+
+  // fade in new, fade out removed
+  Object.keys(layout).forEach(id => {
+    if (targets.has(id) && !(progress[id] >= 1)) progress[id] = progress[id] || 0;
+    // boxes not in target fade out handled in render loop
+  });
+
+  cancelAnimationFrame(raf);
+  tick();
+  updateUI();
+  addHistoryEntry(steps[idx]);
+}
+
+let lastTs = null;
+function tick(ts) {
+  if (!lastTs) lastTs = ts || 0;
+  const dt = Math.min((ts || 0) - lastTs, 50);
+  lastTs = ts || 0;
+
+  const targets = getTargetBoxes();
+  const arrowTargets = getTargetArrows();
+  let dirty = false;
+  const speed = 2.5; // alpha per second
+
+  Object.keys(layout).forEach(id => {
+    const want = targets.has(id) ? 1 : 0;
+    const cur  = progress[id] || 0;
+    if (cur !== want) {
+      const delta = (want - cur > 0 ? 1 : -1) * speed * dt / 1000;
+      progress[id] = Math.max(0, Math.min(1, cur + delta));
+      dirty = true;
+    }
+  });
+
+  // arrows
+  const allArrows = ['cf-kyma','int-sub','sec-arrow','ent-arrow','mem-arrow','conn-arrow','mkt-arrow'];
+  allArrows.forEach(id => {
+    const want = arrowTargets.has(id) ? 1 : 0;
+    const cur  = arrowProgress[id] || 0;
+    if (cur !== want) {
+      const delta = (want > cur ? 1 : -2) * speed * dt / 1000;
+      arrowProgress[id] = Math.max(0, Math.min(1, cur + delta));
+      dirty = true;
+    }
+  });
+
+  draw();
+  if (dirty) raf = requestAnimationFrame(tick);
+}
+
+// ─── Drawing ───────────────────────────────────────────────
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawBox(id, alpha) {
+  const b = layout[id];
+  const c = colorMap[b.color];
+  const lbl = labels[id];
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // fill
+  roundRect(b.x, b.y, b.w, b.h, b.rx);
+  ctx.fillStyle = c.fill;
+  ctx.fill();
+
+  // border
+  roundRect(b.x, b.y, b.w, b.h, b.rx);
+  ctx.strokeStyle = c.border;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // title
+  const cx = b.x + b.w / 2;
+  let ty = b.y + b.h * 0.3;
+  if (lbl.sub.length <= 2) ty = b.y + b.h * 0.32;
+
+  ctx.fillStyle = c.title;
+  ctx.font = `500 ${sc(13)}px 'IBM Plex Sans', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(lbl.title, cx, ty);
+
+  // sub lines
+  ctx.fillStyle = c.text;
+  ctx.font = `400 ${sc(11)}px 'IBM Plex Mono', monospace`;
+  lbl.sub.forEach((line, i) => {
+    ctx.fillText(line, cx, ty + sc(18) * (i + 1));
+  });
+
+  ctx.restore();
+}
+
+function drawArrow(id, alpha) {
+  if (alpha <= 0) return;
+  const d = arrowDef(id);
+  if (!d) return;
+
+  // animated dash progress
+  const dx = d.x2 - d.x1, dy = d.y2 - d.y1;
+  const len = Math.sqrt(dx*dx + dy*dy);
+  const ex = d.x1 + dx * alpha;
+  const ey = d.y1 + dy * alpha;
+
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.9;
+
+  // glow line
+  ctx.beginPath();
+  ctx.moveTo(d.x1, d.y1);
+  ctx.lineTo(ex, ey);
+  ctx.strokeStyle = P.arrowGlow;
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // main line
+  ctx.beginPath();
+  ctx.moveTo(d.x1, d.y1);
+  ctx.lineTo(ex, ey);
+  ctx.strokeStyle = P.arrow;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // arrowhead at tip
+  if (alpha > 0.85) {
+    const ang = Math.atan2(dy, dx);
+    const hs = 7;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - hs * Math.cos(ang - 0.4), ey - hs * Math.sin(ang - 0.4));
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - hs * Math.cos(ang + 0.4), ey - hs * Math.sin(ang + 0.4));
+    ctx.strokeStyle = P.arrow;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // label at midpoint
+  if (alpha > 0.7 && d.label) {
+    const mx = d.x1 + dx * 0.5;
+    const my = d.y1 + dy * 0.5;
+    ctx.fillStyle = P.arrow;
+    ctx.font = `400 ${sc(9)}px 'IBM Plex Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.globalAlpha = (alpha - 0.7) / 0.3 * 0.7;
+    ctx.fillText(d.label, mx, my - 4);
+  }
+
+  ctx.restore();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = P.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // draw boxes in z-order (subaccount first = background)
+  const zOrder = ['subaccount','cf','kyma','integration','subscriptions','security','entitlements','members','connectivity','marketplace'];
+  zOrder.forEach(id => {
+    const a = progress[id] || 0;
+    if (a > 0) drawBox(id, a);
+  });
+
+  // draw arrows on top
+  const allArrows = ['cf-kyma','int-sub','sec-arrow','ent-arrow','mem-arrow','conn-arrow','mkt-arrow'];
+  allArrows.forEach(id => {
+    const a = arrowProgress[id] || 0;
+    if (a > 0) drawArrow(id, a);
+  });
+}
+
+// ─── UI ────────────────────────────────────────────────────
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+const dotsEl  = document.getElementById('dots');
+const descTitle = document.getElementById('desc-title');
+const descText  = document.getElementById('desc-text');
+const stepLabel = document.getElementById('step-label');
+const histLog   = document.getElementById('history-log');
+
+// build dots
+steps.forEach((s, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.title = s.title;
+  d.addEventListener('click', () => goto(i));
+  dotsEl.appendChild(d);
+});
+
+function updateUI() {
+  const s = steps[current];
+  stepLabel.textContent = `${current + 1} / ${steps.length}`;
+  descTitle.textContent = s.title;
+  descText.textContent  = s.desc;
+  btnPrev.disabled = current === 0;
+  btnNext.disabled = current === steps.length - 1;
+
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot' + (i === current ? ' active' : i < current ? ' done' : '');
+  });
+}
+
+function addHistoryEntry(s) {
+  const el = document.createElement('div');
+  el.className = 'entry latest';
+  el.innerHTML = `<span>→</span>${s.title}`;
+  // demote previous latest
+  histLog.querySelectorAll('.entry.latest').forEach(e => e.classList.remove('latest'));
+  histLog.appendChild(el);
+  histLog.scrollTop = histLog.scrollHeight;
+}
+
+function goto(idx) {
+  if (idx < 0 || idx >= steps.length) return;
+  lastTs = null;
+  animateTo(idx);
+}
+
+btnPrev.addEventListener('click', () => goto(current - 1));
+btnNext.addEventListener('click', () => goto(current + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goto(current + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goto(current - 1);
+});
+
+// ─── Init ──────────────────────────────────────────────────
+goto(0);
+</script>
+</body>
+</html>

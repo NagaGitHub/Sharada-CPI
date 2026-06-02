@@ -1,0 +1,390 @@
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:sans-serif}
+
+  /* tab switcher */
+  .tabs{display:flex;gap:0;justify-content:center;margin:1rem 0 0}
+  .tab{padding:7px 28px;font-size:13px;border:0.5px solid #9c9a92;background:transparent;cursor:pointer;color:#5F5E5A;transition:all .2s;font-family:sans-serif}
+  .tab:first-child{border-radius:8px 0 0 8px}
+  .tab:last-child{border-radius:0 8px 8px 0}
+  .tab.active{background:#185FA5;color:#fff;border-color:#185FA5}
+  @media(prefers-color-scheme:dark){
+    .tab{color:#9c9a92;border-color:#5F5E5A}
+    .tab.active{background:#85B7EB;color:#042C53;border-color:#85B7EB}
+  }
+
+  /* stage dots */
+  .stage-nav{display:flex;gap:8px;justify-content:center;margin:.8rem 0 .3rem;flex-wrap:wrap}
+  .stage-dot{width:10px;height:10px;border-radius:50%;background:#9c9a92;border:none;cursor:pointer;padding:0;transition:background .2s,transform .2s}
+  .stage-dot.active{background:#185FA5;transform:scale(1.3)}
+  @media(prefers-color-scheme:dark){.stage-dot{background:#5F5E5A}.stage-dot.active{background:#85B7EB}}
+
+  .stage-label{font-size:12px;color:#73726c;text-align:center;margin:4px 0 .7rem}
+  @media(prefers-color-scheme:dark){.stage-label{color:#9c9a92}}
+
+  /* key hint */
+  .key-hint{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:.8rem}
+  .key{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1.5px solid #9c9a92;background:transparent;font-size:13px;font-weight:500;color:#5F5E5A;font-family:sans-serif;transition:all .12s;user-select:none}
+  .key.pressed{background:#185FA5;border-color:#185FA5;color:#fff;transform:scale(0.88)}
+  @media(prefers-color-scheme:dark){.key{color:#9c9a92;border-color:#5F5E5A}.key.pressed{background:#85B7EB;border-color:#85B7EB;color:#042C53}}
+  .key-hint span{font-size:11px;color:#9c9a92}
+
+  /* animations */
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fly-r{0%{transform:translateX(0);opacity:1}80%{opacity:1}100%{transform:translateX(280px);opacity:0}}
+  @keyframes fly-l{0%{transform:translateX(0);opacity:1}80%{opacity:1}100%{transform:translateX(-280px);opacity:0}}
+  @keyframes glow-p{0%,100%{opacity:.25}50%{opacity:.7}}
+  @keyframes spin-key{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  @keyframes dash-flow{to{stroke-dashoffset:-20}}
+  @keyframes fade-in{from{opacity:0}to{opacity:1}}
+  @keyframes draw-chk{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  @keyframes merge-l{0%{transform:translateX(-30px);opacity:0}100%{transform:translateX(0);opacity:1}}
+  @keyframes merge-r{0%{transform:translateX(30px);opacity:0}100%{transform:translateX(0);opacity:1}}
+  @keyframes pop-in{0%{transform:scale(0.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  @keyframes lock-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  .animate-in{animation:slideIn 1.7s ease forwards}
+  .flow-line{stroke-dasharray:5 4;animation:dash-flow 8.3s linear infinite}
+  .glow{animation:glow-p 11.7s ease-in-out infinite}
+  .spin{transform-origin:center;animation:spin-key 20s linear infinite}
+  .pkt-r{animation:fly-r 10.7s ease-in-out infinite}
+  .pkt-l{animation:fly-l 10.7s ease-in-out infinite 5.3s}
+  .merge-l{animation:merge-l 3s ease forwards}
+  .merge-r{animation:merge-r 3s ease .7s forwards;opacity:0}
+  .pop-in{animation:pop-in 2.3s ease 1.7s forwards;opacity:0}
+  .check-draw{stroke-dasharray:40;animation:draw-chk 2.7s ease forwards 1.3s;stroke-dashoffset:40}
+  .shake{animation:shake 2.3s ease}
+  .lock-bounce{animation:lock-bounce 8s ease-in-out infinite}
+</style>
+
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">SSH and HTTPS crypto explainers</h2>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('ssh')">🔐 SSH</button>
+  <button class="tab" onclick="switchTab('https')">🌐 HTTPS / TLS</button>
+</div>
+<div class="stage-nav" id="dots"></div>
+<div class="stage-label" id="stage-label"></div>
+<div id="canvas"></div>
+<div class="key-hint">
+  <div class="key" id="key-p">P</div>
+  <span>prev</span>
+  <span style="margin:0 4px">·</span>
+  <div class="key" id="key-n">N</div>
+  <span>next</span>
+</div>
+
+<script>
+const LIGHT={tp:"#2C2C2A",ts:"#5F5E5A",bs:"#9c9a92",bt:"#B4B2A9",bg2:"#F1EFE8",bg1:"#ffffff",rF:"#FCEBEB",rS:"#F09595",rT:"#791F1F",rU:"#A32D2D",bF:"#E6F1FB",bS:"#85B7EB",bT:"#0C447C",bU:"#185FA5",gF:"#EAF3DE",gS:"#97C459",gT:"#27500A",gU:"#3B6D11",aF:"#FAEEDA",aS:"#FAC775",aT:"#633806",aU:"#854F0B",pF:"#EEEDFE",pS:"#AFA9EC",pT:"#26215C",pU:"#534AB7",cF:"#E1F5EE",cS:"#5DCAA5",cT:"#04342C",cU:"#0F6E56"};
+const DARK ={tp:"#D3D1C7",ts:"#9c9a92",bs:"#5F5E5A",bt:"#444441",bg2:"#2C2C2A",bg1:"#1a1a18",rF:"#501313",rS:"#A32D2D",rT:"#F7C1C1",rU:"#F09595",bF:"#042C53",bS:"#185FA5",bT:"#B5D4F4",bU:"#85B7EB",gF:"#173404",gS:"#3B6D11",gT:"#C0DD97",gU:"#97C459",aF:"#412402",aS:"#854F0B",aT:"#FAC775",aU:"#EF9F27",pF:"#26215C",pS:"#7F77DD",pT:"#EEEDFE",pU:"#AFA9EC",cF:"#04342C",cS:"#1D9E75",cT:"#9FE1CB",cU:"#5DCAA5"};
+const C=()=>window.matchMedia('(prefers-color-scheme:dark)').matches?DARK:LIGHT;
+
+function adefs(c){
+  const mk=(id,col)=>`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>`;
+  return `<defs>${mk('arr',c.bs)}${mk('arrB',c.bU)}${mk('arrG',c.gU)}${mk('arrP',c.pU)}${mk('arrA',c.aU)}${mk('arrC',c.cU)}${mk('arrR',c.rU)}</defs>`;
+}
+const bx=(x,y,w,h,f,s,rx=8)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}" stroke="${s}" stroke-width="0.5"/>`;
+const tx=(x,y,l,col,sz=12,fw=400,a="middle")=>`<text x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central" style="font-size:${sz}px;font-weight:${fw};fill:${col};font-family:sans-serif">${l}</text>`;
+const mx=(x,y,l,col,sz=11,a="middle")=>`<text x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central" style="font-size:${sz}px;fill:${col};font-family:monospace">${l}</text>`;
+
+// ══════════════════════════════════════════════════════
+// SSH STAGES
+// ══════════════════════════════════════════════════════
+const sshStages=[
+{
+  label:"SSH Step 1 of 6 — Both sides exchange randoms to form session ID",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 310">${adefs(c)}
+    ${bx(30,30,170,58,c.bg1,c.bs)}${tx(115,52,"💻 Client",c.tp,14,500)}${tx(115,68,"generates client_random",c.ts,10)}
+    ${bx(480,30,170,58,c.bg1,c.bs)}${tx(565,52,"🖥 Server",c.tp,14,500)}${tx(565,68,"generates server_random",c.ts,10)}
+    <g class="pkt-r" style="transform-origin:200px 78px">${bx(200,65,150,26,c.aF,c.aS,6)}${tx(275,78,"🎲 client_random",c.aT,11,500)}</g>
+    <g class="pkt-l" style="transform-origin:328px 105px">${bx(328,92,150,26,c.pF,c.pS,6)}${tx(403,105,"🎲 server_random",c.pT,11,500)}</g>
+    <line x1="202" y1="85" x2="478" y2="85" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    ${bx(210,144,260,60,c.bg2,c.bt)}${tx(340,158,"Both sides compute:",c.ts,10)}
+    <g class="merge-l">${tx(255,176,"client_random",c.aU,10)}</g>
+    <g class="merge-r">${tx(425,176,"server_random",c.pU,10)}</g>
+    <g class="pop-in">${tx(340,194,"hash( client_random + server_random ) = session_ID",c.tp,10,500)}</g>
+    <line x1="40" y1="224" x2="640" y2="224" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,242,"both sides independently compute the same session ID",c.ts,11)}
+    ${tx(340,260,"neither side sends the final session ID — they each arrive at it",c.ts,11)}
+    ${tx(340,278,"fresh randoms each connection → old signatures are useless",c.gU,11)}
+  </svg>`;}
+},
+{
+  label:"SSH Step 2 of 6 — Server has a keypair (generated once)",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 300">${adefs(c)}
+    ${bx(260,20,160,44,c.bg1,c.bs)}${tx(340,42,"🖥 Server",c.tp,13,500)}
+    <g class="spin" style="transform-origin:340px 90px"><text x="340" y="90" text-anchor="middle" dominant-baseline="central" style="font-size:26px">🔑</text></g>
+    ${tx(340,120,"generating keypair…",c.ts,11)}
+    ${bx(60,150,220,72,c.rF,c.rS)}<rect x="60" y="150" width="220" height="72" rx="8" fill="${c.rS}" opacity="0.15" class="glow"/>
+    ${tx(170,176,"🔐 Private key",c.rT,13,500)}${mx(170,198,"d = 2753  (secret)",c.rU)}
+    ${bx(400,150,220,72,c.bF,c.bS)}<rect x="400" y="150" width="220" height="72" rx="8" fill="${c.bS}" opacity="0.12" class="glow"/>
+    ${tx(510,176,"🔓 Public key",c.bT,13,500)}${mx(510,198,"e=17, n=3233  (shared)",c.bU)}
+    <line x1="300" y1="64" x2="198" y2="148" stroke="${c.bs}" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="380" y1="64" x2="482" y2="148" stroke="${c.bs}" stroke-width="1" marker-end="url(#arr)"/>
+    ${mx(340,252,"e × d ≡ 1  (mod φ(n))  — mathematical inverses",c.ts,11)}
+    <line x1="60" y1="268" x2="620" y2="268" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,284,"private key never leaves the server — public key shared freely",c.ts,11)}
+  </svg>`;}
+},
+{
+  label:"SSH Step 3 of 6 — Server sends its public key to client",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 290">${adefs(c)}
+    ${bx(40,30,160,54,c.bg1,c.bs)}${tx(120,50,"💻 Client",c.tp,13,500)}${tx(120,66,"known_hosts file",c.ts,10)}
+    ${bx(480,30,160,54,c.bg1,c.bs)}${tx(560,57,"🖥 Server",c.tp,13,500)}
+    <g style="animation:fly-l 6s ease-in-out infinite;transform-origin:440px 56px">${bx(360,44,160,26,c.bF,c.bS,6)}${tx(440,57,"🔓 public key",c.bT,11,500)}</g>
+    <line x1="202" y1="70" x2="478" y2="70" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <line x1="120" y1="84" x2="120" y2="148" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    ${bx(40,152,280,72,c.gF,c.gS)}${tx(180,174,"✓ Check 1 — trust check",c.gT,12,500)}
+    ${tx(180,192,"hash received key → compare known_hosts",c.gU,11)}
+    ${tx(180,210,"seen before? ✓ trust it   first time? ask user",c.gU,10)}
+    ${bx(360,152,280,72,c.bg2,c.bt)}${tx(500,170,"known_hosts stores:",c.ts,11)}
+    ${mx(500,188,"github.com ssh-ed25519 AAAA…",c.ts,10)}${tx(500,208,"hostname + keytype + full pubkey",c.ts,10)}
+    <line x1="40" y1="242" x2="640" y2="242" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,260,"first connection → fingerprint prompt shown to user",c.ts,11)}
+    ${tx(340,276,"later connections → checked silently against known_hosts",c.ts,11)}
+  </svg>`;}
+},
+{
+  label:"SSH Step 4 of 6 — Handshake data formed, then server signs it",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 340">${adefs(c)}
+    ${tx(340,18,"How handshake_data is formed",c.tp,12,500)}
+    ${bx(30,34,140,44,c.bg1,c.bs)}${tx(100,56,"💻 Client",c.tp,12,500)}
+    ${bx(30,94,140,36,c.aF,c.aS,6)}${tx(100,112,"client_random",c.aT,11,500)}
+    ${bx(510,34,140,44,c.bg1,c.bs)}${tx(580,56,"🖥 Server",c.tp,12,500)}
+    ${bx(510,94,140,36,c.pF,c.pS,6)}${tx(580,112,"server_random",c.pT,11,500)}
+    <g class="merge-l"><line x1="172" y1="112" x2="258" y2="136" stroke="${c.aU}" stroke-width="1" marker-end="url(#arrA)"/></g>
+    <g class="merge-r"><line x1="508" y1="112" x2="422" y2="136" stroke="${c.pU}" stroke-width="1" marker-end="url(#arrP)"/></g>
+    <g class="pop-in">${bx(220,138,240,44,c.aF,c.aS)}${tx(340,155,"handshake_data",c.aT,12,500)}${mx(340,171,"hash( c_rand + s_rand )",c.aU,10)}</g>
+    <line x1="340" y1="183" x2="340" y2="202" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    ${bx(510,196,150,44,c.rF,c.rS)}${tx(585,210,"private key",c.rT,11,500)}${mx(585,226,"d = 2753",c.rU,10)}
+    ${bx(200,204,260,44,c.bg2,c.bs)}${tx(330,218,"sign( handshake_data,",c.tp,11,500)}${tx(330,234,"        private_key )",c.tp,11,500)}
+    <line x1="510" y1="218" x2="462" y2="218" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    <line x1="330" y1="248" x2="330" y2="266" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    ${bx(210,268,240,32,c.bF,c.bS)}${mx(330,284,"signature = 2201",c.bU,12)}
+    <g style="animation:fly-l 6s ease-in-out infinite;transform-origin:360px 318px">${bx(270,306,180,26,c.bF,c.bS,6)}${tx(360,319,"📨 signature = 2201",c.bT,11,500)}</g>
+    <line x1="210" y1="284" x2="100" y2="316" stroke="${c.bU}" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arrB)"/>
+    ${bx(30,304,150,36,c.bg1,c.bs)}${tx(105,322,"💻 Client",c.tp,12,500)}
+  </svg>`;}
+},
+{
+  label:"SSH Step 5 of 6 — Client verifies the signature",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 330">${adefs(c)}
+    ${bx(40,20,160,44,c.bg1,c.bs)}${tx(120,42,"💻 Client",c.tp,13,500)}
+    ${bx(40,88,138,50,c.aF,c.aS)}${tx(109,106,"handshake_data",c.aT,11,500)}${tx(109,122,"(computed locally)",c.aU,10)}
+    ${bx(200,88,138,50,c.bF,c.bS)}${tx(269,106,"public key",c.bT,11,500)}${mx(269,122,"e=17, n=3233",c.bU,10)}
+    ${bx(360,88,138,50,c.bF,c.bS)}${tx(429,106,"signature",c.bT,11,500)}${mx(429,122,"2201 (received)",c.bU,10)}
+    ${bx(140,166,400,48,c.bg2,c.bs)}${tx(340,184,"verify(data, signature, public_key)",c.tp,12,500)}${mx(340,204,"sig ^ e  mod n  →  recovers original data",c.ts,11)}
+    <line x1="109" y1="138" x2="220" y2="164" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    <line x1="269" y1="138" x2="305" y2="164" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    <line x1="429" y1="138" x2="390" y2="164" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    <line x1="340" y1="214" x2="340" y2="242" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    ${bx(150,244,380,56,c.gF,c.gS)}${tx(330,262,"recovered data == handshake_data?",c.gT,12,500)}${tx(330,280,"yes ✓  →  server owns the private key — identity confirmed",c.gU,11)}
+    <circle cx="536" cy="262" r="14" fill="none" stroke="${c.gS}" stroke-width="1.5" style="animation:fade-in .4s ease .1s both;opacity:0"/>
+    <polyline points="529,262 535,268 544,255" fill="none" stroke="${c.gT}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
+    <line x1="340" y1="300" x2="340" y2="314" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,322,"public key unlocks what private key locked — that is the math",c.ts,11)}
+  </svg>`;}
+},
+{
+  label:"SSH Step 6 of 6 — Why you cannot cheat it",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 310">${adefs(c)}
+    ${tx(340,22,"Three attacks — each one blocked",c.tp,13,500)}
+    ${bx(40,42,180,72,c.rF,c.rS)}${tx(130,64,"Attack 1",c.rT,11,500)}${tx(130,82,"Replay old",c.rU,11)}${tx(130,98,"signature",c.rU,11)}
+    <g class="shake">${bx(40,132,180,44,c.gF,c.gS)}${tx(130,147,"✓ blocked",c.gT,11,500)}${tx(130,165,"session_ID differs every time",c.gU,10)}</g>
+    <line x1="130" y1="114" x2="130" y2="130" stroke="${c.gU}" stroke-width="0.5" marker-end="url(#arrG)"/>
+    ${bx(250,42,180,72,c.rF,c.rS)}${tx(340,64,"Attack 2",c.rT,11,500)}${tx(340,82,"MITM with own",c.rU,11)}${tx(340,98,"valid keypair",c.rU,11)}
+    ${bx(250,132,180,44,c.gF,c.gS)}${tx(340,147,"✓ blocked",c.gT,11,500)}${tx(340,165,"Key not in known_hosts",c.gU,10)}
+    <line x1="340" y1="114" x2="340" y2="130" stroke="${c.gU}" stroke-width="0.5" marker-end="url(#arrG)"/>
+    ${bx(460,42,180,72,c.rF,c.rS)}${tx(550,64,"Attack 3",c.rT,11,500)}${tx(550,82,"Forge signature",c.rU,11)}${tx(550,98,"without private key",c.rU,11)}
+    ${bx(460,132,180,44,c.gF,c.gS)}${tx(550,147,"✓ blocked",c.gT,11,500)}${tx(550,165,"RSA hardness — 2048-bit math",c.gU,10)}
+    <line x1="550" y1="114" x2="550" y2="130" stroke="${c.gU}" stroke-width="0.5" marker-end="url(#arrG)"/>
+    <line x1="40" y1="200" x2="640" y2="200" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,218,"Full SSH flow",c.tp,12,500)}
+    ${bx(40,232,600,58,c.bg2,c.bt)}
+    ${tx(340,252,"1. Exchange randoms → session ID   2. Server sends public key   3. Server signs",c.ts,11)}
+    ${tx(340,272,"4. Client verifies   5. Client authenticates   6. Encrypted session begins",c.ts,11)}
+    <line x1="50" y1="296" x2="620" y2="296" stroke="${c.bU}" stroke-width="1.5" class="flow-line" marker-end="url(#arrB)"/>
+    ${tx(340,308,"server identity proved before any credential is ever sent",c.ts,11)}
+  </svg>`;}
+}
+];
+
+// ══════════════════════════════════════════════════════
+// HTTPS STAGES
+// ══════════════════════════════════════════════════════
+const httpsStages=[
+{
+  label:"HTTPS Step 1 of 6 — Browser connects and says hello",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 300">${adefs(c)}
+    ${bx(30,30,170,58,c.bg1,c.bs)}${tx(115,52,"🌐 Browser",c.tp,14,500)}${tx(115,68,"wants secure page",c.ts,10)}
+    ${bx(480,30,170,58,c.bg1,c.bs)}${tx(565,52,"🖥 Web Server",c.tp,14,500)}${tx(565,68,"running TLS",c.ts,10)}
+    <g class="pkt-r" style="transform-origin:205px 76px">${bx(205,63,180,26,c.aF,c.aS,6)}${tx(295,76,"👋 Client Hello",c.aT,11,500)}</g>
+    <g class="pkt-l" style="transform-origin:295px 104px">${bx(295,91,180,26,c.bF,c.bS,6)}${tx(385,104,"👋 Server Hello",c.bT,11,500)}</g>
+    <line x1="202" y1="84" x2="478" y2="84" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    ${bx(160,148,360,68,c.bg2,c.bt)}
+    ${tx(340,164,"Browser Hello includes:",c.ts,10)}
+    ${tx(340,182,"supported TLS versions  +  supported cipher suites",c.tp,11,500)}
+    ${tx(340,200,"+ client_random (just like SSH!)",c.gU,11)}
+    <line x1="40" y1="232" x2="640" y2="232" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,252,"biggest difference from SSH: server identity uses a Certificate",c.ts,11)}
+    ${tx(340,270,"signed by a trusted Certificate Authority (CA) — not known_hosts",c.ts,11)}
+    <circle cx="340" cy="290" r="5" fill="${c.aF}" stroke="${c.aS}" stroke-width="1" class="glow"/>
+  </svg>`;}
+},
+{
+  label:"HTTPS Step 2 of 6 — Server sends its Certificate",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 310">${adefs(c)}
+    ${bx(480,20,170,54,c.bg1,c.bs)}${tx(565,47,"🖥 Web Server",c.tp,13,500)}
+    <g style="animation:fly-l 6s ease-in-out infinite;transform-origin:420px 54px">${bx(310,41,200,26,c.gF,c.gS,6)}${tx(410,54,"📜 Certificate",c.gT,11,500)}</g>
+    <line x1="202" y1="60" x2="478" y2="60" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    ${bx(30,20,160,54,c.bg1,c.bs)}${tx(110,47,"🌐 Browser",c.tp,13,500)}
+    <line x1="110" y1="74" x2="110" y2="108" stroke="${c.bs}" stroke-width="0.5" marker-end="url(#arr)"/>
+    ${bx(30,110,600,100,c.bg2,c.bt)}
+    ${tx(330,130,"Certificate contains:",c.ts,10)}
+    ${tx(330,150,"domain name  +  server's public key  +  validity dates",c.tp,11,500)}
+    ${tx(330,170,"+ CA's digital signature over all the above",c.gU,11)}
+    ${tx(330,192,"CA signature = CA signed this cert with its private key",c.ts,10)}
+    ${bx(30,228,600,66,c.gF,c.gS)}
+    ${tx(330,248,"✓ Check 1 — Browser verifies CA signature",c.gT,12,500)}
+    ${tx(330,264,"uses CA's public key (pre-installed in browser/OS) to verify cert signature",c.gU,10)}
+    ${tx(330,282,"if valid → server's public key inside cert is trustworthy",c.gU,10)}
+  </svg>`;}
+},
+{
+  label:"HTTPS Step 3 of 6 — Both sides contribute to the session key",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 420">${adefs(c)}
+    ${bx(30,30,160,54,c.bg1,c.bs)}${tx(110,50,"🌐 Browser",c.tp,13,500)}${tx(110,66,"generates premaster",c.ts,10)}
+    ${bx(490,30,160,54,c.bg1,c.bs)}${tx(570,57,"🖥 Web Server",c.tp,13,500)}
+    ${bx(30,104,160,36,c.aF,c.aS,6)}${tx(110,122,"client_random",c.aT,11,500)}
+    ${bx(490,104,160,36,c.pF,c.pS,6)}${tx(570,122,"server_random",c.pT,11,500)}
+    ${bx(200,104,260,36,c.cF,c.cS,6)}${tx(330,122,"🔒 premaster secret",c.cT,11,500)}
+    ${tx(330,152,"browser encrypts premaster with server's public key",c.ts,11)}
+    ${tx(330,168,"→ only the server can decrypt it (has private key)",c.ts,11)}
+    <g style="animation:fly-r 10.7s ease-in-out infinite;transform-origin:330px 188px">${bx(230,176,200,26,c.cF,c.cS,6)}${tx(330,189,"🔒 encrypted premaster",c.cT,11,500)}</g>
+    <line x1="202" y1="192" x2="488" y2="192" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    ${bx(100,222,480,60,c.bg2,c.bt)}
+    ${tx(340,240,"Both sides now compute master secret:",c.ts,10)}
+    <g class="pop-in">${tx(340,262,"PRF( premaster + client_random + server_random ) = session_key",c.tp,10,500)}</g>
+    <line x1="40" y1="292" x2="640" y2="292" stroke="${c.bt}" stroke-width="0.5"/>
+    ${bx(30,300,620,112,c.cF,c.cS)}
+    ${tx(340,318,"📌 What is the Premaster Secret?",c.cT,12,500)}
+    ${tx(340,338,"A one-time random value the browser generates fresh for this connection.",c.cT,11)}
+    ${tx(340,356,"Never sent in plaintext — encrypted with the server's public key,",c.cT,11)}
+    ${tx(340,372,"so only the server (holding its private key) can unwrap it.",c.cT,11)}
+    ${tx(340,390,"Called 'pre' master because it is an ingredient, not the final key —",c.cT,11)}
+    ${tx(340,406,"PRF mixes it with both randoms to produce the real session_key.",c.cT,11)}
+  </svg>`;}
+},
+{
+  label:"HTTPS Step 4 of 6 — Finished messages — both prove they have the key",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 300">${adefs(c)}
+    ${tx(340,20,"Both sides verify the handshake before any real data flows",c.tp,12,500)}
+    ${bx(30,40,160,54,c.bg1,c.bs)}${tx(110,60,"🌐 Browser",c.tp,13,500)}${tx(110,76,"has session_key",c.ts,10)}
+    ${bx(490,40,160,54,c.bg1,c.bs)}${tx(570,60,"🖥 Web Server",c.tp,13,500)}${tx(570,76,"has session_key",c.ts,10)}
+    <g class="pkt-r" style="transform-origin:195px 76px">${bx(195,63,200,26,c.gF,c.gS,6)}${tx(295,76,"✅ Finished (encrypted)",c.gT,11,500)}</g>
+    <g class="pkt-l" style="transform-origin:285px 104px">${bx(285,91,200,26,c.gF,c.gS,6)}${tx(385,104,"✅ Finished (encrypted)",c.gT,11,500)}</g>
+    <line x1="202" y1="84" x2="488" y2="84" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    ${bx(100,136,480,64,c.gF,c.gS)}
+    ${tx(340,156,"✓ Check 2 — handshake integrity",c.gT,12,500)}
+    ${tx(340,172,"each Finished message = MAC of entire handshake encrypted with session_key",c.gU,10)}
+    ${tx(340,188,"if either side tampered anything → MAC fails → connection dropped",c.gU,10)}
+    <line x1="40" y1="218" x2="640" y2="218" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,238,"after both Finished messages pass — TLS handshake is complete",c.ts,11)}
+    ${tx(340,256,"everything from here is encrypted with the shared session_key",c.bU,11)}
+    <g class="lock-bounce" style="transform-origin:340px 280px"><text x="340" y="280" text-anchor="middle" style="font-size:20px">🔒</text></g>
+  </svg>`;}
+},
+{
+  label:"HTTPS Step 5 of 6 — Encrypted data flows",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 290">${adefs(c)}
+    ${bx(30,30,160,54,c.bg1,c.bs)}${tx(110,50,"🌐 Browser",c.tp,13,500)}${tx(110,66,"GET /page HTTP/1.1",c.ts,10)}
+    ${bx(490,30,160,54,c.bg1,c.bs)}${tx(570,50,"🖥 Web Server",c.tp,13,500)}${tx(570,66,"200 OK + HTML",c.ts,10)}
+    <g class="pkt-r" style="transform-origin:205px 76px">${bx(205,63,210,26,c.bF,c.bS,6)}${tx(310,76,"🔒 encrypted request",c.bT,11,500)}</g>
+    <g class="pkt-l" style="transform-origin:265px 105px">${bx(265,92,210,26,c.bF,c.bS,6)}${tx(370,105,"🔒 encrypted response",c.bT,11,500)}</g>
+    <line x1="202" y1="84" x2="488" y2="84" stroke="${c.bt}" stroke-width="0.5" stroke-dasharray="4 3"/>
+    ${bx(80,140,520,56,c.bF,c.bS)}
+    ${tx(340,160,"Both sides use session_key to encrypt/decrypt",c.bT,12,500)}
+    ${tx(340,178,"symmetric encryption (AES) — fast, cheap, both sides have same key",c.bU,11)}
+    ${bx(80,214,520,56,c.bg2,c.bt)}
+    ${tx(340,234,"Why symmetric from here? Asymmetric (RSA) is ~1000× slower",c.ts,11)}
+    ${tx(340,252,"TLS uses asymmetric only to securely agree the symmetric key",c.ts,11)}
+    <line x1="40" y1="278" x2="640" y2="278" stroke="${c.bt}" stroke-width="0.5"/>
+  </svg>`;}
+},
+{
+  label:"HTTPS Step 6 of 6 — SSH vs HTTPS — key differences",
+  render:()=>{const c=C();return `<svg width="100%" viewBox="0 0 680 310">${adefs(c)}
+    ${tx(340,20,"SSH vs HTTPS — same crypto ideas, different trust model",c.tp,13,500)}
+    ${bx(30,40,300,100,c.bg2,c.bt)}${tx(180,58,"🔐 SSH",c.tp,12,500)}
+    ${tx(180,78,"Trust: known_hosts file (manual)",c.ts,11)}${tx(180,96,"Server cert: raw public key",c.ts,11)}${tx(180,114,"Client auth: key pair or password",c.ts,11)}${tx(180,130,"Use: terminal / file transfer",c.ts,11)}
+    ${bx(350,40,300,100,c.bg2,c.bt)}${tx(500,58,"🌐 HTTPS",c.tp,12,500)}
+    ${tx(500,78,"Trust: CA chain (automatic)",c.ts,11)}${tx(500,96,"Server cert: CA-signed certificate",c.ts,11)}${tx(500,114,"Client auth: usually none (public web)",c.ts,11)}${tx(500,130,"Use: web browsers",c.ts,11)}
+    <line x1="40" y1="158" x2="640" y2="158" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,174,"What they share",c.tp,12,500)}
+    ${bx(30,186,600,96,c.gF,c.gS)}
+    ${tx(330,206,"✓ asymmetric crypto to verify server identity",c.gT,11,500)}
+    ${tx(330,224,"✓ random values from both sides to form session key",c.gT,11,500)}
+    ${tx(330,244,"✓ symmetric encryption (AES) once session key is agreed",c.gT,11,500)}
+    ${tx(330,262,"✓ old sessions cannot be replayed — fresh randoms every time",c.gT,11,500)}
+    <line x1="40" y1="294" x2="640" y2="294" stroke="${c.bt}" stroke-width="0.5"/>
+    ${tx(340,304,"HTTPS is essentially SSH ideas — productised for the public web",c.ts,11)}
+  </svg>`;}
+}
+];
+
+// ══════════════════════════════════════════════════════
+// CONTROLLER
+// ══════════════════════════════════════════════════════
+let activeTab='ssh', current=0;
+const stageMap={ssh:sshStages, https:httpsStages};
+
+function switchTab(tab){
+  activeTab=tab;
+  current=0;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent.toLowerCase().includes(tab)));
+  render();
+}
+
+function render(){
+  const stages=stageMap[activeTab];
+  const s=stages[current];
+  document.getElementById('stage-label').textContent=s.label;
+  document.getElementById('canvas').innerHTML=`<div class="animate-in">${s.render()}</div>`;
+  buildDots();
+}
+
+function buildDots(){
+  const stages=stageMap[activeTab];
+  const nav=document.getElementById('dots');
+  nav.innerHTML='';
+  stages.forEach((_,i)=>{
+    const d=document.createElement('button');
+    d.className='stage-dot'+(i===current?' active':'');
+    d.setAttribute('aria-label',`Step ${i+1}`);
+    d.onclick=()=>{ current=i; render(); };
+    nav.appendChild(d);
+  });
+}
+
+function go(dir){
+  const stages=stageMap[activeTab];
+  current=Math.max(0,Math.min(stages.length-1,current+dir));
+  render();
+}
+
+function flashKey(id){
+  const el=document.getElementById(id);
+  el.classList.add('pressed');
+  setTimeout(()=>el.classList.remove('pressed'),220);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='n'||e.key==='N'){ flashKey('key-n'); go(1); }
+  if(e.key==='p'||e.key==='P'){ flashKey('key-p'); go(-1); }
+});
+
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',render);
+render();
+</script>

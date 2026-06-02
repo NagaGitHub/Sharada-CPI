@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deployment | SAP CPI Architecture</title>
-  <meta name="description" content="Animated SAP CPI deployment page covering SAP BTP Cloud Foundry, TMN, worker nodes, and tenant isolation.">
+  <meta name="description" content="Animated SAP CPI deployment page covering the BTP subaccount split between Cloud Foundry access objects and the CPI tenant runtime.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
         <div class="brand-mark">CPI</div>
         <div>
           <h1>SAP Cloud Integration Architecture</h1>
-          <p>02 deployment // Cloud Foundry // TMN + worker nodes</p>
+          <p>02 deployment // subaccount // Cloud Foundry // CPI tenant</p>
         </div>
       </a>
       <div class="header-meta">
@@ -32,7 +32,7 @@
           <div class="stage-head">
             <div class="stage-title">
               <h2 id="scene-title">Deployment</h2>
-              <p id="scene-subtitle">Multi-tenant SAP BTP Cloud Foundry deployment model</p>
+              <p id="scene-subtitle">How BTP cockpit setup links to the Cloud Integration tenant</p>
             </div>
             <div class="step-controls">
               <button class="arrow-btn" id="prev-step" type="button" aria-label="Previous step">&lt;</button>
@@ -42,7 +42,7 @@
           </div>
           <div class="canvas-wrap">
             <canvas id="architecture-canvas" aria-label="Animated SAP CPI deployment diagram"></canvas>
-            <div class="canvas-status"><span class="pulse"></span><span id="canvas-status-text">deployment.cf.tenant.cluster</span></div>
+            <div class="canvas-status"><span class="pulse"></span><span id="canvas-status-text">deployment.subaccount.split</span></div>
           </div>
           <div class="progress" id="progress-dots" aria-label="Step progress"></div>
         </div>
@@ -54,8 +54,8 @@
       <aside class="inspector" aria-live="polite">
         <div class="step-card">
           <span class="kicker" id="step-kicker">Deployment // step 01</span>
-          <h2 id="step-title">BTP Cloud Foundry provides the hosting environment</h2>
-          <p id="step-body">SAP Integration Suite is subscribed and managed through SAP BTP.</p>
+          <h2 id="step-title">The subaccount contains two linked areas</h2>
+          <p id="step-body">Cloud Foundry stores cockpit access objects, while the Integration Suite subscription gives you the Cloud Integration tenant.</p>
         </div>
         <h3>Architecture Notes</h3>
         <div class="note-list" id="note-list"></div>

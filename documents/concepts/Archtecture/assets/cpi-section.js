@@ -3,7 +3,8 @@ const pages = [
   { key: "deployment", no: "02", label: "Deployment", file: "cpi-deployment.html" },
   { key: "components", no: "03", label: "Components", file: "cpi-components.html" },
   { key: "lifecycle", no: "04", label: "iFlow Lifecycle", file: "cpi-iflow-lifecycle.html" },
-  { key: "message", no: "05", label: "Message Flow", file: "cpi-message-flow.html" }
+  { key: "message", no: "05", label: "Message Flow", file: "cpi-message-flow.html" },
+  { key: "cockpit", no: "06", label: "Cockpit & Access", file: "cpi-btp-cockpit.html" }
 ];
 
 const scenes = {
@@ -80,79 +81,81 @@ const scenes = {
   deployment: {
     no: "02",
     label: "Deployment",
-    subtitle: "Multi-tenant SAP BTP Cloud Foundry deployment model",
-    status: "deployment.cf.tenant.cluster",
+    subtitle: "How BTP cockpit setup links to the Cloud Integration tenant",
+    status: "deployment.subaccount.split",
     terms: [
-      ["CF", "Cloud Foundry is the BTP environment where the current SAP Integration Suite service is operated."],
-      ["TMN", "Tenant Management Node is the management and web UI node for design, admin, monitor, and deployment coordination."],
-      ["Worker", "Runtime node where deployed artifacts execute and tenant messages are processed."],
-      ["Isolation", "Tenants are isolated by customer resources and data separation, including separate database schemas."]
+      ["Subaccount", "The BTP container that holds subscriptions, entitlements, Cloud Foundry setup, roles, destinations, and service instances."],
+      ["Cloud Foundry", "The BTP environment where spaces, apps, service instances, and service keys are organized. It is not the CPI tenant."],
+      ["CPI tenant", "The Cloud Integration system where iFlows are designed, deployed, monitored, and executed."],
+      ["TMN", "Management app side used for Discover, Design, Configure, Deploy, Monitor, and tenant settings."],
+      ["Worker", "Runtime node where deployed artifacts execute and business messages are processed."]
     ],
     notes: [
-      ["Multi-tenant", "SAP operates the platform infrastructure while each customer receives tenant-specific resource allocation."],
-      ["Deployment path", "An artifact is designed on the tenant management side and distributed to runtime worker nodes."],
-      ["Cloud Foundry", "Current Integration Suite usage is tied to SAP BTP Cloud Foundry subscription and service setup."]
+      ["Two branches", "Cloud Foundry holds access objects such as spaces, service instances, and service keys. Integration Suite holds the Cloud Integration tenant."],
+      ["SAP managed", "SAP operates the management services, runtime workers, scaling, patching, platform isolation, and hidden worker-node infrastructure."],
+      ["Name correction", "An instance named iflowpreprod inside the dev space is still in the dev space. The name alone does not create a preprod landscape."]
     ],
     nodes: [
-      { id: "btp", x: 0.05, y: 0.08, w: 0.9, h: 0.78, label: "SAP BTP - Cloud Foundry", sub: "SAP managed cloud platform", type: "zone" },
-      { id: "subaccount", x: 0.11, y: 0.18, w: 0.22, h: 0.18, label: "Subaccount", sub: "Entitlements + subscription", type: "design" },
-      { id: "tenant", x: 0.42, y: 0.16, w: 0.45, h: 0.55, label: "Cloud Integration Tenant Cluster", sub: "Customer tenant boundary", type: "zone" },
-      { id: "tmn", x: 0.47, y: 0.26, w: 0.18, h: 0.18, label: "TMN", sub: "Design, deploy, monitor", type: "design" },
-      { id: "worker1", x: 0.69, y: 0.24, w: 0.18, h: 0.16, label: "Worker Node A", sub: "JVM runtime", type: "runtime" },
-      { id: "worker2", x: 0.69, y: 0.47, w: 0.18, h: 0.16, label: "Worker Node B", sub: "iFlow execution", type: "runtime" },
-      { id: "db", x: 0.47, y: 0.53, w: 0.18, h: 0.15, label: "Tenant Data", sub: "schema, stores, logs", type: "ops" },
-      { id: "internet", x: 0.1, y: 0.58, w: 0.21, h: 0.16, label: "External Access", sub: "users + systems", type: "connect" }
+      { id: "btp", x: 0.05, y: 0.08, w: 0.9, h: 0.79, label: "BTP Subaccount", sub: "One account boundary with two linked areas", type: "zone" },
+      { id: "cf", x: 0.09, y: 0.2, w: 0.35, h: 0.66, label: "Cloud Foundry Environment", sub: "Org, spaces, service instances", type: "zone" },
+      { id: "space", x: 0.14, y: 0.36, w: 0.25, h: 0.16, label: "Space: dev", sub: "classroom for CF objects", type: "design" },
+      { id: "instance", x: 0.14, y: 0.63, w: 0.25, h: 0.15, label: "PI Runtime Service Instance", sub: "access identity, not runtime", type: "connect" },
+      { id: "suite", x: 0.51, y: 0.2, w: 0.39, h: 0.66, label: "Integration Suite Tenant", sub: "Cloud Integration capability", type: "zone" },
+      { id: "tmn", x: 0.56, y: 0.34, w: 0.15, h: 0.16, label: "TMN / Management", sub: "design, deploy, monitor", type: "design" },
+      { id: "worker", x: 0.75, y: 0.34, w: 0.15, h: 0.16, label: "Runtime Worker", sub: "message execution", type: "runtime" },
+      { id: "iflow", x: 0.75, y: 0.62, w: 0.15, h: 0.14, label: "Deployed iFlow", sub: "started artifact", type: "runtime" },
+      { id: "ops", x: 0.56, y: 0.62, w: 0.15, h: 0.14, label: "Monitor + Logs", sub: "MPL, trace, status", type: "ops" }
     ],
     links: [
-      { from: "subaccount", to: "tenant", label: "provision" },
-      { from: "internet", to: "tmn", label: "web UI / API" },
-      { from: "tmn", to: "worker1", label: "deploy" },
-      { from: "tmn", to: "worker2", label: "deploy" },
-      { from: "worker1", to: "db", label: "logs" },
-      { from: "worker2", to: "db", label: "logs" }
+      { from: "space", to: "instance", label: "create" },
+      { from: "cf", to: "suite", label: "same subaccount" },
+      { from: "instance", to: "iflow", label: "call credentials" },
+      { from: "tmn", to: "worker", label: "deploy" },
+      { from: "worker", to: "iflow", label: "start" },
+      { from: "iflow", to: "ops", label: "logs" }
     ],
     steps: [
       {
-        title: "BTP Cloud Foundry provides the hosting environment",
-        body: "SAP Integration Suite is subscribed and managed through SAP BTP. In Cloud Foundry, the tenant is reached through service and application URLs.",
-        log: "Cloud Foundry hosting layer selected.",
-        highlight: ["btp", "subaccount"],
-        activeLinks: ["subaccount->tenant"]
+        title: "The subaccount contains two linked areas",
+        body: "For CPI architecture, keep two branches separate: Cloud Foundry stores cockpit access objects, while the Integration Suite subscription gives you the Cloud Integration tenant.",
+        log: "BTP subaccount split into Cloud Foundry setup and Integration Suite tenant.",
+        highlight: ["btp", "cf", "suite"],
+        activeLinks: ["cf->suite"]
       },
       {
-        title: "A customer tenant is provisioned inside SAP managed infrastructure",
-        body: "The tenant represents customer-allocated resources. SAP Help describes tenant isolation through separate resource allocation and data separation.",
-        log: "Tenant boundary and isolation model created.",
-        highlight: ["tenant", "db"],
-        activeLinks: ["subaccount->tenant"]
+        title: "Cloud Foundry space holds service objects",
+        body: "The dev space is like a classroom. Service instances and service keys are created inside that room for access management.",
+        log: "Cloud Foundry space and service instance placement identified.",
+        highlight: ["cf", "space", "instance"],
+        activeLinks: ["space->instance"]
       },
       {
-        title: "The TMN exposes the management surface",
-        body: "The Tenant Management Node represents the web interface for discovery, design workspace, administration, monitoring, and deployment actions.",
-        log: "TMN control plane is active.",
-        highlight: ["tmn", "internet"],
-        activeLinks: ["internet->tmn"]
+        title: "Cloud Foundry service instance is an access identity",
+        body: "A Process Integration Runtime instance and its service key give external systems credentials. The iFlow does not execute inside that instance.",
+        log: "Service instance classified as credentials structure, not runtime engine.",
+        highlight: ["space", "instance", "iflow"],
+        activeLinks: ["instance->iflow"]
       },
       {
-        title: "Deployment pushes artifacts to worker nodes",
-        body: "When an integration flow is deployed, the deployment path moves from the management node to suitable runtime worker nodes in the tenant cluster.",
-        log: "Artifact distribution to worker nodes completed.",
-        highlight: ["tmn", "worker1", "worker2"],
-        activeLinks: ["tmn->worker1", "tmn->worker2"]
+        title: "The TMN side exposes the management surface",
+        body: "The management app is where users discover, design, configure, deploy, monitor runtime artifacts, and manage tenant settings and security material.",
+        log: "TMN management side selected.",
+        highlight: ["suite", "tmn", "ops"],
+        activeLinks: ["tmn->worker", "iflow->ops"]
       },
       {
-        title: "Worker nodes process tenant messages",
-        body: "Worker or runtime nodes run the integration engine, execute iFlow logic, and write operational evidence such as processing logs and persisted data.",
-        log: "Runtime workers are processing and recording evidence.",
-        highlight: ["worker1", "worker2", "db"],
-        activeLinks: ["worker1->db", "worker2->db"]
+        title: "Deployment makes the iFlow ready on runtime",
+        body: "When you click Deploy, the management side validates and builds the artifact, then starts it on the runtime worker side.",
+        log: "iFlow deployed from management side to runtime worker.",
+        highlight: ["tmn", "worker", "iflow"],
+        activeLinks: ["tmn->worker", "worker->iflow"]
       },
       {
-        title: "Operations observe the tenant cluster",
-        body: "Monitoring ties design-time artifacts to runtime behavior: deployment status, runtime status, message processing logs, traces, and node-level behavior.",
-        log: "Deployment and operations loop closed.",
-        highlight: ["tenant", "tmn", "worker1", "worker2", "db"],
-        activeLinks: ["tmn->worker1", "tmn->worker2", "worker1->db", "worker2->db"]
+        title: "SAP manages worker infrastructure, you manage artifacts",
+        body: "Customers can deploy, stop, start, monitor, and configure iFlows. SAP manages the actual worker-node infrastructure, scaling, patching, and hidden node count.",
+        log: "Customer artifact control separated from SAP infrastructure control.",
+        highlight: ["suite", "tmn", "worker", "iflow", "ops"],
+        activeLinks: ["tmn->worker", "worker->iflow", "iflow->ops"]
       }
     ]
   },
@@ -398,6 +401,125 @@ const scenes = {
         log: "Exception handling path prepared for failure scenarios.",
         highlight: ["error", "process", "monitor"],
         activeLinks: ["process->error", "process->monitor"]
+      }
+    ]
+  },
+  cockpit: {
+    no: "06",
+    label: "Cockpit & Access",
+    subtitle: "BTP cockpit objects, CPI tenant runtime, and an external URL call end to end",
+    status: "cockpit.access.url.to.runtime",
+    terms: [
+      ["CPI tenant", "The school building where Cloud Integration content is designed, deployed, monitored, and run."],
+      ["Space", "A Cloud Foundry classroom that groups service instances and keys, such as the dev space."],
+      ["Service instance", "An entry-pass category used to manage credentials for one vendor, app, or technical caller."],
+      ["Service key", "The actual ID card/password containing client ID, secret or certificate details, token URL, and runtime URL."],
+      ["Worker node", "The engine-room server that executes the deployed iFlow when a message arrives."]
+    ],
+    notes: [
+      ["School analogy", "CPI tenant is the school building, space is a classroom, iFlow is the classroom activity, service instance is an entry-pass category, service key is the actual ID card."],
+      ["Access model", "Multiple instances such as VendorA and VendorB help separate credentials and revoke one caller without breaking another."],
+      ["Execution model", "The instance does not execute the iFlow. It authenticates the caller; the Cloud Integration runtime worker executes the iFlow."],
+      ["Trial note", "If only the dev space exists, every instance you create is placed in dev even if the instance name contains preprod."]
+    ],
+    nodes: [
+      { id: "btp", x: 0.03, y: 0.06, w: 0.94, h: 0.84, label: "BTP Subaccount", sub: "subscription + Cloud Foundry setup", type: "zone" },
+      { id: "cf", x: 0.06, y: 0.17, w: 0.34, h: 0.72, label: "Cloud Foundry Environment", sub: "not the CPI tenant", type: "zone" },
+      { id: "space", x: 0.1, y: 0.3, w: 0.26, h: 0.14, label: "Space: dev", sub: "classroom", type: "design" },
+      { id: "vendorA", x: 0.08, y: 0.56, w: 0.14, h: 0.14, label: "Instance: VendorA", sub: "entry-pass category", type: "connect" },
+      { id: "vendorB", x: 0.24, y: 0.56, w: 0.14, h: 0.14, label: "Instance: VendorB", sub: "separate credentials", type: "connect" },
+      { id: "key", x: 0.16, y: 0.75, w: 0.14, h: 0.12, label: "Service Key", sub: "ID card/password", type: "connect" },
+      { id: "tenant", x: 0.47, y: 0.17, w: 0.47, h: 0.72, label: "Integration Suite / CPI Tenant", sub: "school building", type: "zone" },
+      { id: "tmn", x: 0.51, y: 0.29, w: 0.16, h: 0.16, label: "TMN / Management App", sub: "design, deploy, monitor", type: "design" },
+      { id: "worker", x: 0.74, y: 0.29, w: 0.16, h: 0.16, label: "Worker Node", sub: "engine room", type: "runtime" },
+      { id: "engine", x: 0.73, y: 0.53, w: 0.18, h: 0.14, label: "Runtime Engine", sub: "Apache Camel + adapters", type: "runtime" },
+      { id: "iflow", x: 0.51, y: 0.53, w: 0.16, h: 0.14, label: "Deployed iFlow", sub: "classroom activity", type: "runtime" },
+      { id: "sender", x: 0.48, y: 0.76, w: 0.15, h: 0.12, label: "External Caller", sub: "URL + parameter", type: "connect" },
+      { id: "logs", x: 0.74, y: 0.76, w: 0.16, h: 0.12, label: "MPL + Stores", sub: "runtime evidence", type: "ops" }
+    ],
+    links: [
+      { from: "space", to: "vendorA", label: "create" },
+      { from: "space", to: "vendorB", label: "create" },
+      { from: "vendorA", to: "key", label: "key" },
+      { from: "vendorB", to: "key", label: "key" },
+      { from: "tmn", to: "iflow", label: "design" },
+      { from: "tmn", to: "worker", label: "deploy" },
+      { from: "worker", to: "engine", label: "host" },
+      { from: "engine", to: "iflow", label: "run route" },
+      { from: "key", to: "sender", label: "credentials" },
+      { from: "sender", to: "engine", label: "HTTPS call" },
+      { from: "iflow", to: "logs", label: "MPL" }
+    ],
+    steps: [
+      {
+        title: "Start with two linked branches under one subaccount",
+        body: "Cloud Foundry is the cockpit area for spaces, service instances, and service keys. The Integration Suite subscription opens the CPI tenant where iFlows live.",
+        log: "BTP subaccount separated into Cloud Foundry access setup and CPI tenant runtime.",
+        highlight: ["btp", "cf", "tenant"],
+        activeLinks: []
+      },
+      {
+        title: "The dev space is the Cloud Foundry classroom",
+        body: "In trial you often see only one space named dev. If VendorA and VendorB are created there, both instances belong to the same dev space.",
+        log: "Space dev selected as the classroom for service instances.",
+        highlight: ["cf", "space", "vendorA", "vendorB"],
+        activeLinks: ["space->vendorA", "space->vendorB"]
+      },
+      {
+        title: "Instances organize credentials per caller",
+        body: "VendorA and VendorB instances are not separate CPI runtimes. They are separate access identities so each caller can have its own service key and lifecycle.",
+        log: "Vendor-specific service instances mapped to separate credential owners.",
+        highlight: ["vendorA", "vendorB", "key"],
+        activeLinks: ["vendorA->key", "vendorB->key"]
+      },
+      {
+        title: "The service key is the actual access card",
+        body: "The service key contains the technical values a caller uses, such as client ID, secret or certificate, token URL, and CPI runtime URL.",
+        log: "Service key issued as the actual ID card/password for an external caller.",
+        highlight: ["key", "sender"],
+        activeLinks: ["key->sender"]
+      },
+      {
+        title: "TMN manages iFlows, not physical worker servers",
+        body: "The management app lets you design, configure, deploy, monitor runtime artifacts and messages, and manage security artifacts and packages.",
+        log: "TMN side identified as the management surface for CPI content.",
+        highlight: ["tenant", "tmn", "iflow"],
+        activeLinks: ["tmn->iflow"]
+      },
+      {
+        title: "Deploy makes the iFlow ready on runtime",
+        body: "When you click Deploy, the TMN side validates and builds the artifact, then deploys it to runtime worker node or nodes. Runtime status becomes Started when it is ready.",
+        log: "iFlow deployed from TMN to worker runtime and marked ready.",
+        highlight: ["tmn", "worker", "iflow"],
+        activeLinks: ["tmn->worker", "engine->iflow"]
+      },
+      {
+        title: "The worker node contains the runtime engine",
+        body: "Inside the worker, the runtime engine uses Apache Camel routes, deployed iFlow logic, adapters, mapping, scripting, routing, security checks, and message handling.",
+        log: "Worker node engine-room internals expanded.",
+        highlight: ["worker", "engine", "iflow"],
+        activeLinks: ["worker->engine", "engine->iflow"]
+      },
+      {
+        title: "External caller sends URL and parameter",
+        body: "A system calls the iFlow endpoint with a parameter or body. CPI checks the access token from the service key identity before processing starts.",
+        log: "External URL call authenticated with the service-key identity.",
+        highlight: ["key", "sender", "engine"],
+        activeLinks: ["key->sender", "sender->engine"]
+      },
+      {
+        title: "Runtime engine executes the iFlow",
+        body: "CPI chooses an available worker. The engine creates the message exchange, runs the iFlow route, uses adapters and processors, and writes message logs and stores.",
+        log: "Runtime worker executed the iFlow and recorded operational evidence.",
+        highlight: ["sender", "engine", "iflow", "logs"],
+        activeLinks: ["sender->engine", "engine->iflow", "iflow->logs"]
+      },
+      {
+        title: "SAP manages the invisible infrastructure",
+        body: "Customers manage artifacts, credentials, configuration, and monitoring. SAP manages TMN services, worker infrastructure, scaling, patching, isolation, and the hidden worker-node count.",
+        log: "SAP-managed infrastructure separated from customer-managed CPI content and access.",
+        highlight: ["tenant", "tmn", "worker", "engine", "logs"],
+        activeLinks: ["tmn->worker", "worker->engine", "iflow->logs"]
       }
     ]
   }

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SAP BTP CF Architecture – Animated</title>
+<style>
+  :root{
+    --bg:       #08090f;
+    --bg2:      #0f1018;
+    --bg3:      #14152a;
+    --border:   #2a2b3d;
+    --text:     #e2e0f0;
+    --muted:    #7875a0;
+    --dim:      #3d3c55;
+
+    --gold:     #d4a017;
+    --blue:     #3b82f6;
+    --blue-b:   #60a5fa;
+    --blue-dim: #1e3a5f;
+    --emerald:  #10b981;
+    --emerald-b:#34d399;
+    --violet:   #a78bfa;
+    --violet-d: #7c3aed;
+    --teal:     #14b8a6;
+    --cyan:     #22d3ee;
+    --amber:    #fbbf24;
+    --orange:   #fb923c;
+    --red:      #f87171;
+
+    --panel-r:  420px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px 12px 40px;
+  }
+
+  /* ── Header ── */
+  header{
+    text-align:center;
+    margin-bottom:14px;
+    width:100%;
+    max-width:1320px;
+  }
+  header h1{
+    font-size:15px;
+    font-weight:600;
+    background:linear-gradient(90deg,var(--blue-b),var(--violet),var(--amber));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    letter-spacing:.05em;
+  }
+  header p{font-size:11px;color:var(--muted);margin-top:3px}
+
+  /* ── Main two-column layout ── */
+  .layout{
+    display:flex;
+    gap:16px;
+    width:100%;
+    max-width:1320px;
+    align-items:flex-start;
+  }
+
+  /* LEFT column */
+  .left-col{
+    flex:1 1 0;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .stage-nav{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+  .stage-dot{width:10px;height:10px;border-radius:50%;background:var(--dim);border:none;cursor:pointer;transition:background .2s,transform .2s;padding:0}
+  .stage-dot.active{background:var(--blue-b);transform:scale(1.4)}
+  .stage-label{font-size:11px;color:var(--muted);text-align:center;min-height:16px}
+
+  #canvas{width:100%;position:relative}
+  #canvas svg{width:100%;height:auto;display:block}
+
+  /* key hint */
+  .key-hint{display:flex;gap:8px;justify-content:center;align-items:center}
+  .key{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:7px;
+    border:1.5px solid var(--dim);
+    color:var(--muted);font-size:15px;cursor:pointer;
+    transition:all .12s;user-select:none;
+    background:transparent;
+  }
+  .key.pressed{background:var(--blue-b);border-color:var(--blue-b);color:#04172e;transform:scale(.88)}
+  .key-hint span{font-size:11px;color:var(--dim)}
+
+  /* RIGHT column */
+  .right-col{
+    width:var(--panel-r);
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    height:fit-content;
+  }
+
+  .panel{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .panel-header{
+    padding:9px 14px;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .panel-body{
+    padding:14px;
+    overflow-y:auto;
+  }
+
+  /* Info panel (top right) */
+  #info-panel{min-height:200px;max-height:280px}
+  #info-panel .panel-header{background:linear-gradient(90deg,#1a1040,#0d1f3c);color:var(--violet)}
+  #info-panel .panel-body{max-height:230px}
+  .info-placeholder{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:160px;color:var(--dim);font-size:11px;gap:8px;
+  }
+  .info-placeholder svg{opacity:.3}
+  .info-title{font-size:14px;font-weight:700;margin-bottom:8px;line-height:1.3}
+  .info-desc{font-size:11px;color:#a8a5c8;line-height:1.7;margin-bottom:10px}
+  .info-tag{
+    display:inline-block;
+    padding:2px 8px;border-radius:20px;
+    font-size:10px;font-weight:600;
+    margin:2px 2px 2px 0;
+  }
+  .info-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+  .info-table th{
+    background:#1a1630;color:var(--violet);padding:5px 8px;
+    text-align:left;font-weight:600;border-bottom:1px solid #2d2850;
+  }
+  .info-table td{
+    padding:5px 8px;border-bottom:1px solid #1a1a2e;color:#c4c0e8;vertical-align:top;
+  }
+  .info-table tr:last-child td{border-bottom:none}
+  .badge{
+    display:inline-block;padding:1px 6px;border-radius:4px;
+    font-size:9px;font-weight:700;letter-spacing:.05em;
+    vertical-align:middle;margin-left:4px;
+  }
+
+  /* Steps panel (bottom right) */
+  #steps-panel{min-height:260px}
+  #steps-panel .panel-header{background:linear-gradient(90deg,#0d1f10,#0d1f3c);color:var(--emerald-b)}
+  #steps-panel .panel-body{max-height:480px;overflow-y:auto}
+  .step-item{
+    display:flex;gap:10px;padding:8px 0;
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+    transition:background .15s;
+    border-radius:6px;
+    padding:7px 8px;
+  }
+  .step-item:hover{background:#1a1b2e}
+  .step-item.active{background:#111828;border-left:3px solid var(--blue-b);padding-left:10px}
+  .step-num{
+    min-width:22px;height:22px;border-radius:50%;
+    background:var(--dim);color:#09090e;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;flex-shrink:0;
+    transition:background .2s;
+  }
+  .step-item.active .step-num{background:var(--blue-b)}
+  .step-title{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px}
+  .step-desc{font-size:10px;color:var(--muted);line-height:1.6}
+
+  /* ── SVG layer animations ── */
+  .layer{transition:opacity .5s}
+  .layer.hidden{opacity:0;pointer-events:none}
+  @keyframes dash-flow{to{stroke-dashoffset:-20}}
+  @keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes packet-down{0%{cy:0;opacity:1}85%{opacity:.8}100%{cy:46px;opacity:0}}
+  @keyframes glow-pulse{0%,100%{filter:drop-shadow(0 0 2px transparent)}50%{filter:drop-shadow(0 0 10px #60a5fa66)}}
+  @keyframes xsuaa-pulse{0%,100%{filter:drop-shadow(0 0 2px transparent)}50%{filter:drop-shadow(0 0 12px #a78bfa88)}}
+  @keyframes float-up{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-42px);opacity:0}}
+  @keyframes float-down{0%{transform:translateY(0);opacity:1}100%{transform:translateY(42px);opacity:0}}
+  @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+  .flow-line{stroke-dasharray:6 4;animation:dash-flow 1s linear infinite}
+  .flow-line-slow{stroke-dasharray:6 4;animation:dash-flow 1.8s linear infinite}
+  .fade-up{animation:fade-up .5s ease forwards}
+  .pkt-down{animation:float-down 1.2s ease-in-out infinite}
+  .pkt-up{animation:float-up 1.2s ease-in-out infinite}
+  .glow-box{animation:glow-pulse 2s ease-in-out infinite}
+  .xsuaa-glow{animation:xsuaa-pulse 1.5s ease-in-out infinite}
+
+  /* Clickable SVG elements */
+  .clickable{cursor:pointer;transition:filter .2s}
+  .clickable:hover rect,.clickable:hover .box-rect{filter:brightness(1.25)}
+
+  /* ── Image section ── */
+  .img-section{
+    width:100%;max-width:1320px;
+    margin-top:20px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--bg2);
+  }
+  .img-toggle{
+    width:100%;padding:11px 18px;
+    background:var(--bg3);
+    border:none;color:var(--text);
+    font-family:inherit;font-size:12px;font-weight:600;
+    cursor:pointer;display:flex;align-items:center;gap:8px;
+    letter-spacing:.04em;
+    transition:background .2s;
+  }
+  .img-toggle:hover{background:#1e1f35}
+  .img-toggle .arrow{margin-left:auto;transition:transform .25s;font-size:14px;color:var(--muted)}
+  .img-toggle .arrow.open{transform:rotate(180deg)}
+  .img-body{
+    padding:14px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .upload-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:8px 16px;border-radius:8px;
+    border:1.5px dashed var(--violet-d);
+    color:var(--violet);font-size:11px;font-weight:600;
+    cursor:pointer;transition:all .2s;width:fit-content;
+    font-family:inherit;
+  }
+  .upload-btn:hover{background:#1a1040;border-color:var(--violet)}
+  .img-grid{
+    display:flex;flex-wrap:wrap;gap:10px;
+  }
+  .img-thumb-wrap{
+    position:relative;width:120px;height:90px;
+    border-radius:8px;overflow:hidden;
+    border:1.5px solid var(--border);
+    cursor:pointer;transition:transform .2s,border-color .2s;
+    flex-shrink:0;
+  }
+  .img-thumb-wrap:hover{transform:scale(1.04);border-color:var(--blue-b)}
+  .img-thumb-wrap img{width:100%;height:100%;object-fit:cover}
+  .img-thumb-wrap .img-overlay{
+    position:absolute;inset:0;background:#00000088;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .2s;font-size:18px;
+  }
+  .img-thumb-wrap:hover .img-overlay{opacity:1}
+  .no-images{font-size:11px;color:var(--dim);text-align:center;padding:20px}
+  .img-count{font-size:10px;color:var(--muted);margin-left:auto}
+
+  /* scrollbar */
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
+
+  @media(max-width:900px){
+    .layout{flex-direction:column}
+    .right-col{width:100%;--panel-r:100%}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SAP BTP Subaccount · CF Environment &amp; CPI Tenant Architecture</h1>
+  <p>Interactive step-by-step walkthrough · Click any component for details</p>
+</header>
+
+<div class="layout">
+
+  <!-- ═══════════════ LEFT: Diagram ═══════════════ -->
+  <div class="left-col">
+    <div class="stage-nav" id="dots"></div>
+    <div class="stage-label" id="stage-label"></div>
+
+    <div id="canvas">
+    <svg viewBox="0 0 680 580" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+        </marker>
+        <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
+        </marker>
+        <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+        </marker>
+        <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/>
+        </marker>
+
+        <!-- Glow filters -->
+        <filter id="glow-blue" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-violet" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- ── Layer 0: BTP Subaccount (always visible) ── -->
+      <g id="l-btp" class="layer clickable" onclick="showInfo('btp')">
+        <rect x="20" y="16" width="640" height="548" rx="20"
+          fill="#0d0e14" stroke="#d4a017" stroke-width="1.2"/>
+        <text x="340" y="44" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="13" font-weight="700" fill="#d4a017" letter-spacing=".08em">SAP BTP SUBACCOUNT</text>
+      </g>
+
+      <!-- ── Layer 1: CF Environment ── -->
+      <g id="l-cf" class="layer hidden clickable" onclick="showInfo('cf')">
+        <rect x="46" y="60" width="588" height="328" rx="14"
+          fill="#050e1f" stroke="#3b82f6" stroke-width="1.2"/>
+        <text x="340" y="87" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="12" font-weight="700" fill="#60a5fa" letter-spacing=".06em">CF ENVIRONMENT</text>
+        <text x="340" y="104" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="10" fill="#3b6ea8">Open-source PaaS runtime · 1 org per subaccount</text>
+      </g>
+
+      <!-- ── Layer 2: CF Service Instances ── -->
+      <g id="l-svc" class="layer hidden">
+        <rect x="68" y="118" width="544" height="126" rx="10"
+          fill="#021a0e" stroke="#10b981" stroke-width="1"/>
+        <text x="340" y="142" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="11" font-weight="700" fill="#34d399" letter-spacing=".05em">CF SERVICE INSTANCES</text>
+
+        <!-- XSUAA pill -->
+        <g id="pill-xsuaa" class="clickable" onclick="event.stopPropagation();showInfo('xsuaa')">
+          <rect x="84" y="152" width="158" height="80" rx="9"
+            fill="#0f0a2e" stroke="#a78bfa" stroke-width="1.2"/>
+          <text x="163" y="175" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="12" font-weight="700" fill="#c4b5fd">XSUAA</text>
+          <text x="163" y="191" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="9" fill="#8b78d0">OAuth 2.0 / OIDC server</text>
+          <!-- auth method chips -->
+          <rect x="88" y="200" width="72" height="14" rx="4" fill="#1e1040"/>
+          <text x="124" y="211" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="8" fill="#a78bfa">Client Creds</text>
+          <rect x="166" y="200" width="72" height="14" rx="4" fill="#1e1040"/>
+          <text x="202" y="211" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="8" fill="#a78bfa">JWT Bearer</text>
+          <!-- hover hint -->
+          <text x="163" y="228" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="8" fill="#534AB7">+3 more auth methods ↗</text>
+        </g>
+
+        <!-- Destination pill -->
+        <g id="pill-dest" class="clickable" onclick="event.stopPropagation();showInfo('dest')">
+          <rect x="258" y="152" width="148" height="80" rx="9"
+            fill="#011a15" stroke="#14b8a6" stroke-width="1"/>
+          <text x="332" y="175" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="12" font-weight="700" fill="#5eead4">Destination</text>
+          <text x="332" y="191" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="9" fill="#3d9c80">Remote connection configs</text>
+          <text x="332" y="208" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="9" fill="#0e7a6a">URL · Auth · Proxy</text>
+          <text x="332" y="225" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="8" fill="#14b8a6">lookup by name →</text>
+        </g>
+
+        <!-- Connectivity pill -->
+        <g id="pill-conn" class="clickable" onclick="event.stopPropagation();showInfo('conn')">
+          <rect x="420" y="152" width="178" height="80" rx="9"
+            fill="#011a20" stroke="#22d3ee" stroke-width="1"/>
+          <text x="509" y="175" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="12" font-weight="700" fill="#67e8f9">Connectivity</text>
+          <text x="509" y="191" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="9" fill="#3a9db0">On-premise access</text>
+          <text x="509" y="208" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="9" fill="#1a7a8c">Cloud Connector tunnel</text>
+          <text x="509" y="225" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+            font-size="8" fill="#22d3ee">RFC · HTTP · LDAP →</text>
+        </g>
+      </g>
+
+      <!-- ── Layer 3: Arrow svc→apps (auth/bind) ── -->
+      <g id="l-arrow1" class="layer hidden">
+        <line x1="340" y1="244" x2="340" y2="278" stroke="#60a5fa" stroke-width="1.5"
+          marker-end="url(#arr-blue)" class="flow-line"/>
+        <text x="348" y="266" font-family="IBM Plex Mono,monospace"
+          font-size="9" fill="#3b82f6">auth / bind</text>
+        <circle cx="340" cy="248" r="4" fill="#60a5fa" class="pkt-down" opacity=".9"/>
+      </g>
+
+      <!-- ── Layer 4: Custom CF Apps ── -->
+      <g id="l-apps" class="layer hidden clickable" onclick="event.stopPropagation();showInfo('apps')">
+        <rect x="68" y="278" width="544" height="98" rx="10"
+          fill="#1c1100" stroke="#f59e0b" stroke-width="1.8"/>
+        <text x="340" y="304" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="12" font-weight="700" fill="#fde68a" letter-spacing=".04em">YOUR CUSTOM CF APPS</text>
+        <text x="340" y="322" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="10" fill="#d4920a">Java · Node.js · Python · Go · community buildpacks</text>
+        <text x="340" y="340" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="10" fill="#a06a10">Microservices · Extensions · OData services · Open Connectors</text>
+        <text x="340" y="358" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" fill="#6b4a18">credentials injected via VCAP_SERVICES env var</text>
+      </g>
+
+      <!-- ── Layer 5: 3-arrow auth+communicate flow ── -->
+      <g id="l-arrow2" class="layer hidden">
+
+        <!-- ① Apps → XSUAA: get Bearer token (up-left) -->
+        <line x1="120" y1="278" x2="120" y2="234" stroke="#a78bfa" stroke-width="2"
+          marker-end="url(#arr-violet)" class="flow-line-slow"/>
+        <circle cx="120" cy="274" r="5" fill="#a78bfa" class="pkt-up" opacity=".95"/>
+        <!-- label background -->
+        <rect x="28" y="249" width="88" height="18" rx="4" fill="#1e1040" opacity=".9"/>
+        <text x="72" y="261" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#c4b5fd">① get token</text>
+        <!-- XSUAA glow ring -->
+        <rect x="84" y="152" width="158" height="80" rx="9"
+          fill="none" stroke="#a78bfa" stroke-width="2.5" class="xsuaa-glow" opacity=".8"/>
+
+        <!-- ② Apps → Destination: get iFlow URL (up-right) -->
+        <line x1="332" y1="278" x2="332" y2="234" stroke="#14b8a6" stroke-width="2"
+          marker-end="url(#arr-teal)" class="flow-line-slow"/>
+        <circle cx="332" cy="274" r="5" fill="#14b8a6" class="pkt-up" opacity=".95" style="animation-delay:.6s"/>
+        <!-- label background -->
+        <rect x="338" y="249" width="100" height="18" rx="4" fill="#011a15" opacity=".9"/>
+        <text x="388" y="261" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#5eead4">② get iFlow URL</text>
+        <!-- Destination glow ring -->
+        <rect x="258" y="152" width="148" height="80" rx="9"
+          fill="none" stroke="#14b8a6" stroke-width="2.5" class="xsuaa-glow" opacity=".7"/>
+
+        <!-- ③ Apps → CPI: auth + communicate (down-center) -->
+        <line x1="340" y1="376" x2="340" y2="426" stroke="#60a5fa" stroke-width="2.5"
+          marker-end="url(#arr-blue)" class="flow-line"/>
+        <circle cx="340" cy="380" r="5" fill="#60a5fa" class="pkt-down" opacity=".95" style="animation-delay:.3s"/>
+        <!-- label background -->
+        <rect x="348" y="390" width="148" height="30" rx="4" fill="#0d1f3c" opacity=".95"/>
+        <text x="422" y="403" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="700" fill="#93c5fd">③ auth + communicate</text>
+        <text x="422" y="416" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="8" fill="#60a5fa">Bearer token + iFlow endpoint</text>
+
+      </g>
+
+      <!-- ── Layer 6: CPI Tenant ── -->
+      <g id="l-cpi" class="layer hidden clickable" onclick="event.stopPropagation();showInfo('cpi')">
+        <rect x="46" y="428" width="588" height="118" rx="14"
+          fill="#1e0d00" stroke="#f97316" stroke-width="2"/>
+        <text x="340" y="456" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="12" font-weight="700" fill="#fed7aa" letter-spacing=".05em">INTEGRATION SUITE / CPI TENANT</text>
+        <text x="340" y="474" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="10" fill="#ea8040">Design time · Runtime (TMN + worker nodes) · Monitoring</text>
+        <text x="340" y="492" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="10" fill="#b05828">iFlow execution · Keystore · Credentials · Message logs</text>
+        <!-- sub-tags -->
+        <rect x="68"  y="504" width="92" height="18" rx="5" fill="#2e1200"/>
+        <text x="114" y="517" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#fb923c">Design Time</text>
+        <rect x="172" y="504" width="92" height="18" rx="5" fill="#2e1200"/>
+        <text x="218" y="517" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#fb923c">Worker Nodes</text>
+        <rect x="276" y="504" width="92" height="18" rx="5" fill="#2e1200"/>
+        <text x="322" y="517" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#fb923c">Keystore</text>
+        <rect x="380" y="504" width="92" height="18" rx="5" fill="#2e1200"/>
+        <text x="426" y="517" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#fb923c">Msg Logs</text>
+        <rect x="484" y="504" width="92" height="18" rx="5" fill="#2e1200"/>
+        <text x="530" y="517" text-anchor="middle" font-family="IBM Plex Mono,monospace"
+          font-size="9" font-weight="600" fill="#fb923c">Monitoring</text>
+      </g>
+
+    </svg>
+    </div><!-- end canvas -->
+
+    <div class="key-hint">
+      <div class="key" id="key-l">←</div>
+      <span>prev</span>
+      <span style="margin:0 6px">·</span>
+      <div class="key" id="key-r">→</div>
+      <span>next</span>
+    </div>
+  </div><!-- end left-col -->
+
+  <!-- ═══════════════ RIGHT: Info + Steps ═══════════════ -->
+  <div class="right-col">
+
+    <!-- Top: Click info -->
+    <div class="panel" id="info-panel">
+      <div class="panel-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Component Details
+      </div>
+      <div class="panel-body" id="info-body">
+        <div class="info-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Click any box or sub-component in the diagram to see details here
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: All steps always visible -->
+    <div class="panel" id="steps-panel">
+      <div class="panel-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        All Steps
+      </div>
+      <div class="panel-body" id="steps-list"></div>
+    </div>
+
+  </div><!-- end right-col -->
+</div><!-- end layout -->
+
+<!-- ═══════════════ Image section ═══════════════ -->
+<div class="img-section">
+  <button class="img-toggle" id="img-toggle-btn" onclick="toggleImages()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    Reference Images
+    <span class="img-count" id="img-count">0 images</span>
+    <span class="arrow" id="img-arrow">▼</span>
+  </button>
+  <div class="img-body" id="img-body" style="display:none">
+    <label class="upload-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Images
+      <input type="file" accept="image/*" multiple onchange="handleUpload(event)" style="display:none"/>
+    </label>
+    <div class="img-grid" id="img-grid">
+      <div class="no-images" id="no-images-msg">No images uploaded yet.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ STEPS DATA ═══ */
+const STEPS = [
+  {
+    label:"SAP BTP Subaccount",
+    short:"The outermost administrative and billing boundary.",
+    desc:"Every resource lives inside a BTP Subaccount. It provides isolation, quotas, and entitlements. You can have multiple subaccounts per Global Account — e.g. Dev / QA / Prod.",
+    show:[]
+  },
+  {
+    label:"CF Environment",
+    short:"Open-source PaaS runtime provisioned inside the subaccount.",
+    desc:"The CF (Cloud Foundry) Environment is enabled as an entitlement. Each subaccount gets exactly 1 CF Org, subdivided into Spaces for isolation. Orgs and Spaces control who can deploy what.",
+    show:["l-cf"]
+  },
+  {
+    label:"CF Service Instances",
+    short:"Managed backing services: XSUAA, Destination, Connectivity.",
+    desc:"Service instances are SAP-managed services provisioned via the CF marketplace. XSUAA issues OAuth tokens; Destination stores remote connection configs; Connectivity enables Cloud Connector tunnels to on-premise systems.",
+    show:["l-cf","l-svc"]
+  },
+  {
+    label:"auth / bind — services bound to apps",
+    short:"Credentials are injected into apps at deploy time via VCAP_SERVICES.",
+    desc:"Binding a service instance to an app injects credentials (Client ID, Secret, token URL, service URL) into the VCAP_SERVICES environment variable. Apps read these at runtime — no hardcoded secrets.",
+    show:["l-cf","l-svc","l-arrow1"]
+  },
+  {
+    label:"Custom CF Apps",
+    short:"Your workloads running in CF containers using buildpacks.",
+    desc:"Apps run in isolated containers managed by Diego (CF's runtime). Supported buildpacks: Java, Node.js, Python, Go, and community buildpacks. Apps can expose OData services, act as extension apps, or run open connector adapters.",
+    show:["l-cf","l-svc","l-arrow1","l-apps"]
+  },
+  {
+    label:"auth + communicate — 3-step flow to CPI",
+    short:"Token from XSUAA + URL from Destination → auth + communicate to CPI iFlow.",
+    desc:"① App calls XSUAA (Client Credentials grant) → gets Bearer token.  ② App calls Destination service → resolves the CPI iFlow endpoint URL by logical name.  ③ App calls CPI iFlow URL with Bearer token in Authorization header — this is the auth + communicate step.",
+    show:["l-cf","l-svc","l-arrow1","l-apps","l-arrow2"]
+  },
+  {
+    label:"Integration Suite / CPI Tenant",
+    short:"SAP's integration middleware — hosts and executes iFlows.",
+    desc:"The CPI Tenant is provisioned as a subscription inside the same BTP subaccount. It runs iFlows on worker nodes managed by the TMN (Tenant Management Node). It also manages the Keystore, Credential store, and Message Monitoring.",
+    show:["l-cf","l-svc","l-arrow1","l-apps","l-arrow2","l-cpi"]
+  }
+];
+
+/* ═══ COMPONENT INFO ═══ */
+const INFO = {
+  btp:{
+    title:"SAP BTP Subaccount",
+    color:"#d4a017",
+    desc:"The outermost administrative unit. Provides isolation boundaries, quota assignments, and entitlement management. Multiple subaccounts (Dev / QA / Prod) can exist under one Global Account.",
+    tags:[{t:"Global Account child",c:"#2a1f00",tc:"#d4a017"},{t:"Quota unit",c:"#2a1f00",tc:"#d4a017"},{t:"IAM boundary",c:"#2a1f00",tc:"#d4a017"}],
+    extra:null
+  },
+  cf:{
+    title:"CF Environment",
+    color:"#60a5fa",
+    desc:"Cloud Foundry is an open-source PaaS layer. SAP enables it as an entitlement inside a subaccount. It provides container-based app hosting, service broker integration, and buildpack lifecycle management.",
+    tags:[{t:"1 Org per subaccount",c:"#0d1f3c",tc:"#60a5fa"},{t:"Diego runtime",c:"#0d1f3c",tc:"#60a5fa"},{t:"CF CLI compatible",c:"#0d1f3c",tc:"#60a5fa"}],
+    extra:`<table class="info-table">
+      <tr><th>Concept</th><th>Description</th></tr>
+      <tr><td>Org</td><td>Top-level CF container, 1 per subaccount</td></tr>
+      <tr><td>Space</td><td>Deployment isolation (e.g. dev / test)</td></tr>
+      <tr><td>Buildpack</td><td>Runtime layer for app container</td></tr>
+      <tr><td>Diego</td><td>Container scheduler and lifecycle manager</td></tr>
+    </table>`
+  },
+  xsuaa:{
+    title:"XSUAA — OAuth 2.0 / OIDC Server",
+    color:"#a78bfa",
+    desc:"Extended Services for User Account and Authentication. SAP's identity and authorization server built on UAA (Cloud Foundry's auth component). Issues JWT tokens scoped to your application.",
+    tags:[{t:"OAuth 2.0",c:"#1e1040",tc:"#a78bfa"},{t:"OIDC",c:"#1e1040",tc:"#a78bfa"},{t:"JWT",c:"#1e1040",tc:"#a78bfa"}],
+    extra:`<table class="info-table">
+      <tr><th>Auth Method</th><th>Use Case</th><th>Type</th></tr>
+      <tr><td>Client Credentials</td><td>Server-to-server (most common for CPI)</td><td><span class="badge" style="background:#1e1040;color:#a78bfa">M2M</span></td></tr>
+      <tr><td>JWT Bearer</td><td>Pass an existing JWT, exchange for XSUAA token</td><td><span class="badge" style="background:#1e1040;color:#a78bfa">Token exchange</span></td></tr>
+      <tr><td>mTLS / X.509</td><td>Certificate-based, no secret needed</td><td><span class="badge" style="background:#1e1040;color:#a78bfa">Cert</span></td></tr>
+      <tr><td>Authorization Code</td><td>User-facing OAuth (Fiori apps, UI logins)</td><td><span class="badge" style="background:#1e1040;color:#a78bfa">User</span></td></tr>
+      <tr><td>Password Grant</td><td>Legacy — username + password (deprecated)</td><td><span class="badge" style="background:#2a1a00;color:#fb923c">Legacy</span></td></tr>
+    </table>`
+  },
+  dest:{
+    title:"Destination Service",
+    color:"#14b8a6",
+    desc:"Stores and manages connection configurations (HTTP, RFC, LDAP, Mail). Apps look up destinations by logical name instead of hardcoding URLs or credentials. Supports proxy settings and OAuth flows.",
+    tags:[{t:"HTTP / RFC / LDAP",c:"#011a15",tc:"#14b8a6"},{t:"No hardcoded URLs",c:"#011a15",tc:"#14b8a6"}],
+    extra:`<table class="info-table">
+      <tr><th>Auth Type</th><th>When to Use</th></tr>
+      <tr><td>No Auth</td><td>Public endpoints</td></tr>
+      <tr><td>Basic Auth</td><td>Username + password</td></tr>
+      <tr><td>OAuth2 Client Credentials</td><td>M2M via XSUAA</td></tr>
+      <tr><td>OAuth2 SAMLBearer</td><td>Principal propagation</td></tr>
+      <tr><td>Client Certificate (mTLS)</td><td>Certificate-based</td></tr>
+    </table>`
+  },
+  conn:{
+    title:"Connectivity Service",
+    color:"#22d3ee",
+    desc:"Enables secure tunnels to on-premise systems via the Cloud Connector agent installed in your on-premise network. Supports HTTP, RFC (ABAP), LDAP, and TCP protocols.",
+    tags:[{t:"Cloud Connector tunnel",c:"#011a20",tc:"#22d3ee"},{t:"RFC / HTTP / LDAP",c:"#011a20",tc:"#22d3ee"}],
+    extra:`<table class="info-table">
+      <tr><th>Protocol</th><th>Use Case</th></tr>
+      <tr><td>HTTP/HTTPS</td><td>OData, REST APIs on-premise</td></tr>
+      <tr><td>RFC</td><td>ABAP function modules (BAPI)</td></tr>
+      <tr><td>LDAP</td><td>Directory services</td></tr>
+      <tr><td>TCP</td><td>Generic TCP tunnels</td></tr>
+    </table>`
+  },
+  apps:{
+    title:"Your Custom CF Apps",
+    color:"#fbbf24",
+    desc:"Application workloads deployed as CF apps. The CF runtime provisions containers using buildpacks. Apps access bound services via VCAP_SERVICES environment variable, which contains all credentials and URLs injected at runtime.",
+    tags:[{t:"Java",c:"#1a0e00",tc:"#fbbf24"},{t:"Node.js",c:"#1a0e00",tc:"#fbbf24"},{t:"Python",c:"#1a0e00",tc:"#fbbf24"},{t:"Go",c:"#1a0e00",tc:"#fbbf24"}],
+    extra:`<table class="info-table">
+      <tr><th>App Type</th><th>Example</th></tr>
+      <tr><td>Extension App</td><td>Add custom UI or logic to S/4HANA</td></tr>
+      <tr><td>OData Service</td><td>Expose custom data via ODATA V4</td></tr>
+      <tr><td>Open Connector</td><td>Connect 3rd-party SaaS APIs</td></tr>
+      <tr><td>Microservice</td><td>Independent domain services</td></tr>
+    </table>`
+  },
+  cpi:{
+    title:"Integration Suite / CPI Tenant",
+    color:"#fb923c",
+    desc:"SAP Cloud Platform Integration (CPI) is SAP's iPaaS. Provisioned as a subscription inside the BTP subaccount. The tenant manages design-time (iFlow authoring), runtime (TMN + worker nodes), and monitoring/operations.",
+    tags:[{t:"TMN",c:"#1a0800",tc:"#fb923c"},{t:"Worker Nodes",c:"#1a0800",tc:"#fb923c"},{t:"iFlows",c:"#1a0800",tc:"#fb923c"}],
+    extra:`<table class="info-table">
+      <tr><th>Component</th><th>Role</th></tr>
+      <tr><td>Design Time</td><td>Web UI for building and deploying iFlows</td></tr>
+      <tr><td>TMN</td><td>Tenant Management Node — orchestrates workers</td></tr>
+      <tr><td>Worker Nodes</td><td>Execute iFlow instances in parallel</td></tr>
+      <tr><td>Keystore</td><td>Manage certificates and private keys</td></tr>
+      <tr><td>Credential Store</td><td>Secure credential aliases for iFlows</td></tr>
+      <tr><td>Message Monitoring</td><td>Track success/error of message runs</td></tr>
+    </table>`
+  }
+};
+
+/* ═══ STATE ═══ */
+let current = 0;
+
+/* ═══ INIT ═══ */
+const dotsEl   = document.getElementById('dots');
+const labelEl  = document.getElementById('stage-label');
+const stepsEl  = document.getElementById('steps-list');
+const keyL     = document.getElementById('key-l');
+const keyR     = document.getElementById('key-r');
+
+// Build dots
+STEPS.forEach((_,i)=>{
+  const d = document.createElement('button');
+  d.className='stage-dot';
+  d.title='Step '+(i+1);
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+});
+
+// Build steps list (always visible)
+STEPS.forEach((s,i)=>{
+  const el = document.createElement('div');
+  el.className='step-item';
+  el.id='step-item-'+i;
+  el.onclick=()=>goTo(i);
+  el.innerHTML=`
+    <div class="step-num">${i+1}</div>
+    <div>
+      <div class="step-title">${s.label}</div>
+      <div class="step-desc">${s.desc}</div>
+    </div>`;
+  stepsEl.appendChild(el);
+});
+
+function goTo(idx){
+  current = Math.max(0, Math.min(STEPS.length-1, idx));
+  render();
+}
+
+function render(){
+  const step = STEPS[current];
+  // dots
+  document.querySelectorAll('.stage-dot').forEach((d,i)=>d.classList.toggle('active', i===current));
+  // label
+  labelEl.textContent = `${current+1} / ${STEPS.length}  ·  ${step.label}`;
+  // layers
+  document.querySelectorAll('.layer').forEach(el=>el.classList.add('hidden'));
+  // BTP always visible
+  document.getElementById('l-btp').classList.remove('hidden');
+  step.show.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('hidden');
+    el.classList.remove('fade-up');
+    void el.offsetWidth;
+    el.classList.add('fade-up');
+  });
+  // steps list highlight
+  document.querySelectorAll('.step-item').forEach((el,i)=>{
+    el.classList.toggle('active', i===current);
+    if(i===current) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  });
+}
+
+function showInfo(key){
+  const d = INFO[key];
+  if(!d) return;
+  const body = document.getElementById('info-body');
+  body.innerHTML = `
+    <div class="info-title" style="color:${d.color}">${d.title}</div>
+    <div class="info-desc">${d.desc}</div>
+    <div style="margin-bottom:8px">${(d.tags||[]).map(t=>`<span class="info-tag" style="background:${t.c};color:${t.tc}">${t.t}</span>`).join('')}</div>
+    ${d.extra || ''}
+  `;
+}
+
+function flashKey(el){
+  el.classList.add('pressed');
+  setTimeout(()=>el.classList.remove('pressed'),160);
+}
+keyL.onclick=()=>{flashKey(keyL);goTo(current-1)};
+keyR.onclick=()=>{flashKey(keyR);goTo(current+1)};
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='n'||e.key==='N'){flashKey(keyR);goTo(current+1)}
+  if(e.key==='ArrowLeft'||e.key==='p'||e.key==='P'){flashKey(keyL);goTo(current-1)}
+});
+
+/* ═══ IMAGE SECTION ═══ */
+let imgOpen = false;
+let imgCount = 0;
+function toggleImages(){
+  imgOpen = !imgOpen;
+  document.getElementById('img-body').style.display = imgOpen ? 'flex' : 'none';
+  document.getElementById('img-arrow').classList.toggle('open', imgOpen);
+}
+
+function handleUpload(e){
+  const files = Array.from(e.target.files);
+  const grid = document.getElementById('img-grid');
+  const noMsg = document.getElementById('no-images-msg');
+  if(noMsg) noMsg.remove();
+
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      imgCount++;
+      document.getElementById('img-count').textContent = imgCount+' image'+(imgCount===1?'':'s');
+      const url = ev.target.result;
+      const wrap = document.createElement('div');
+      wrap.className='img-thumb-wrap';
+      wrap.title='Click to open full size';
+      wrap.onclick=()=>{
+        const win=window.open();
+        win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${url}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
+      };
+      wrap.innerHTML=`<img src="${url}" alt="${file.name}"/>
+        <div class="img-overlay">🔍</div>`;
+      grid.appendChild(wrap);
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+}
+
+/* Init */
+render();
+</script>
+</body>
+</html>

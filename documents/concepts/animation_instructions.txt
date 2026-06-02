@@ -1,0 +1,7 @@
+Animation Style (matching the sample):
+	• Dark theme with IBM Plex Mono + Sans and checkboxes
+	• Canvas-based animations with step-by-step navigation
+	• Animated arrows showing data flow
+	• History log below
+	• Dot progress indicators
+	• Using left and right arrow makes should help to move to next step as part of animiation
