@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAP CPI Architecture Concepts</title>
+  <meta
+    name="description"
+    content="Modular SAP CPI architecture concept pages with animated canvas lessons for overview, deployment, components, iFlow lifecycle, and message flow."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/cpi-architecture.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="cpi-architecture.html">
+        <div class="brand-mark">CPI</div>
+        <div>
+          <h1>SAP Cloud Integration Architecture</h1>
+          <p>modular concept pages // SAP BTP // iFlow runtime // message journey</p>
+        </div>
+      </a>
+      <div class="header-meta" aria-label="Page metadata">
+        <span class="meta-pill"><span class="meta-light"></span> 5 focused pages</span>
+        <span class="meta-pill">Shared CSS + JS</span>
+        <span class="meta-pill">Canvas lessons</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="index-hero" aria-labelledby="page-title">
+        <div class="hero-panel">
+          <span class="kicker">SAP CPI architecture concepts</span>
+          <h2 id="page-title">A maintainable, page-by-page explainer for SAP CPI architecture.</h2>
+          <p>
+            Each section is now a separate HTML page with its own focused canvas animation, history log,
+            dot progress, and left/right keyboard navigation. Shared assets keep styling and animation logic
+            easy to update without editing every page.
+          </p>
+        </div>
+
+        <aside class="quick-panel">
+          <span class="kicker">Structure</span>
+          <div class="quick-grid">
+            <div class="quick-row">
+              <strong>Index</strong>
+              <span>This page links all architecture lessons in sequence.</span>
+            </div>
+            <div class="quick-row">
+              <strong>Section Pages</strong>
+              <span>Each page has one SAP CPI topic, one scene dataset, and one animated canvas.</span>
+            </div>
+            <div class="quick-row">
+              <strong>Maintenance</strong>
+              <span>Change look and feel in CSS. Change animation data and flow logic in JS.</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="page-grid" aria-label="SAP CPI concept pages">
+        <a class="page-link" href="cpi-overview.html">
+          <span class="no">01</span>
+          <h3>Overview</h3>
+          <p>What CPI is, where it sits in the SAP BTP ecosystem, and the high-level architecture.</p>
+        </a>
+        <a class="page-link" href="cpi-deployment.html">
+          <span class="no">02</span>
+          <h3>Deployment</h3>
+          <p>Multi-tenant SAP BTP Cloud Foundry deployment, TMN, worker nodes, and tenant isolation.</p>
+        </a>
+        <a class="page-link" href="cpi-components.html">
+          <span class="no">03</span>
+          <h3>Components</h3>
+          <p>TMN, worker nodes, iFlow artifacts, adapters, integration engine, stores, and logs.</p>
+        </a>
+        <a class="page-link" href="cpi-iflow-lifecycle.html">
+          <span class="no">04</span>
+          <h3>iFlow Lifecycle</h3>
+          <p>Design, configure, deploy, execute, monitor, and improve an integration flow.</p>
+        </a>
+        <a class="page-link" href="cpi-message-flow.html">
+          <span class="no">05</span>
+          <h3>Message Flow</h3>
+          <p>How a message travels from sender through CPI processing to receiver and monitoring.</p>
+        </a>
+      </section>
+
+      <section class="reference-band" aria-label="Reference links">
+        <h2>Source Base Used For The Explainer</h2>
+        <div class="references">
+          <a class="reference" href="https://community.sap.com/t5/technology-blogs-by-sap/landscape-components-of-sap-cloud-platform-integration/ba-p/13129287" target="_blank" rel="noreferrer">
+            <strong>SAP Community</strong>
+            <p>Landscape components of SAP Cloud Platform Integration, including TMN and worker node roles.</p>
+          </a>
+          <a class="reference" href="https://help.sap.com/docs/help/90c8ad90cb684ee5979856093efe7462/c0b207c20caf4675968e415b23ba1627.html" target="_blank" rel="noreferrer">
+            <strong>SAP Help</strong>
+            <p>Cloud Foundry technical landscape and Cloud Integration web UI/runtime node split.</p>
+          </a>
+          <a class="reference" href="https://help.sap.com/docs/cloud-integration/sap-cloud-integration/runtime-in-detail" target="_blank" rel="noreferrer">
+            <strong>SAP Help</strong>
+            <p>Runtime isolation, tenant resources, and separate database schema model.</p>
+          </a>
+          <a class="reference" href="https://help.sap.com/docs/cloud-integration/sap-cloud-integration/elements-of-integration-flow" target="_blank" rel="noreferrer">
+            <strong>SAP Help</strong>
+            <p>Elements of an integration flow, including sender, receiver, adapters, and processing steps.</p>
+          </a>
+          <a class="reference" href="https://help.sap.com/docs/integration-suite/sap-integration-suite/integration-artifact-types" target="_blank" rel="noreferrer">
+            <strong>SAP Help</strong>
+            <p>Integration artifact types such as integration flows, value mappings, APIs, mappings, and script collections.</p>
+          </a>
+          <a class="reference" href="https://help.sap.com/docs/integration-suite/sap-integration-suite/add-integrations-manually?locale=en-US" target="_blank" rel="noreferrer">
+            <strong>SAP Help</strong>
+            <p>SAP Integration Suite overview and its position as an SAP BTP Cloud Foundry service.</p>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

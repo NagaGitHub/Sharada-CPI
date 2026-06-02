@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overview | SAP CPI Architecture</title>
+  <meta name="description" content="Animated SAP CPI overview covering what CPI is and where it sits in SAP BTP.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/cpi-architecture.css">
+</head>
+<body data-scene="overview">
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="cpi-architecture.html">
+        <div class="brand-mark">CPI</div>
+        <div>
+          <h1>SAP Cloud Integration Architecture</h1>
+          <p>01 overview // SAP BTP // Integration Suite</p>
+        </div>
+      </a>
+      <div class="header-meta">
+        <span class="meta-pill"><span class="meta-light"></span> Animated runtime map</span>
+        <span class="meta-pill">Use left/right arrows</span>
+      </div>
+    </header>
+    <nav class="section-nav" id="section-nav" aria-label="SAP CPI architecture sections"></nav>
+    <main class="workspace" aria-label="Overview animated lesson">
+      <section>
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-title">
+              <h2 id="scene-title">Overview</h2>
+              <p id="scene-subtitle">What CPI is and where it sits in SAP BTP</p>
+            </div>
+            <div class="step-controls">
+              <button class="arrow-btn" id="prev-step" type="button" aria-label="Previous step">&lt;</button>
+              <div class="step-counter" id="step-counter">Step 1 / 5</div>
+              <button class="arrow-btn" id="next-step" type="button" aria-label="Next step">&gt;</button>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="architecture-canvas" aria-label="Animated SAP CPI overview diagram"></canvas>
+            <div class="canvas-status"><span class="pulse"></span><span id="canvas-status-text">overview.signal.active</span></div>
+          </div>
+          <div class="progress" id="progress-dots" aria-label="Step progress"></div>
+        </div>
+        <div class="history">
+          <h3>History Log</h3>
+          <ol class="history-list" id="history-list"></ol>
+        </div>
+      </section>
+      <aside class="inspector" aria-live="polite">
+        <div class="step-card">
+          <span class="kicker" id="step-kicker">Overview // step 01</span>
+          <h2 id="step-title">SAP BTP hosts the integration layer</h2>
+          <p id="step-body">SAP Cloud Integration runs in the SAP BTP ecosystem as part of SAP Integration Suite.</p>
+        </div>
+        <h3>Architecture Notes</h3>
+        <div class="note-list" id="note-list"></div>
+        <h3>Key Terms</h3>
+        <ul class="component-list" id="component-list"></ul>
+      </aside>
+    </main>
+    <footer class="page-footer">
+      <a class="footer-link" id="prev-page" href="cpi-message-flow.html">&lt; 05 Message Flow</a>
+      <a class="footer-link" href="cpi-architecture.html">Back to index</a>
+      <a class="footer-link" id="next-page" href="cpi-deployment.html">02 Deployment &gt;</a>
+    </footer>
+  </div>
+  <script src="assets/cpi-section.js"></script>
+</body>
+</html>
