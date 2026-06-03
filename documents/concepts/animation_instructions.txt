@@ -1,7 +1,272 @@
-Animation Style (matching the sample):
-	• Dark theme with IBM Plex Mono + Sans and checkboxes
-	• Canvas-based animations with step-by-step navigation
-	• Animated arrows showing data flow
-	• History log below
-	• Dot progress indicators
-	• Using left and right arrow makes should help to move to next step as part of animiation
+SAP BTP Architecture Diagram — Animation & Style Guide
+=======================================================
+
+This file describes the exact style used in the WORKING version of
+sap_btp_cf_architecture_animated.html. Use it as a reference when
+creating new diagrams in the same style.
+
+
+1. APPROACH
+-----------
+
+SVG-based diagram with CSS layer animations and step-by-step navigation.
+Each layer is a <g> element toggled with class="hidden" (opacity:0).
+Steps are driven by a show[] array of layer IDs per step.
+
+NOT canvas-based. No requestAnimationFrame. No Google Fonts needed.
+
+
+2. FONTS
+--------
+
+Body and all SVG text: IBM Plex Mono (system font, no external load needed)
+
+  font-family: 'IBM Plex Mono', ui-monospace, monospace
+
+SVG text attributes:
+  Box titles:     font-size="12–13"  font-weight="700"  letter-spacing=".05–.08em"
+  Sub-text:       font-size="10"
+  Chips/tags:     font-size="8–9"    font-weight="600"
+  Hints/micro:    font-size="8"
+
+
+3. PAGE BACKGROUND
+------------------
+
+Solid dark background — no grid, no gradient:
+
+  body { background: var(--bg); }   /* #08090f */
+
+CSS variables:
+  --bg:        #08090f
+  --bg2:       #0f1018
+  --bg3:       #14152a
+  --border:    #2a2b3d
+  --text:      #e2e0f0
+  --muted:     #7875a0
+  --dim:       #3d3c55
+
+Accent colors:
+  --gold:      #d4a017   (BTP border)
+  --blue:      #3b82f6   (CF Environment border)
+  --blue-b:    #60a5fa   (arrows, active dots)
+  --emerald:   #10b981   (CF Services border)
+  --emerald-b: #34d399
+  --violet:    #a78bfa   (XSUAA border)
+  --teal:      #14b8a6   (Destination, Connectivity, CPI border)
+  --cyan:      #22d3ee
+  --amber:     #fbbf24
+  --orange:    #fb923c
+
+
+4. SCROLL FIX (important)
+--------------------------
+
+Use min-height instead of height on html to prevent scroll clipping when
+the browser is zoomed:
+
+  html { min-height: 100%; }   /* NOT html,body { height: 100% } */
+
+For any collapsible section at the bottom, add scrollIntoView on open:
+
+  if(open) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}), 60);
+
+
+5. SVG VIEWBOX
+--------------
+
+Standard:  viewBox="0 0 680 580"
+With External App box:  viewBox="0 0 800 580"  (+120px on right)
+
+BTP Subaccount rect occupies x=20 y=16 w=640 h=548.
+External App lives in the extra space x=668–786, at the same y level as CPI.
+
+
+6. BTP SUBACCOUNT BOX (outermost)
+----------------------------------
+
+Solid gold border, dark fill, light grey grid texture overlay:
+
+  <rect x="20" y="16" width="640" height="548" rx="20"
+    fill="#0d0e14" stroke="#d4a017" stroke-width="1.2"/>
+  <rect x="20" y="16" width="640" height="548" rx="20"
+    fill="url(#btp-grid)" stroke="none"/>
+  <text ... fill="#d4a017">SAP BTP SUBACCOUNT</text>
+
+Grid pattern definition (horizontal + vertical lines, very light grey):
+
+  <pattern id="btp-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+    <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#8888a0" stroke-width="0.5" opacity="0.18"/>
+  </pattern>
+
+Two-rect technique: solid fill first, grid overlay second (same dimensions).
+The L-shaped path tiles into a full horizontal + vertical grid.
+
+
+7. INNER CONTAINER BOXES
+-------------------------
+
+CF Environment (zone inside BTP):
+  fill="#050e1f"  stroke="#3b82f6"  stroke-width="1.2"  rx="14"
+
+CF Service Instances row:
+  fill="#021a0e"  stroke="#10b981"  stroke-width="1"  rx="10"
+
+Each has a label (font-weight 700, accent color) and optional subtitle (dimmer).
+
+
+8. SERVICE PILLS (inside CF Services row)
+-----------------------------------------
+
+Each pill: dark tinted fill matching its color, colored border, rx="9"
+
+  XSUAA:        fill="#0f0a2e"  stroke="#a78bfa"  stroke-width="1.2"
+  Destination:  fill="#011a15"  stroke="#14b8a6"  stroke-width="1"
+  Connectivity: fill="#011a20"  stroke="#22d3ee"  stroke-width="1"
+
+Inside each pill: title (accent color), sub-text (dimmer), optional chips.
+Chip style: small rx="4" rect with dark fill + accent text, font-size="8".
+
+
+9. APP AND TENANT BOXES
+------------------------
+
+Custom CF Apps:
+  fill="#1c1100"  stroke="#f59e0b"  stroke-width="1.8"  rx="10"
+  Title: fill="#fde68a"
+
+Integration Suite / CPI Tenant  (same color scheme as Destination):
+  fill="#011a15"  stroke="#14b8a6"  stroke-width="1.5"  rx="14"
+  Title: fill="#5eead4"
+  Sub-text 1: fill="#3d9c80"
+  Sub-text 2: fill="#0e7a6a"
+  Sub-tags: rect fill="#021a15"  text fill="#14b8a6"
+
+Rule: CPI and Destination share the same teal scheme intentionally —
+they are both "endpoint/configuration" services in the same flow.
+
+
+10. EXTERNAL APP BOX (outside BTP)
+------------------------------------
+
+Placed to the right of BTP boundary (x ≥ 668), same y-level as CPI.
+Label "EXTERNAL" appears above the box before it (y = box.y - 6).
+
+  <rect x="668" y="428" width="118" height="90" rx="8"
+    fill="#0b0f1f" stroke="#7ba7ff" stroke-width="1.5"/>
+  <rect x="668" y="428" width="118" height="3" rx="2" fill="#7ba7ff"/>
+
+3px top bar in accent color is the visual signature of external/connect boxes.
+
+Arrow (horizontal, left-pointing, from External App → CPI right edge):
+  x1="668" y1="473"  x2="638" y2="473"
+  marker-end="url(#arr-blue-b)"  class="flow-line"
+  Animated packet: class="pkt-left"  @keyframes float-left (translateX -28px)
+
+Label "same auth flow":
+  Position BELOW the External App box (y = box.bottom + 3), centered on box.
+  Do NOT place label at arrow y-level — it will overlap the box.
+
+
+11. ARROW SYSTEM
+-----------------
+
+Markers in <defs>:
+  arr-blue   — #60a5fa  (downward arrows, internal)
+  arr-violet — #a78bfa  (upward toward XSUAA)
+  arr-teal   — #14b8a6  (upward toward Destination)
+  arr-blue-b — #7ba7ff  (horizontal, External App)
+  All use orient="auto-start-reverse"
+
+Arrow colors by purpose:
+  violet  — auth token request (CF Apps → XSUAA, upward)
+  teal    — URL lookup (CF Apps → Destination, upward)
+  blue    — communicate/execute (CF Apps → CPI, downward)
+  blue-b  — external caller (horizontal, right → left)
+
+Animated classes:
+  .flow-line       stroke-dasharray:6 4; dash-flow 1s  (fast, downward arrows)
+  .flow-line-slow  stroke-dasharray:6 4; dash-flow 1.8s (slow, upward arrows)
+  .pkt-up          float-up  1.2s  (translateY -42px)
+  .pkt-down        float-down 1.2s  (translateY +42px)
+  .pkt-left        float-left 1.2s  (translateX -28px)
+
+Glow rings: add a same-size rect (no fill, animated stroke) inside the
+arrow layer to highlight the target box when active. Use class="xsuaa-glow".
+
+CRITICAL: Always include the TARGET box in the same step's show[] array.
+Never point an arrow at a hidden box.
+
+
+12. STEP SYSTEM
+----------------
+
+Each step object:
+  { label, short, desc, show:["layer-id", ...] }
+
+show[] lists SVG layer <g> IDs to make visible for that step.
+Layer l-btp is always visible (set in render(), not in show[]).
+
+Example progression (8 steps):
+  Step 1: show:[]                                              (BTP only)
+  Step 2: show:["l-cf"]
+  Step 3: show:["l-cf","l-svc"]
+  Step 4: show:["l-cf","l-svc","l-arrow1"]
+  Step 5: show:["l-cf","l-svc","l-arrow1","l-apps"]
+  Step 6: show:["l-cf","l-svc","l-arrow1","l-apps","l-cpi","l-arrow2"]
+  Step 7: show:["l-cf","l-svc","l-arrow1","l-apps","l-arrow2","l-cpi"]
+  Step 8: show:["l-cf","l-svc","l-arrow1","l-apps","l-arrow2","l-cpi","l-ext"]
+
+The arrow layer (l-arrow2) must come AFTER l-cpi in show[] so CPI is
+visible before the arrow animates toward it.
+
+
+13. STEP DESCRIPTIONS — CONTENT RULES
+---------------------------------------
+
+Step 6 (auth + communicate): always explain "logical name" inline:
+  "...resolves the CPI iFlow endpoint URL by logical name (a human-readable
+  alias like 'CPI_IFLOW_ORDER_SYNC' registered in the Destination config —
+  no hardcoded URLs; if the CPI URL changes, only the Destination config
+  needs updating, not the app code)."
+
+External App step: explain the auth pattern is identical to CF App flow.
+
+
+14. RIGHT PANELS
+-----------------
+
+Info panel (top right):
+  • Appears on click of any .clickable SVG group
+  • Each INFO entry: title, color (matching border), desc, tags[], extra (HTML table)
+  • Tags use chip style: inline-block, rounded, font-size:10px
+
+Steps panel (bottom right):
+  • All steps always rendered (not hidden)
+  • Active step: background #111828, border-left 3px solid var(--blue-b)
+  • Step numbers in circular badges; active = var(--blue-b) fill
+
+Stage dots (above diagram):
+  • One dot per step; active dot: background var(--blue-b), scale(1.4)
+  • Clicking a dot jumps to that step
+
+
+15. CLICKABILITY
+-----------------
+
+  class="clickable" onclick="showInfo('key')"       — on major boxes
+  onclick="event.stopPropagation();showInfo('key')" — on nested pills
+
+Hover effect:
+  .clickable:hover rect { filter: brightness(1.25) }
+
+
+16. LAYOUT
+-----------
+
+Two-column flex layout:
+  Left:  flex:1 1 0  (SVG diagram + dots + key hints)
+  Right: fixed 420px (info panel + steps panel)
+
+Responsive: stack at max-width 900px.
+Max-width 1320px, centered. Body padding: 16px 12px 40px.

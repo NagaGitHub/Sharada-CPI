@@ -1,0 +1,415 @@
+SAP CPI Canvas Animation Style Guide
+====================================
+
+Use this file as a reference when creating a new HTML page with the same look
+and animation style as cpi-overview.html.
+
+
+1. Core Approach
+----------------
+
+The diagram is not animated with CSS keyframes. It is drawn and animated on a
+HTML canvas using JavaScript:
+
+  requestAnimationFrame(draw);
+
+Each animation frame:
+
+  1. Clears the canvas.
+  2. Draws the dark technical grid background.
+  3. Draws links between nodes.
+  4. Draws boxes/nodes.
+  5. Draws moving message packets.
+
+
+2. Fonts
+--------
+
+Load these Google fonts in the HTML head:
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+Main page font:
+
+  font-family: "IBM Plex Sans", Arial, sans-serif;
+
+Technical labels, subtitles, counters, status text:
+
+  font-family: "IBM Plex Mono", monospace;
+
+
+3. Main Color Palette
+---------------------
+
+Use this palette for the dark SAP architecture style:
+
+  --bg:          #050608;
+  --surface:     #0b0f14;
+  --surface-2:   #111820;
+  --surface-3:   #151d26;
+  --line:        #263241;
+  --line-strong: #334557;
+  --text:        #eef4f8;
+  --muted:       #a9b7c4;
+  --faint:       #748292;
+  --cyan:        #63e6d4;
+  --blue:        #7ba7ff;
+  --green:       #82d173;
+  --amber:       #f0c66e;
+  --rose:        #ff8d92;
+
+Node type colors used in JavaScript:
+
+  const typeColors = {
+    zone: "#344151",
+    design: "#63e6d4",
+    runtime: "#f0c66e",
+    connect: "#7ba7ff",
+    ops: "#82d173"
+  };
+
+
+4. Page Background
+------------------
+
+The whole page uses a very dark grid and vertical gradient:
+
+  body {
+    color: var(--text);
+    font-family: "IBM Plex Sans", Arial, sans-serif;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(180deg, #050608 0%, #070a0d 52%, #040506 100%);
+    background-size: 32px 32px, 32px 32px, auto;
+  }
+
+Add a subtle cyan glow and scanline overlay:
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(99, 230, 212, 0.06), transparent 240px),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.015) 0,
+        rgba(255, 255, 255, 0.015) 1px,
+        transparent 1px,
+        transparent 7px
+      );
+    mask-image: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.9),
+      rgba(0, 0, 0, 0.48) 70%,
+      transparent
+    );
+  }
+
+
+5. Panel / Stage Background
+---------------------------
+
+Use this for page panels such as the animation stage, inspector, history, and
+navigation cards:
+
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(11, 15, 20, 0.92);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
+
+
+6. Canvas Background
+--------------------
+
+The canvas has its own dark grid drawn by JavaScript.
+
+Use this function inside the animation script:
+
+  function drawGrid(width, height) {
+    ctx.save();
+    ctx.fillStyle = "#070a0d";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.04)";
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x <= width; x += 24) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    for (let y = 0; y <= height; y += 24) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "rgba(99,230,212,0.025)";
+    ctx.fillRect(0, 0, width, 52);
+    ctx.restore();
+  }
+
+
+7. Outer SAP BTP Dotted Box
+---------------------------
+
+The outer SAP BTP boundary is a "zone" node.
+
+Example node:
+
+  { id: "cloud", x: 0.05, y: 0.09, w: 0.9, h: 0.74, label: "SAP BTP", sub: "Cloud platform foundation", type: "zone" }
+
+Zone style:
+
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = active
+    ? "rgba(99,230,212,0.62)"
+    : "rgba(160,178,194,0.24)";
+  ctx.fillStyle = active
+    ? "rgba(99,230,212,0.055)"
+    : "rgba(255,255,255,0.018)";
+  roundRect(box.x, box.y, box.w, box.h, 10);
+  ctx.fill();
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+Zone label:
+
+  ctx.fillStyle = active ? "#dffcf8" : "#8f9eab";
+  ctx.font = "600 13px IBM Plex Mono, monospace";
+  ctx.fillText(node.label, box.x + 16, box.y + 24);
+
+Zone subtitle:
+
+  ctx.fillStyle = "#748292";
+  ctx.font = "12px IBM Plex Mono, monospace";
+  ctx.fillText(node.sub, box.x + 16, box.y + 42);
+
+
+8. Inner Boxes
+--------------
+
+Inner boxes are normal non-zone nodes. They use dark fill, rounded corners,
+colored top bars, active borders, and active glow.
+
+Base style:
+
+  const color = typeColors[node.type] || "#63e6d4";
+
+  if (active) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 20;
+  }
+
+  ctx.fillStyle = active ? tint(color, 0.18) : "rgba(17,24,32,0.94)";
+  ctx.strokeStyle = active ? color : "rgba(120,140,158,0.35)";
+  ctx.lineWidth = active ? 2 : 1;
+  roundRect(box.x, box.y, box.w, box.h, 8);
+  ctx.fill();
+  ctx.stroke();
+
+Colored top bar:
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = color;
+  ctx.fillRect(box.x, box.y, box.w, 3);
+
+Inner box title:
+
+  ctx.fillStyle = active ? "#f6fbff" : "#d7e0e8";
+  ctx.font = "600 13px IBM Plex Sans, Arial, sans-serif";
+  wrapText(node.label, box.x + 12, box.y + 27, box.w - 24, 15, 2);
+
+Inner box subtitle:
+
+  ctx.fillStyle = active ? "#cbd7df" : "#95a5b2";
+  ctx.font = "12px IBM Plex Mono, monospace";
+  wrapText(node.sub, box.x + 12, box.y + Math.min(box.h - 34, 61), box.w - 24, 14, 2);
+
+
+9. Link / Arrow Animation
+-------------------------
+
+Links are curved Bezier lines between boxes.
+
+Inactive link:
+
+  strokeStyle: rgba(139,155,169,0.32)
+  lineWidth: 1
+
+Active link:
+
+  strokeStyle: #63e6d4
+  lineWidth: 2
+
+Active links also show moving glowing dots:
+
+  for (let i = 0; i < 3; i += 1) {
+    const t = ((state.time / 1500) + i / 3) % 1;
+    const point = cubicPoint(p1, c1, c2, p2, t);
+    ctx.fillStyle = i === 0 ? "#f0c66e" : "#63e6d4";
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+This creates the small moving signal dots along the connection line.
+
+
+10. Moving Message Packet
+-------------------------
+
+The larger animated message packet moves along the currently active link:
+
+  const point = cubicPoint(p1, c1, c2, p2, (state.time / 1900) % 1);
+
+  ctx.save();
+  ctx.translate(point.x, point.y);
+  ctx.fillStyle = "rgba(240,198,110,0.22)";
+  ctx.strokeStyle = "#f0c66e";
+  ctx.shadowColor = "#f0c66e";
+  ctx.shadowBlur = 18;
+  roundRect(-18, -10, 36, 20, 5);
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#fff0c8";
+  ctx.font = "600 9px IBM Plex Mono, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("MSG", 0, 4);
+  ctx.restore();
+
+
+11. Active Step Highlighting
+----------------------------
+
+Each step controls which nodes and links are active.
+
+Example:
+
+  {
+    title: "SAP BTP hosts the integration layer",
+    body: "SAP Cloud Integration runs in the SAP BTP ecosystem as part of SAP Integration Suite.",
+    highlight: ["cloud", "suite"],
+    activeLinks: ["suite->cpi"]
+  }
+
+Rules:
+
+  - Nodes listed in highlight get brighter fill, stronger border, and glow.
+  - Links listed in activeLinks become cyan and show moving dots.
+  - The moving MSG packet follows one active link at a time.
+
+
+12. Utility Functions Needed
+----------------------------
+
+Rounded rectangle path:
+
+  function roundRect(x, y, w, h, radius) {
+    const r = Math.min(radius, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+Color tint helper:
+
+  function tint(hex, amount) {
+    const color = hex.replace("#", "");
+    const r = parseInt(color.slice(0, 2), 16);
+    const g = parseInt(color.slice(2, 4), 16);
+    const b = parseInt(color.slice(4, 6), 16);
+    return "rgba(" + r + "," + g + "," + b + "," + amount + ")";
+  }
+
+Text wrapping helper:
+
+  function wrapText(text, x, y, maxWidth, lineHeight, maxLines) {
+    const words = String(text).split(" ");
+    let line = "";
+    let lines = 0;
+
+    for (let i = 0; i < words.length; i += 1) {
+      const testLine = line ? line + " " + words[i] : words[i];
+      if (ctx.measureText(testLine).width > maxWidth && line) {
+        ctx.fillText(line, x, y + lines * lineHeight);
+        line = words[i];
+        lines += 1;
+        if (lines >= maxLines) {
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+
+    if (line && lines < maxLines) {
+      ctx.fillText(line, x, y + lines * lineHeight);
+    }
+  }
+
+
+13. Recommended HTML Structure
+------------------------------
+
+Use a page structure like this:
+
+  <div class="canvas-wrap">
+    <canvas id="architecture-canvas" aria-label="Animated architecture diagram"></canvas>
+    <div class="canvas-status">
+      <span class="pulse"></span>
+      <span id="canvas-status-text">signal.active</span>
+    </div>
+  </div>
+
+Canvas CSS:
+
+  .canvas-wrap {
+    position: relative;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+      #070a0d;
+    background-size: 24px 24px;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 430px;
+  }
+
+
+14. Visual Summary
+------------------
+
+Overall style:
+
+  - Dark technical dashboard.
+  - Grid background.
+  - IBM Plex Sans for primary UI text.
+  - IBM Plex Mono for technical labels.
+  - Cyan active highlights.
+  - Amber runtime/message emphasis.
+  - Blue connector boxes.
+  - Green operations boxes.
+  - Dotted outer zone boundary for SAP BTP or large platform areas.
+  - Moving particles and MSG packet on active links.
+  - No CSS keyframe animation is required for the main diagram.
+
