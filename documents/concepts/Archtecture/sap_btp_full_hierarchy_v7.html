@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP BTP Full CF Hierarchy v7</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{min-height:100%}
+body{
+  background:#000;
+  color:#c0c4d6;
+  font-family:'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden
+}
+/* ─── Header ─── */
+.hdr{
+  background:#060608;
+  border-bottom:1px solid #1c1e30;
+  padding:7px 16px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-shrink:0
+}
+.hdr h1{font-size:12px;font-weight:700;color:#d4a017;letter-spacing:.06em}
+.hdr span{font-size:9px;color:#3a3d55}
+.hdr .zoom-ctrl{margin-left:auto;display:flex;align-items:center;gap:6px}
+.hdr .zoom-ctrl button{
+  background:#15172a;
+  border:1px solid #2a2d44;
+  color:#8a8faa;
+  font-size:13px;
+  width:24px;height:24px;
+  border-radius:4px;
+  cursor:pointer;
+  line-height:1;
+  display:flex;align-items:center;justify-content:center
+}
+.hdr .zoom-ctrl button:hover{background:#1e2038;color:#c0c4d6}
+.hdr .zoom-ctrl span{font-size:10px;color:#5a5d72;min-width:32px;text-align:center}
+/* ─── Main area ─── */
+.main{display:flex;flex:1;overflow:hidden}
+/* ─── Diagram panel ─── */
+.diagram-panel{
+  flex:0 0 63%;
+  overflow:auto;
+  background:#000;
+  border-right:1px solid #1c1e30;
+  padding:10px
+}
+#svgWrapper{display:inline-block;transform-origin:top left}
+#svgWrapper svg{display:block}
+/* ─── Info panel ─── */
+.info-panel{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  min-width:280px
+}
+/* ─── Details section (top ~55%) ─── */
+.det{
+  flex:0 0 55%;
+  overflow:auto;
+  padding:14px;
+  border-bottom:1px solid #1c1e30;
+  background:#000
+}
+.det-placeholder{
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:6px;
+  color:#252840;
+  font-size:10px;
+  text-align:center;
+  line-height:1.7
+}
+.det-placeholder svg{opacity:.3}
+.det-title{
+  font-size:13px;font-weight:700;
+  color:#e2e4f0;
+  margin-bottom:4px;
+  padding-bottom:6px;
+  border-bottom:1px solid #1c1e30
+}
+.det-badge{
+  display:inline-block;
+  font-size:8px;font-weight:700;
+  letter-spacing:.1em;
+  padding:2px 8px;
+  border-radius:10px;
+  margin:6px 0 10px;
+  border:1px solid currentColor;
+  opacity:.85
+}
+.det-desc{font-size:10.5px;color:#8a8faa;line-height:1.75;margin-bottom:12px}
+.det-lbl{
+  font-size:9px;font-weight:700;
+  color:#40435a;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin:12px 0 6px
+}
+.det-contains{
+  display:flex;flex-wrap:wrap;gap:5px;
+  margin-bottom:10px
+}
+.det-tag{
+  font-size:9px;
+  background:#12131f;
+  border:1px solid #22253a;
+  border-radius:4px;
+  padding:3px 8px;
+  color:#7a7e9a
+}
+.conn-item{
+  display:flex;
+  gap:10px;
+  margin-bottom:8px;
+  padding:9px 11px;
+  border-radius:6px;
+  background:#06060e;
+  border-left:3px solid #333;
+  font-size:10px;
+  line-height:1.55
+}
+.conn-arrow{font-size:15px;flex-shrink:0;margin-top:1px}
+.conn-name{font-weight:700;color:#e0e2f0;margin-bottom:3px}
+.conn-why{color:#62667a}
+/* ─── Steps section (bottom ~45%, always visible) ─── */
+.steps{
+  flex:1;
+  overflow:auto;
+  padding:14px;
+  background:#08090f
+}
+.steps-title{
+  font-size:9px;font-weight:700;
+  color:#353850;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin-bottom:10px;
+  padding-bottom:7px;
+  border-bottom:1px solid #141520
+}
+.leg-item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:9px;
+  font-size:10px
+}
+.leg-line{
+  flex-shrink:0;
+  width:30px;height:0;
+  margin-top:8px;
+  border-top:2px dashed;
+  position:relative
+}
+.leg-line::after{
+  content:'▶';
+  position:absolute;
+  right:-7px;top:-7px;
+  font-size:8px;font-style:normal
+}
+.leg-txt strong{color:#c0c4d6;display:block;margin-bottom:2px}
+.leg-txt{color:#5a5d72;line-height:1.55}
+.key-row{
+  display:flex;gap:8px;
+  font-size:10px;
+  padding:5px 0;
+  border-bottom:1px solid #10111c
+}
+.key-row .kk{color:#c0c4d6;font-weight:600;min-width:120px;flex-shrink:0}
+.key-row .kv{color:#555870;line-height:1.5}
+.sdiv{height:1px;background:#141520;margin:12px 0}
+/* ─── Image section ─── */
+.img-bar{
+  border-top:1px solid #1c1e30;
+  background:#000;
+  flex-shrink:0
+}
+.img-toggle{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 16px;
+  cursor:pointer;
+  font-size:10px;color:#353850;
+  user-select:none;transition:color .18s
+}
+.img-toggle:hover{color:#7a7e9a}
+.img-toggle .ti{transition:transform .2s;display:inline-block}
+.img-toggle.open .ti{transform:rotate(90deg)}
+.img-body{display:none;padding:0 16px 12px}
+.img-body.open{display:block}
+.drop-zone{
+  border:1.5px dashed #252840;
+  border-radius:7px;
+  padding:16px;text-align:center;
+  font-size:10px;color:#353850;
+  cursor:pointer;transition:border-color .18s,color .18s;
+  margin-bottom:8px
+}
+.drop-zone:hover{border-color:#454870;color:#7a7e9a}
+.img-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.img-thumb{
+  width:76px;height:56px;
+  object-fit:cover;
+  border-radius:5px;
+  border:1px solid #252840;
+  cursor:pointer;transition:border-color .18s
+}
+.img-thumb:hover{border-color:#7a7e9a}
+/* ─── SVG interactions ─── */
+.bx{cursor:pointer}
+.bx rect,.bx path{transition:opacity .12s}
+.bx:hover rect{opacity:.82}
+.bx.sel rect{stroke-width:2.5 !important}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#08090f}
+::-webkit-scrollbar-thumb{background:#252840;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#353860}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="hdr">
+  <h1>SAP BTP · Full CF Hierarchy v7</h1>
+  <span>Click any component to see details &amp; relationships</span>
+  <div class="zoom-ctrl">
+    <button onclick="zoomOut()" title="Zoom out">−</button>
+    <span id="zoomLabel">100%</span>
+    <button onclick="zoomIn()" title="Zoom in">+</button>
+    <button onclick="zoomReset()" title="Reset" style="width:40px;font-size:9px;letter-spacing:.04em">RESET</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- ── Left: Diagram ── -->
+  <div class="diagram-panel" id="diagramPanel">
+    <div id="svgWrapper">
+
+<!-- ════════════════════════════════════════════════
+     SVG  —  GoRouter is drawn AFTER Org rect so its
+     filled background covers the Org boundary stroke.
+     All container outlines use fill="rgba(0,0,0,0)"
+     so they catch no pointer events — only labels do.
+     ════════════════════════════════════════════════ -->
+<svg viewBox="0 0 1100 1030" xmlns="http://www.w3.org/2000/svg"
+     style="width:1100px;display:block;font-family:system-ui,-apple-system,sans-serif">
+  <defs>
+    <marker id="ap" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#993c1d"/></marker>
+    <marker id="ab" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#185fa5"/></marker>
+    <marker id="ao" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ba7517"/></marker>
+    <marker id="ag" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#3b6d11"/></marker>
+  </defs>
+
+  <!-- ══ LAYER 1: Container outlines (drawn first) ══ -->
+
+  <!-- Global Account -->
+  <rect x="5" y="5" width="755" height="1018" rx="14" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="10,5"/>
+  <text x="382" y="22" text-anchor="middle" font-size="14" fill="#908f8a" font-weight="700">Global Account</text>
+
+  <!-- Subaccount -->
+  <rect x="18" y="30" width="729" height="993" rx="12" fill="none" stroke="#185fa5" stroke-width="1.8" stroke-dasharray="8,4"/>
+  <text x="382" y="47" text-anchor="middle" font-size="14" fill="#4a8fe4" font-weight="700">SAP BTP Subaccount  <tspan font-size="10" font-weight="400" fill="#285080">— e.g. mycompany-dev  (1 subaccount per environment)</tspan></text>
+
+  <!-- CF Environment -->
+  <rect x="30" y="56" width="705" height="810" rx="10" fill="none" stroke="#3b6d11" stroke-width="1.8" stroke-dasharray="6,3"/>
+  <text x="382" y="72" text-anchor="middle" font-size="13" fill="#6ab828" font-weight="700">CF Environment — PaaS runtime · 1 org per subaccount</text>
+
+  <!-- SAP Global Infrastructure -->
+  <rect x="778" y="5" width="318" height="1018" rx="12" fill="none" stroke="#ba7517" stroke-width="1.8" stroke-dasharray="8,4"/>
+  <text x="937" y="22" text-anchor="middle" font-size="14" fill="#e09420" font-weight="700">SAP Global Infrastructure</text>
+  <text x="937" y="38" text-anchor="middle" font-size="11" fill="#8a5d18">(shared · multi-tenant)</text>
+
+  <!-- Diego Cell VMs outline -->
+  <rect x="42" y="660" width="681" height="192" rx="9" fill="none" stroke="#993c1d" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="382" y="677" text-anchor="middle" font-size="13" fill="#c05628" font-weight="700">Diego Cell VMs — runtime: shared across all spaces (part of CF Environment)</text>
+
+  <!-- Integration Suite outline -->
+  <rect x="30" y="880" width="705" height="130" rx="9" fill="none" stroke="#ba7517" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="280" y="897" text-anchor="middle" font-size="13" fill="#e09420" font-weight="700">Integration Suite — separate service subscription (not inside CF Environment)</text>
+
+  <!-- Org outline -->
+  <rect x="228" y="80" width="492" height="560" rx="9" fill="none" stroke="#3b6d11" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <g class="bx" onclick="showBox('org')">
+    <text x="490" y="97" text-anchor="middle" font-size="13" fill="#6ab828" font-weight="700" style="cursor:pointer">Org (1 per subaccount)</text>
+  </g>
+
+  <!-- Space 1 outline -->
+  <rect x="240" y="104" width="468" height="410" rx="8" fill="none" stroke="#533ab7" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <g class="bx" onclick="showBox('space1')">
+    <text x="420" y="121" text-anchor="middle" font-size="12" fill="#8a70e8" font-weight="700" style="cursor:pointer">Space: dev / test / ci  <tspan font-size="10" font-weight="400" fill="#5a4a90">· quota: space-level limits</tspan></text>
+  </g>
+
+  <!-- Space 2 outline -->
+  <rect x="240" y="528" width="468" height="96" rx="8" fill="none" stroke="#533ab7" stroke-width="1.2" stroke-dasharray="5,3"/>
+
+  <!-- ══ LAYER 2: SAP Global Infra components ══ -->
+
+  <!-- XSUAA server -->
+  <g class="bx" onclick="showBox('xsuaa-server')">
+    <rect x="795" y="48" width="284" height="60" rx="7" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.3"/>
+    <text x="937" y="66" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">XSUAA server</text>
+    <text x="937" y="81" text-anchor="middle" font-size="9.5" fill="#555">OAuth 2.0 / OIDC · multi-tenant</text>
+    <text x="937" y="96" text-anchor="middle" font-size="9" fill="#888">isolated by tenant ID + client ID</text>
+  </g>
+
+  <!-- Destination server -->
+  <g class="bx" onclick="showBox('destination-server')">
+    <rect x="795" y="118" width="284" height="60" rx="7" fill="#eaf3de" stroke="#3b6d11" stroke-width="1.3"/>
+    <text x="937" y="136" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">Destination server</text>
+    <text x="937" y="151" text-anchor="middle" font-size="9.5" fill="#555">remote connection configs · multi-tenant</text>
+    <text x="937" y="166" text-anchor="middle" font-size="9" fill="#888">URL · Auth · Proxy — per instance</text>
+  </g>
+
+  <!-- Connectivity server -->
+  <g class="bx" onclick="showBox('connectivity-server')">
+    <rect x="795" y="188" width="284" height="60" rx="7" fill="#faece7" stroke="#993c1d" stroke-width="1.3"/>
+    <text x="937" y="206" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">Connectivity server</text>
+    <text x="937" y="221" text-anchor="middle" font-size="9.5" fill="#555">on-premise tunnel · multi-tenant</text>
+    <text x="937" y="236" text-anchor="middle" font-size="9" fill="#888">Cloud Connector ↔ RFC · HTTP · LDAP</text>
+  </g>
+
+  <!-- IS Runtime Nodes -->
+  <g class="bx" onclick="showBox('is-runtime-nodes')">
+    <rect x="795" y="258" width="284" height="60" rx="7" fill="#faeeda" stroke="#ba7517" stroke-width="2"/>
+    <text x="937" y="276" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">IS Runtime Nodes</text>
+    <text x="937" y="291" text-anchor="middle" font-size="9.5" fill="#555">K8s pods · SAP managed</text>
+    <text x="937" y="306" text-anchor="middle" font-size="9" fill="#888">Apache Camel OSGi runtime</text>
+  </g>
+
+  <!-- iFlow Instances -->
+  <g class="bx" onclick="showBox('iflow-instances')">
+    <rect x="795" y="328" width="284" height="48" rx="7" fill="#faeeda" stroke="#ba7517" stroke-width="2"/>
+    <text x="937" y="347" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">iFlow Instances</text>
+    <text x="937" y="362" text-anchor="middle" font-size="9" fill="#888">deployed iFlows · calls XSUAA · Destination · Connectivity</text>
+  </g>
+  <line x1="937" y1="318" x2="937" y2="328" stroke="#ba7517" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- ══ LAYER 3: CF Platform components (left column) ══ -->
+
+  <!-- Cloud Controller -->
+  <g class="bx" onclick="showBox('cloud-controller')">
+    <rect x="42" y="80" width="170" height="52" rx="7" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.3"/>
+    <text x="127" y="98" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">Cloud Controller</text>
+    <text x="127" y="112" text-anchor="middle" font-size="9" fill="#888">one per CF env · shared</text>
+    <text x="127" y="125" text-anchor="middle" font-size="9" fill="#888">quota enforcement</text>
+  </g>
+
+  <!-- CC → CCDB connector line -->
+  <line x1="127" y1="132" x2="127" y2="172" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+
+  <!-- CCDB -->
+  <g class="bx" onclick="showBox('ccdb')">
+    <rect x="42" y="172" width="170" height="88" rx="7" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.3"/>
+    <text x="127" y="190" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">CCDB (PostgreSQL)</text>
+    <text x="127" y="205" text-anchor="middle" font-size="9" fill="#888">orgs · spaces · apps · routes</text>
+    <text x="127" y="218" text-anchor="middle" font-size="9" fill="#888">service instances · keys · bindings</text>
+    <text x="127" y="231" text-anchor="middle" font-size="9" fill="#888">credentials · quotas</text>
+    <text x="127" y="246" text-anchor="middle" font-size="9" fill="#888">all records only — no compute</text>
+  </g>
+
+  <!-- ══ GoRouter drawn AFTER Org so it renders on top ══ -->
+  <g class="bx" onclick="showBox('gorouter')">
+    <rect x="224" y="80" width="155" height="52" rx="7" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.3"/>
+    <text x="301" y="98" text-anchor="middle" font-weight="500" font-size="11" fill="#1a1a2e">GoRouter</text>
+    <text x="301" y="112" text-anchor="middle" font-size="9" fill="#888">one per CF env · shared</text>
+    <text x="301" y="125" text-anchor="middle" font-size="9" fill="#888">routes HTTP → app containers</text>
+  </g>
+
+  <!-- ══ LAYER 4: Space 1 — App components ══ -->
+
+  <!-- App Definitions -->
+  <g class="bx" onclick="showBox('app-definitions')">
+    <rect x="250" y="128" width="140" height="44" rx="6" fill="#eeedfe" stroke="#533ab7" stroke-width="1.2"/>
+    <text x="320" y="146" text-anchor="middle" font-weight="500" font-size="11" fill="#3c3489">App Definitions</text>
+    <text x="320" y="161" text-anchor="middle" font-size="9" fill="#888">metadata in CCDB</text>
+  </g>
+
+  <!-- Routes -->
+  <g class="bx" onclick="showBox('routes')">
+    <rect x="250" y="182" width="140" height="44" rx="6" fill="#eeedfe" stroke="#533ab7" stroke-width="1.2"/>
+    <text x="320" y="200" text-anchor="middle" font-weight="500" font-size="11" fill="#3c3489">Routes</text>
+    <text x="320" y="215" text-anchor="middle" font-size="9" fill="#888">URL mappings in CCDB</text>
+  </g>
+
+  <!-- ══ LAYER 5: Space 1 — Service Instances ══ -->
+
+  <!-- XSUAA Instance -->
+  <g class="bx" onclick="showBox('xsuaa-instance')">
+    <rect x="405" y="128" width="288" height="44" rx="6" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.3"/>
+    <text x="549" y="146" text-anchor="middle" font-weight="500" font-size="11" fill="#0c447c">XSUAA Instance</text>
+    <text x="549" y="161" text-anchor="middle" font-size="9" fill="#888">record in CCDB · space_id · tenant_id · plan</text>
+  </g>
+  <line x1="460" y1="172" x2="460" y2="190" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <line x1="600" y1="172" x2="600" y2="190" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <g class="bx" onclick="showBox('xsuaa-service-key')">
+    <rect x="405" y="190" width="130" height="42" rx="6" fill="#eeedfe" stroke="#185fa5" stroke-width="1.2"/>
+    <text x="470" y="207" text-anchor="middle" font-weight="500" font-size="11" fill="#3c3489">Service Key</text>
+    <text x="470" y="222" text-anchor="middle" font-size="9" fill="#888">client_id · secret · url</text>
+  </g>
+  <g class="bx" onclick="showBox('xsuaa-service-binding')">
+    <rect x="545" y="190" width="145" height="42" rx="6" fill="#eeedfe" stroke="#185fa5" stroke-width="1.2"/>
+    <text x="617" y="207" text-anchor="middle" font-weight="500" font-size="11" fill="#3c3489">Service Binding</text>
+    <text x="617" y="222" text-anchor="middle" font-size="9" fill="#888">VCAP_SERVICES → app</text>
+  </g>
+
+  <!-- Destination Instance -->
+  <g class="bx" onclick="showBox('destination-instance')">
+    <rect x="405" y="248" width="288" height="44" rx="6" fill="#eaf3de" stroke="#3b6d11" stroke-width="1.3"/>
+    <text x="549" y="266" text-anchor="middle" font-weight="500" font-size="11" fill="#27500a">Destination Instance</text>
+    <text x="549" y="281" text-anchor="middle" font-size="9" fill="#888">record in CCDB · space_id · connection configs</text>
+  </g>
+  <line x1="460" y1="292" x2="460" y2="310" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <line x1="600" y1="292" x2="600" y2="310" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <g class="bx" onclick="showBox('destination-service-key')">
+    <rect x="405" y="310" width="130" height="42" rx="6" fill="#eaf3de" stroke="#3b6d11" stroke-width="1.2"/>
+    <text x="470" y="327" text-anchor="middle" font-weight="500" font-size="11" fill="#27500a">Service Key</text>
+    <text x="470" y="342" text-anchor="middle" font-size="9" fill="#888">URL · credentials</text>
+  </g>
+  <g class="bx" onclick="showBox('destination-service-binding')">
+    <rect x="545" y="310" width="145" height="42" rx="6" fill="#eaf3de" stroke="#3b6d11" stroke-width="1.2"/>
+    <text x="617" y="327" text-anchor="middle" font-weight="500" font-size="11" fill="#27500a">Service Binding</text>
+    <text x="617" y="342" text-anchor="middle" font-size="9" fill="#888">VCAP_SERVICES → app</text>
+  </g>
+
+  <!-- Connectivity Instance -->
+  <g class="bx" onclick="showBox('connectivity-instance')">
+    <rect x="405" y="368" width="288" height="44" rx="6" fill="#faece7" stroke="#993c1d" stroke-width="1.3"/>
+    <text x="549" y="386" text-anchor="middle" font-weight="500" font-size="11" fill="#712b13">Connectivity Instance</text>
+    <text x="549" y="401" text-anchor="middle" font-size="9" fill="#888">record in CCDB · space_id · tunnel config</text>
+  </g>
+  <line x1="460" y1="412" x2="460" y2="430" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <line x1="600" y1="412" x2="600" y2="430" stroke="#aaa" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <g class="bx" onclick="showBox('connectivity-service-key')">
+    <rect x="405" y="430" width="130" height="42" rx="6" fill="#faece7" stroke="#993c1d" stroke-width="1.2"/>
+    <text x="470" y="447" text-anchor="middle" font-weight="500" font-size="11" fill="#712b13">Service Key</text>
+    <text x="470" y="462" text-anchor="middle" font-size="9" fill="#888">proxy URL · token</text>
+  </g>
+  <g class="bx" onclick="showBox('connectivity-service-binding')">
+    <rect x="545" y="430" width="145" height="42" rx="6" fill="#faece7" stroke="#993c1d" stroke-width="1.2"/>
+    <text x="617" y="447" text-anchor="middle" font-weight="500" font-size="11" fill="#712b13">Service Binding</text>
+    <text x="617" y="462" text-anchor="middle" font-size="9" fill="#888">VCAP_SERVICES → app</text>
+  </g>
+
+  <!-- ══ LAYER 6: Space 2 content ══ -->
+  <g class="bx" onclick="showBox('space2')">
+    <text x="474" y="547" text-anchor="middle" font-size="12" fill="#8a70e8" font-weight="700" style="cursor:pointer">Space: staging / preprod  <tspan font-size="9" font-weight="400" fill="#5a4a90">· same subaccount as dev</tspan></text>
+    <text x="474" y="563" text-anchor="middle" font-size="9" fill="#888">own App Defs · Routes · Service Instances · Keys · Bindings</text>
+    <text x="474" y="578" text-anchor="middle" font-size="9" fill="#999">⚠  For true prod isolation → use a separate Subaccount (mycompany-prod)</text>
+    <text x="474" y="593" text-anchor="middle" font-size="9" fill="#888">Separate Subaccount = separate XSUAA tenant · separate quotas · separate roles</text>
+    <text x="474" y="608" text-anchor="middle" font-size="9" fill="#888">Common pattern: dev subaccount (dev/test/staging spaces) + prod subaccount (prod space)</text>
+  </g>
+
+  <!-- ══ LAYER 7: Diego Cell — App Container ══ -->
+  <g class="bx" onclick="showBox('app-container')">
+    <rect x="55" y="688" width="320" height="148" rx="7" fill="#faece7" stroke="#993c1d" stroke-width="1.3"/>
+    <text x="215" y="706" text-anchor="middle" font-weight="500" font-size="11" fill="#4a1b0c">App Container (instance)</text>
+    <text x="215" y="721" text-anchor="middle" font-size="9" fill="#888">1 container per app instance</text>
+    <text x="215" y="735" text-anchor="middle" font-size="9" fill="#888">reads VCAP_SERVICES (service bindings from CCDB)</text>
+    <text x="215" y="749" text-anchor="middle" font-size="9" fill="#888">calls XSUAA · Destination · Connectivity at runtime</text>
+    <text x="215" y="763" text-anchor="middle" font-size="9" fill="#888">GoRouter directs incoming HTTP traffic here</text>
+    <text x="215" y="777" text-anchor="middle" font-size="9" fill="#888">Space 1 + Space 2 apps can share same Diego Cell</text>
+    <text x="215" y="791" text-anchor="middle" font-size="9" fill="#888">no dedicated cell per space — scheduler places freely</text>
+  </g>
+
+  <!-- ══ LAYER 8: Legend ══ -->
+  <rect x="390" y="688" width="325" height="148" rx="7" fill="none" stroke="#bbb" stroke-width="0.8"/>
+  <text x="552" y="705" text-anchor="middle" font-size="10" fill="#555" font-weight="500">Legend</text>
+  <line x1="405" y1="718" x2="430" y2="718" stroke="#185fa5" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ab)"/>
+  <text x="435" y="722" font-size="9" fill="#555">app calls XSUAA at runtime</text>
+  <line x1="405" y1="736" x2="430" y2="736" stroke="#3b6d11" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ag)"/>
+  <text x="435" y="740" font-size="9" fill="#555">app calls Destination at runtime</text>
+  <line x1="405" y1="754" x2="430" y2="754" stroke="#993c1d" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ap)"/>
+  <text x="435" y="758" font-size="9" fill="#555">app calls Connectivity at runtime</text>
+  <line x1="405" y1="772" x2="430" y2="772" stroke="#ba7517" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ao)"/>
+  <text x="435" y="776" font-size="9" fill="#555">Integration Suite → SAP infra</text>
+  <text x="405" y="793" font-size="9" fill="#888">Service Key = for external apps</text>
+  <text x="405" y="806" font-size="9" fill="#888">Service Binding = VCAP_SERVICES (same-space apps)</text>
+  <text x="405" y="819" font-size="9" fill="#888">Diego Cells = inside CF Env, shared across all spaces</text>
+
+  <!-- ══ LAYER 9: Integration Suite components ══ -->
+  <g class="bx" onclick="showBox('design-time-repo')">
+    <rect x="44" y="908" width="200" height="42" rx="6" fill="#faeeda" stroke="#ba7517" stroke-width="1.5"/>
+    <text x="144" y="924" text-anchor="middle" font-size="9.5" fill="#633806">Design-time repository</text>
+    <text x="144" y="939" text-anchor="middle" font-size="9" fill="#888">iFlow artifacts / metadata stored here</text>
+  </g>
+  <text x="260" y="931" font-size="13" fill="#ba7517">→</text>
+  <g class="bx" onclick="showBox('runtime-nodes-is')">
+    <rect x="275" y="908" width="200" height="42" rx="6" fill="#faeeda" stroke="#ba7517" stroke-width="1.5"/>
+    <text x="375" y="924" text-anchor="middle" font-size="9.5" fill="#633806">Runtime Nodes (K8s / SAP)</text>
+    <text x="375" y="939" text-anchor="middle" font-size="9" fill="#888">iFlows run here — NOT Diego Cells</text>
+  </g>
+  <text x="44" y="970" font-size="9" fill="#ba7517">↑ IS has its own runtime — iFlows do not run on Diego Cells. IS runtime nodes are in SAP Global Infrastructure (amber box, right).</text>
+
+  <!-- Cloud Connector -->
+  <g class="bx" onclick="showBox('cloud-connector')">
+    <rect x="475" y="908" width="248" height="60" rx="6" fill="#faece7" stroke="#993c1d" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <text x="599" y="926" text-anchor="middle" font-size="9.5" fill="#712b13">Cloud Connector (on-premise)</text>
+    <text x="599" y="941" text-anchor="middle" font-size="9" fill="#888">installed in customer network · outside BTP</text>
+    <text x="599" y="956" text-anchor="middle" font-size="9" fill="#888">creates secure tunnel → Connectivity server</text>
+  </g>
+
+  <!-- ══ LAYER 10: Arrows ══ -->
+  <!-- App Container → SAP servers -->
+  <path d="M 375,720 Q 590,680 795,78" stroke="#185fa5" stroke-width="1.2" fill="none" stroke-dasharray="4,3" marker-end="url(#ab)"/>
+  <path d="M 375,749 Q 595,710 795,148" stroke="#3b6d11" stroke-width="1.2" fill="none" stroke-dasharray="4,3" marker-end="url(#ag)"/>
+  <path d="M 375,775 Q 600,740 795,218" stroke="#993c1d" stroke-width="1.2" fill="none" stroke-dasharray="4,3" marker-end="url(#ap)"/>
+  <!-- Instance records → SAP servers -->
+  <line x1="693" y1="150" x2="795" y2="78" stroke="#185fa5" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ab)"/>
+  <line x1="693" y1="270" x2="795" y2="148" stroke="#3b6d11" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ag)"/>
+  <line x1="693" y1="390" x2="795" y2="218" stroke="#993c1d" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ap)"/>
+  <!-- IS → SAP infra -->
+  <path d="M 475,929 Q 640,850 795,288" stroke="#ba7517" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#ao)"/>
+</svg>
+
+    </div><!-- /svgWrapper -->
+  </div><!-- /diagram-panel -->
+
+  <!-- ── Right: Info panel ── -->
+  <div class="info-panel">
+
+    <!-- Details (top half) -->
+    <div class="det" id="detPanel">
+      <div class="det-placeholder" id="detPlaceholder">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#353860" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/>
+          <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
+        </svg>
+        <div>Click any component box<br>to see details &amp; connections</div>
+      </div>
+      <div id="detContent" style="display:none"></div>
+    </div>
+
+    <!-- Steps / Legend (bottom half — always visible) -->
+    <div class="steps">
+      <div class="steps-title">Architecture Key · Relationships</div>
+
+      <div class="leg-item">
+        <div class="leg-line" style="border-color:#185fa5;color:#185fa5"></div>
+        <div class="leg-txt"><strong>App → XSUAA (blue)</strong>At runtime, app exchanges client credentials (from VCAP_SERVICES) for a JWT token. Token authenticates outbound API calls.</div>
+      </div>
+      <div class="leg-item">
+        <div class="leg-line" style="border-color:#3b6d11;color:#3b6d11"></div>
+        <div class="leg-txt"><strong>App → Destination (green)</strong>At runtime, app calls Destination API to look up a named destination's URL, auth type, and proxy config.</div>
+      </div>
+      <div class="leg-item">
+        <div class="leg-line" style="border-color:#993c1d;color:#993c1d"></div>
+        <div class="leg-txt"><strong>App → Connectivity (orange-red)</strong>App sends on-premise requests through Connectivity proxy, which relays them via Cloud Connector tunnel.</div>
+      </div>
+      <div class="leg-item">
+        <div class="leg-line" style="border-color:#ba7517;color:#ba7517"></div>
+        <div class="leg-txt"><strong>IS → SAP Infra (amber)</strong>Integration Suite deploys iFlows to IS Runtime Nodes in SAP Global Infrastructure. iFlows then call XSUAA, Destination, Connectivity.</div>
+      </div>
+
+      <div class="sdiv"></div>
+
+      <div class="key-row"><span class="kk" style="color:#8a70e8">Subaccount Pattern</span><span class="kv" style="color:#7a6ab8">Best practice: 1 subaccount per environment — mycompany-dev, mycompany-prod. Each has isolated XSUAA tenant, quotas, and roles. Do NOT use spaces as dev/prod boundary.</span></div>
+      <div class="key-row"><span class="kk" style="color:#8a70e8">Space Names (non-prod)</span><span class="kv" style="color:#7a6ab8">dev · test · int · ci · uat · staging · preprod</span></div>
+      <div class="key-row"><span class="kk" style="color:#8a70e8">Space Names (prod)</span><span class="kv" style="color:#7a6ab8">preprod · prod · hotfix — in a dedicated prod subaccount</span></div>
+      <div class="sdiv"></div>
+      <div class="key-row"><span class="kk">Service Key</span><span class="kv">Credentials for external apps (not in CF). Contains client_id, secret, URLs.</span></div>
+      <div class="key-row"><span class="kk">Service Binding</span><span class="kv">Credentials injected into VCAP_SERVICES for CF apps in the same space.</span></div>
+      <div class="key-row"><span class="kk">CCDB</span><span class="kv">Single source of truth for all CF metadata. No compute — records only.</span></div>
+      <div class="key-row"><span class="kk">Diego Cells</span><span class="kv">Shared across ALL spaces. Scheduler places containers freely (no dedicated cell per space).</span></div>
+      <div class="key-row"><span class="kk">IS Runtime</span><span class="kv">NOT Diego Cells. K8s pods in SAP Global Infra. iFlows run here.</span></div>
+      <div class="key-row"><span class="kk">Cloud Connector</span><span class="kv">On-premise agent. Outbound tunnel to Connectivity Server. No inbound firewall rules needed.</span></div>
+    </div>
+
+  </div><!-- /info-panel -->
+</div><!-- /main -->
+
+<!-- ═══ IMAGE SECTION ═══ -->
+<div class="img-bar">
+  <div class="img-toggle" id="imgToggle" onclick="toggleImages()">
+    <span class="ti">▶</span>
+    <span>Reference Images</span>
+    <span style="font-size:9px;margin-left:6px;color:#252840" id="imgCount"></span>
+  </div>
+  <div class="img-body" id="imgBody">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      Click or drag &amp; drop images here
+    </div>
+    <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+    <div class="img-grid" id="imgGrid"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  BOX DATA
+// ═══════════════════════════════════════════════
+const BOX = {
+  'global-account':{
+    title:'Global Account',badge:'TOP-LEVEL CONTAINER',bc:'#706f6b',
+    desc:'The root billing and entitlement boundary in SAP BTP. All subaccounts, entitlements, and global users are managed here. SAP manages this tier on your behalf.',
+    contains:['One or more Subaccounts','Entitlement management','Global user management'],
+    calls:[]
+  },
+  'subaccount':{
+    title:'SAP BTP Subaccount',badge:'TENANT ISOLATION UNIT',bc:'#3a7fd4',
+    desc:'Each subaccount is a fully isolated tenant. Best practice: use one subaccount per environment — e.g. mycompany-dev, mycompany-prod. Each has its own XSUAA tenant ID, separate quotas, separate role collections, and independent service subscriptions. Do NOT use spaces as a prod/dev boundary — use separate subaccounts.',
+    contains:['CF Environment (1 per subaccount)','Integration Suite subscription','Naming examples: mycompany-dev · mycompany-test · mycompany-prod'],
+    calls:[]
+  },
+  'cf-env':{
+    title:'CF Environment',badge:'PAAS RUNTIME',bc:'#5a9e22',
+    desc:'The Cloud Foundry PaaS layer — 1 per subaccount. Provides managed app hosting, the service marketplace, route management, and Diego-based container scheduling. All CF commands target this environment.',
+    contains:['Cloud Controller','GoRouter','CCDB (PostgreSQL)','Org → Spaces → Apps','Diego Cell VMs'],
+    calls:[]
+  },
+  'cloud-controller':{
+    title:'Cloud Controller',badge:'CF PLATFORM COMPONENT',bc:'#3a7fd4',
+    desc:'The brain of Cloud Foundry. One instance per CF environment, shared across all orgs and spaces. Every operation — cf push, cf create-service, cf bind-service — is an API call to Cloud Controller.',
+    contains:[],
+    calls:[
+      {target:'CCDB (PostgreSQL)',why:'Reads and writes all CF state: app definitions, routes, service instances, bindings, quotas. CCDB is the only persistence layer.',color:'#185fa5'}
+    ]
+  },
+  'gorouter':{
+    title:'GoRouter',badge:'CF PLATFORM COMPONENT',bc:'#3a7fd4',
+    desc:'The HTTP reverse proxy for Cloud Foundry. One instance per CF environment, shared. All inbound HTTP/HTTPS traffic enters through GoRouter, which matches the hostname to a route and forwards to the correct running app container.',
+    contains:[],
+    calls:[
+      {target:'CCDB (route table)',why:'GoRouter reads the route table (hostname → app mapping) from CCDB to know where to forward each incoming request.',color:'#185fa5'},
+      {target:'App Container',why:'After matching a route, GoRouter forwards the HTTP request to the correct running app instance (container) on a Diego Cell.',color:'#993c1d'}
+    ]
+  },
+  'ccdb':{
+    title:'CCDB (PostgreSQL)',badge:'CF PLATFORM DATASTORE',bc:'#3a7fd4',
+    desc:'The single source of truth for all Cloud Foundry metadata. It stores records only — no compute happens here. Every cf push, cf create-service, and cf bind-service results in reads and writes to CCDB.',
+    contains:['Orgs · Spaces · App Definitions · Routes','Service Instances · Service Keys · Service Bindings','Credentials · Quotas'],
+    calls:[]
+  },
+  'org':{
+    title:'Org (CF Organization)',badge:'CF NAMESPACE',bc:'#5a9e22',
+    desc:'Top-level namespace within a CF Environment. In SAP BTP there is exactly 1 Org per subaccount. It is the quota and membership boundary at the CF level.',
+    contains:['Space: dev / test / ci (non-prod subaccount)','Space: staging / preprod (same subaccount)','⚠  prod → use a separate subaccount'],
+    calls:[]
+  },
+  'space1':{
+    title:'Space: dev / test / ci',badge:'CF SPACE — NON-PROD',bc:'#7a5fdd',
+    desc:'A CF Space is a logical boundary for resource isolation, quota enforcement, and role-based access within the Org. Real-world space names within a dev/test subaccount: "dev" (active development), "test" or "int" (integration testing), "ci" (CI/CD pipeline deployments), "uat" (user acceptance testing). Each space has its own service instances, routes, and bindings — but shares the same XSUAA tenant with other spaces in the same subaccount.',
+    contains:['App Definitions','Routes','XSUAA Instance (per space)','Destination Instance','Connectivity Instance','Real names: dev · test · int · ci · uat'],
+    calls:[]
+  },
+  'space2':{
+    title:'Space: staging / preprod',badge:'CF SPACE — PRE-PROD',bc:'#7a5fdd',
+    desc:'Staging/preprod spaces exist within the same subaccount for final validation. However — for true production isolation the industry best practice is a SEPARATE SUBACCOUNT (e.g. mycompany-prod). A separate subaccount gives: its own XSUAA tenant ID (separate token issuance), separate role collections, separate quotas, and separate service instances. Spaces within one subaccount share the same XSUAA tenant and admin boundaries. Real-world space names per environment: Non-prod subaccount → dev, test, int, ci, uat, staging. Prod subaccount → preprod, prod, hotfix.',
+    contains:['Own App Defs · Routes · Service Instances','⚠  Prod isolation: use a separate Subaccount','Separate subaccount = separate XSUAA tenant ID','Non-prod spaces: dev · test · int · ci · uat · staging','Prod spaces: preprod · prod · hotfix'],
+    calls:[]
+  },
+  'app-definitions':{
+    title:'App Definitions',badge:'CCDB RECORD',bc:'#7a5fdd',
+    desc:'The CF application specification stored as a record in CCDB. Not the running app — just the blueprint: name, buildpack, memory and disk limits, instance count, environment variables, health-check config.',
+    contains:[],
+    calls:[
+      {target:'CCDB',why:'App Definitions are records in CCDB. Cloud Controller reads them to know how to schedule container instances on Diego Cells.',color:'#185fa5'}
+    ]
+  },
+  'routes':{
+    title:'Routes',badge:'CCDB RECORD',bc:'#7a5fdd',
+    desc:'URL-to-app mappings stored in CCDB. Each route maps a hostname (and optional path prefix) to a CF app. GoRouter reads the route table to know where to send incoming HTTP requests.',
+    contains:[],
+    calls:[
+      {target:'GoRouter',why:'GoRouter polls/reads the route table from CCDB. When an HTTP request arrives, GoRouter matches the host+path and forwards to the mapped app container.',color:'#185fa5'}
+    ]
+  },
+  'xsuaa-instance':{
+    title:'XSUAA Instance',badge:'CF SERVICE INSTANCE',bc:'#3a7fd4',
+    desc:'A provisioned instance of the XSUAA service. It is a metadata record in CCDB (not a running server). When created, it registers a tenant + client in the actual XSUAA Server in SAP Global Infrastructure.',
+    contains:['Service Key (for external apps)','Service Binding (VCAP_SERVICES for CF apps)'],
+    calls:[
+      {target:'XSUAA Server (SAP Global Infra)',why:'Instance creation registers a client_id + secret in the real XSUAA OAuth server. Apps later use these to get JWT tokens.',color:'#185fa5'}
+    ]
+  },
+  'xsuaa-service-key':{
+    title:'Service Key (XSUAA)',badge:'CREDENTIAL ARTIFACT',bc:'#3a7fd4',
+    desc:'Credentials generated from the XSUAA Instance for use by external (non-CF) apps. Contains client_id, client_secret, and the XSUAA token URL. Used by external systems, CI/CD pipelines, Postman, or the Integration Suite.',
+    contains:[],
+    calls:[
+      {target:'XSUAA Server',why:'External app POSTs to /oauth/token with client_id + secret from this key to receive a JWT access token for authenticating API calls.',color:'#185fa5'}
+    ]
+  },
+  'xsuaa-service-binding':{
+    title:'Service Binding (XSUAA)',badge:'RUNTIME INJECTION',bc:'#3a7fd4',
+    desc:'Binds the XSUAA Instance to a CF app. CF injects the XSUAA credentials into VCAP_SERVICES at container startup. The CF app reads VCAP_SERVICES["xsuaa"] to discover the token endpoint and client credentials.',
+    contains:[],
+    calls:[
+      {target:'App Container (via VCAP_SERVICES)',why:'At container startup, CF reads this binding from CCDB and injects client_id, client_secret, and token URL into the app\'s VCAP_SERVICES env var.',color:'#993c1d'}
+    ]
+  },
+  'destination-instance':{
+    title:'Destination Instance',badge:'CF SERVICE INSTANCE',bc:'#5a9e22',
+    desc:'A provisioned instance of the SAP Destination service, stored as a record in CCDB. Backed by the Destination Server in SAP Global Infrastructure. Stores named remote connection configs: URL, auth type, proxy.',
+    contains:['Service Key (for external tools)','Service Binding (VCAP_SERVICES for CF apps)'],
+    calls:[
+      {target:'Destination Server (SAP Global Infra)',why:'At runtime, the app uses credentials from this instance to call the Destination REST API (GET /destinations/{name}) to fetch target URL and auth.',color:'#3b6d11'}
+    ]
+  },
+  'destination-service-key':{
+    title:'Service Key (Destination)',badge:'CREDENTIAL ARTIFACT',bc:'#5a9e22',
+    desc:'Credentials to access the Destination service from outside CF. Contains the Destination API URL and auth credentials. Used by external tools to manage destinations or fetch connection configs programmatically.',
+    contains:[],
+    calls:[
+      {target:'Destination Server',why:'External app authenticates with these credentials to read or write destination configurations (named connections to remote systems).',color:'#3b6d11'}
+    ]
+  },
+  'destination-service-binding':{
+    title:'Service Binding (Destination)',badge:'RUNTIME INJECTION',bc:'#5a9e22',
+    desc:'Binds the Destination Instance to a CF app. Injects Destination service credentials into VCAP_SERVICES["destination"]. The CF app uses these at runtime to call the Destination API and resolve target system URLs.',
+    contains:[],
+    calls:[
+      {target:'App Container (via VCAP_SERVICES)',why:'App reads VCAP_SERVICES["destination"] at startup to get the Destination service URL and auth credentials for runtime lookups.',color:'#993c1d'}
+    ]
+  },
+  'connectivity-instance':{
+    title:'Connectivity Instance',badge:'CF SERVICE INSTANCE',bc:'#993c1d',
+    desc:'A provisioned instance of the SAP Connectivity service. Backed by the Connectivity Server in SAP Global Infrastructure, which manages the secure tunnel to on-premise systems via Cloud Connector.',
+    contains:['Service Key (proxy URL + token for external)','Service Binding (VCAP_SERVICES for CF apps)'],
+    calls:[
+      {target:'Connectivity Server (SAP Global Infra)',why:'At runtime, apps send on-premise requests to the Connectivity proxy endpoint. The server forwards them through the Cloud Connector tunnel to the on-premise system.',color:'#993c1d'}
+    ]
+  },
+  'connectivity-service-key':{
+    title:'Service Key (Connectivity)',badge:'CREDENTIAL ARTIFACT',bc:'#993c1d',
+    desc:'Contains the Connectivity proxy URL and access token for external (non-CF) apps that need to route traffic through the Cloud Connector tunnel to on-premise systems.',
+    contains:[],
+    calls:[
+      {target:'Connectivity Server',why:'External app uses proxy URL + token to route HTTP requests through Connectivity. Server relays them via Cloud Connector tunnel to the target on-premise host.',color:'#993c1d'}
+    ]
+  },
+  'connectivity-service-binding':{
+    title:'Service Binding (Connectivity)',badge:'RUNTIME INJECTION',bc:'#993c1d',
+    desc:'Injects Connectivity proxy credentials into VCAP_SERVICES["connectivity"]. The CF app reads these at startup and configures its HTTP client proxy settings for routing on-premise bound traffic.',
+    contains:[],
+    calls:[
+      {target:'App Container (via VCAP_SERVICES)',why:'App reads VCAP_SERVICES["connectivity"] at startup to get the proxy host/port and token needed to tunnel on-premise requests.',color:'#993c1d'}
+    ]
+  },
+  'app-container':{
+    title:'App Container (Instance)',badge:'RUNNING APP',bc:'#993c1d',
+    desc:'A Linux container running one instance of a CF app, hosted on a Diego Cell VM. Receives HTTP traffic from GoRouter. At container startup, CF injects VCAP_SERVICES (from bindings in CCDB) so the app knows its service endpoints.',
+    contains:[],
+    calls:[
+      {target:'XSUAA Server',why:'At runtime: app calls XSUAA /oauth/token with client_id + secret (from VCAP_SERVICES). Gets a JWT token used to authenticate all outbound API calls.',color:'#185fa5'},
+      {target:'Destination Server',why:'At runtime: app calls Destination API with a destination name (e.g. "S4H_ORDERS"). Gets back URL + auth headers for the target system.',color:'#3b6d11'},
+      {target:'Connectivity Server',why:'For on-premise targets: app sends HTTP request to the Connectivity proxy endpoint. Server forwards it through the Cloud Connector tunnel to the on-premise system.',color:'#993c1d'}
+    ]
+  },
+  'diego-cells':{
+    title:'Diego Cell VMs',badge:'CF RUNTIME LAYER',bc:'#993c1d',
+    desc:'Linux VMs that physically host running app containers. Part of the CF Environment, shared across ALL spaces. The Diego Brain + Executor scheduler places app instances on cells using bin-packing — there are no dedicated cells per space.',
+    contains:['App Container instances (from any space in the org)'],
+    calls:[]
+  },
+  'integration-suite':{
+    title:'Integration Suite',badge:'SEPARATE SERVICE SUBSCRIPTION',bc:'#d4870f',
+    desc:'A separate SAP-managed service subscription within the subaccount. NOT inside the CF Environment — iFlows do NOT run on Diego Cells. Integration Suite has its own runtime: K8s pods in SAP Global Infrastructure.',
+    contains:['Design-time repository','Runtime Nodes (K8s / SAP)'],
+    calls:[
+      {target:'IS Runtime Nodes (SAP Global Infra)',why:'When a developer deploys an iFlow, Integration Suite pushes the artifact to the Runtime Nodes in SAP Global Infra for execution.',color:'#ba7517'}
+    ]
+  },
+  'design-time-repo':{
+    title:'Design-time Repository',badge:'IS COMPONENT',bc:'#d4870f',
+    desc:'Where integration developers design, configure, and version iFlow artifacts. Acts as the source store. When an iFlow is deployed, it is pushed from here to the IS Runtime Nodes for execution.',
+    contains:[],
+    calls:[
+      {target:'Runtime Nodes (K8s / SAP)',why:'Deploy action packages the iFlow artifact and sends it to the Runtime Nodes (K8s pods in SAP Global Infra) for execution.',color:'#ba7517'}
+    ]
+  },
+  'runtime-nodes-is':{
+    title:'Runtime Nodes (K8s / SAP)',badge:'IS COMPONENT',bc:'#d4870f',
+    desc:'The IS-side reference to K8s pods in SAP Global Infrastructure where iFlows execute. NOT Diego Cells. Runs Apache Camel OSGi bundles. Corresponds to the "IS Runtime Nodes" box in the amber SAP Global Infra column.',
+    contains:[],
+    calls:[
+      {target:'IS Runtime Nodes (SAP Global Infra)',why:'These are the same pods — the IS design-time view references the actual running Camel containers in SAP Global Infrastructure.',color:'#ba7517'}
+    ]
+  },
+  'sap-global-infra':{
+    title:'SAP Global Infrastructure',badge:'SAP MANAGED · MULTI-TENANT',bc:'#d4870f',
+    desc:'SAP-managed shared infrastructure hosting core BTP platform services. All BTP customers share the same server infrastructure, isolated per tenant by tenant ID and client ID.',
+    contains:['XSUAA Server (OAuth 2.0 / OIDC)','Destination Server (connection configs)','Connectivity Server (on-premise tunnel)','IS Runtime Nodes (K8s / Camel)','iFlow Instances'],
+    calls:[]
+  },
+  'xsuaa-server':{
+    title:'XSUAA Server',badge:'SAP GLOBAL INFRA · OAUTH SERVER',bc:'#3a7fd4',
+    desc:'The actual OAuth 2.0 / OIDC authorization server. Shared across all SAP BTP customers, isolated by tenant ID + client ID. Issues signed JWT access tokens. All CF apps and iFlows that need to authenticate outbound calls come here first.',
+    contains:[],
+    calls:[
+      {target:'Called BY: App Container',why:'At runtime, app sends POST /oauth/token with client_id + secret (from VCAP_SERVICES). XSUAA issues a signed JWT for authenticating downstream API calls.',color:'#185fa5'},
+      {target:'Called BY: iFlow Instances',why:'iFlows call XSUAA to get OAuth tokens for authenticating calls to target APIs (e.g. SAP S/4HANA, SAP SuccessFactors).',color:'#185fa5'}
+    ]
+  },
+  'destination-server':{
+    title:'Destination Server',badge:'SAP GLOBAL INFRA · CONNECTION STORE',bc:'#5a9e22',
+    desc:'The backend for the SAP Destination service. Stores named remote connection configs: target URL, authentication type (BasicAuth, OAuth2, ...), and proxy settings. Multi-tenant, isolated per service instance.',
+    contains:[],
+    calls:[
+      {target:'Called BY: App Container',why:'App calls GET /destinations/{name} to fetch the full connection config for a named target system (URL + auth headers) before making the outbound call.',color:'#3b6d11'},
+      {target:'Called BY: iFlow Instances',why:'iFlows resolve destination configs to find target system base URLs and authentication setup for outbound calls.',color:'#3b6d11'}
+    ]
+  },
+  'connectivity-server':{
+    title:'Connectivity Server',badge:'SAP GLOBAL INFRA · TUNNEL BROKER',bc:'#993c1d',
+    desc:'The cloud-side endpoint of the Cloud Connector tunnel. Receives on-premise bound requests from CF apps and iFlows, then relays them through the persistent HTTPS tunnel maintained by the Cloud Connector agent in the customer network.',
+    contains:[],
+    calls:[
+      {target:'Cloud Connector (on-premise)',why:'Cloud Connector maintains a persistent outbound HTTPS tunnel to this server. Connectivity Server relays incoming on-premise requests through this tunnel to the target internal system.',color:'#993c1d'},
+      {target:'Called BY: App Container / iFlows',why:'Apps send on-premise requests to the Connectivity proxy URL. Server uses the Cloud Connector tunnel to forward them to the on-premise host.',color:'#993c1d'}
+    ]
+  },
+  'is-runtime-nodes':{
+    title:'IS Runtime Nodes',badge:'SAP GLOBAL INFRA · K8S PODS',bc:'#d4870f',
+    desc:'K8s pods managed by SAP that run the Apache Camel OSGi runtime. This is where deployed iFlows execute. Located in SAP Global Infrastructure, completely separate from the customer\'s CF Diego Cells.',
+    contains:['iFlow Instances (running Camel bundles)'],
+    calls:[
+      {target:'iFlow Instances',why:'IS Runtime Nodes host and execute the deployed iFlow artifacts. Each iFlow runs as an OSGi bundle inside the Camel container.',color:'#ba7517'}
+    ]
+  },
+  'iflow-instances':{
+    title:'iFlow Instances',badge:'SAP GLOBAL INFRA · RUNNING IFLOWS',bc:'#d4870f',
+    desc:'Deployed and running iFlow integration logic, executing on IS Runtime Nodes (Apache Camel OSGi). Each iFlow processes messages: routing, mapping, enrichment, protocol conversion.',
+    contains:[],
+    calls:[
+      {target:'XSUAA Server',why:'iFlows call XSUAA /oauth/token to obtain access tokens for authenticating calls to target systems (e.g. SAP S/4HANA APIs require a valid JWT).',color:'#185fa5'},
+      {target:'Destination Server',why:'iFlows look up Destination configs to resolve the target system URL and authentication details before making outbound HTTP calls.',color:'#3b6d11'},
+      {target:'Connectivity Server',why:'For on-premise targets, iFlows route HTTP requests through the Connectivity proxy → Cloud Connector tunnel → on-premise system.',color:'#993c1d'}
+    ]
+  },
+  'cloud-connector':{
+    title:'Cloud Connector (On-Premise)',badge:'CUSTOMER NETWORK · OUTSIDE BTP',bc:'#993c1d',
+    desc:'A Java agent installed in the customer\'s on-premise network, completely outside SAP BTP. It creates a persistent outbound HTTPS tunnel to the Connectivity Server — no inbound firewall rules are needed. Routes RFC, HTTP, and LDAP traffic to internal systems.',
+    contains:[],
+    calls:[
+      {target:'Connectivity Server (SAP Global Infra)',why:'Cloud Connector initiates a persistent outbound HTTPS connection to the Connectivity Server. The server uses this tunnel to relay on-premise bound requests from CF apps and iFlows.',color:'#993c1d'},
+      {target:'On-Premise Systems (SAP ERP, databases, etc.)',why:'Cloud Connector forwards relayed requests to configured internal hosts via RFC, HTTP, or LDAP — as defined in Cloud Connector\'s access control list.',color:'#993c1d'}
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════
+//  RENDER DETAILS
+// ═══════════════════════════════════════════════
+let activeBox = null;
+
+function showBox(id) {
+  const data = BOX[id];
+  if (!data) return;
+
+  // Highlight active
+  document.querySelectorAll('.bx.sel').forEach(el => el.classList.remove('sel'));
+  // Find the <g> with onclick containing id and mark it
+  document.querySelectorAll('.bx').forEach(g => {
+    if (g.getAttribute('onclick') === `showBox('${id}')`) g.classList.add('sel');
+  });
+  activeBox = id;
+
+  document.getElementById('detPlaceholder').style.display = 'none';
+  const content = document.getElementById('detContent');
+  content.style.display = 'block';
+
+  let html = `<div class="det-title">${data.title}</div>`;
+  html += `<span class="det-badge" style="color:${data.bc};border-color:${data.bc}">${data.badge}</span>`;
+  html += `<div class="det-desc">${data.desc}</div>`;
+
+  if (data.contains && data.contains.length) {
+    html += `<div class="det-lbl">Contains / Hosts</div>`;
+    html += `<div class="det-contains">`;
+    data.contains.forEach(c => { html += `<span class="det-tag">${c}</span>`; });
+    html += `</div>`;
+  }
+
+  if (data.calls && data.calls.length) {
+    html += `<div class="det-lbl">${data.calls.some(c=>c.target.startsWith('Called')) ? 'Relationships' : 'Calls / References'}</div>`;
+    data.calls.forEach(c => {
+      html += `<div class="conn-item" style="border-left-color:${c.color}">
+        <div class="conn-arrow" style="color:${c.color}">→</div>
+        <div>
+          <div class="conn-name">${c.target}</div>
+          <div class="conn-why">${c.why}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  content.innerHTML = html;
+  // Scroll details panel to top
+  document.getElementById('detPanel').scrollTop = 0;
+}
+
+// ═══════════════════════════════════════════════
+//  ZOOM
+// ═══════════════════════════════════════════════
+let zoom = 1.0;
+function applyZoom() {
+  const w = document.getElementById('svgWrapper');
+  w.style.transform = `scale(${zoom})`;
+  w.style.transformOrigin = 'top left';
+  document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
+}
+function zoomIn() { zoom = Math.min(2.5, +(zoom + 0.1).toFixed(1)); applyZoom(); }
+function zoomOut() { zoom = Math.max(0.3, +(zoom - 0.1).toFixed(1)); applyZoom(); }
+function zoomReset() { zoom = 1.0; applyZoom(); }
+
+// ═══════════════════════════════════════════════
+//  IMAGE SECTION
+// ═══════════════════════════════════════════════
+const images = [];
+
+function toggleImages() {
+  const tog = document.getElementById('imgToggle');
+  const body = document.getElementById('imgBody');
+  tog.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+function handleFiles(files) {
+  Array.from(files).forEach(f => {
+    if (!f.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      images.push({src: e.target.result, name: f.name});
+      renderImages();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function renderImages() {
+  const grid = document.getElementById('imgGrid');
+  const count = document.getElementById('imgCount');
+  grid.innerHTML = '';
+  images.forEach((img, i) => {
+    const el = document.createElement('img');
+    el.className = 'img-thumb';
+    el.src = img.src;
+    el.title = img.name;
+    el.onclick = () => { const w = window.open(); w.document.write(`<img src="${img.src}" style="max-width:100%;background:#000">`); };
+    grid.appendChild(el);
+  });
+  count.textContent = images.length ? `(${images.length})` : '';
+}
+
+// Drag and drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='#5a5fdd'; });
+dz.addEventListener('dragleave', () => { dz.style.borderColor=''; });
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.style.borderColor = '';
+  handleFiles(e.dataTransfer.files);
+});
+</script>
+</body>
+</html>

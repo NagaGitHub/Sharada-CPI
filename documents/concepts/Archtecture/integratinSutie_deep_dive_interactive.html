@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Integration Suite Deep Dive — Interactive</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{display:flex;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;height:100vh;overflow:hidden}
+
+/* ── Diagram panel ── */
+#diagram-area{flex:0 0 55%;min-width:280px;height:100vh;overflow:hidden;background:#0d1117;border-right:1px solid #21262d;display:flex;flex-direction:column}
+#diagram-toolbar{flex-shrink:0;display:flex;align-items:center;padding:5px 10px;background:#0d1117;border-bottom:1px solid #21262d;gap:8px}
+.tb-pill{display:inline-flex;align-items:center;border:1px solid #30363d;border-radius:5px;overflow:hidden;background:#161b22}
+.tb-btn{background:none;border:none;color:#6e7681;cursor:pointer;padding:4px 11px;font-size:15px;line-height:1.4}
+.tb-btn:hover{background:#21262d;color:#e6edf3}
+.tb-btn.active{background:#0a2a1e;color:#4fc98f}
+.tb-sep{font-size:10px;color:#6e7681;padding:3px 9px;border-left:1px solid #30363d;border-right:1px solid #30363d;white-space:nowrap}
+.collapsed .sub-box{display:none}
+#diagram-scroll{flex:1;min-height:0;overflow:auto}
+#diagram-scroll svg{display:block;width:100%;height:auto}
+#diagram-scroll::-webkit-scrollbar{width:7px;height:7px}
+#diagram-scroll::-webkit-scrollbar-track{background:#161b22;border-radius:3px}
+#diagram-scroll::-webkit-scrollbar-thumb{border-radius:3px}
+#diagram-scroll::-webkit-scrollbar-thumb:vertical{background:#1d6e5a}
+#diagram-scroll::-webkit-scrollbar-thumb:vertical:hover{background:#1d9e75}
+#diagram-scroll::-webkit-scrollbar-thumb:horizontal{background:#185fa5}
+#diagram-scroll::-webkit-scrollbar-thumb:horizontal:hover{background:#378add}
+#diagram-scroll::-webkit-scrollbar-corner{background:#161b22}
+/* resizer */
+#resizer{flex:0 0 5px;background:#21262d;cursor:col-resize;transition:background .2s;z-index:10;flex-shrink:0}
+#resizer:hover,#resizer.dragging{background:#378add}
+
+/* ── Detail panel ── */
+#detail-panel{flex:1;display:flex;flex-direction:column;background:#161b22;overflow:hidden;min-width:280px}
+#detail-header{padding:16px 20px 12px;border-bottom:1px solid #30363d;flex-shrink:0}
+#detail-title{font-size:16px;font-weight:700;color:#e6edf3;margin-bottom:4px}
+#detail-subtitle{font-size:11px;color:#6e7681}
+
+/* ── Flow sequence strip ── */
+#strip-wrap{padding:12px 20px;border-bottom:1px solid #30363d;overflow-x:auto;flex-shrink:0;background:#0d1117}
+#strip-wrap::-webkit-scrollbar{height:4px}
+#strip-wrap::-webkit-scrollbar-track{background:#0d1117;border-radius:2px}
+#strip-wrap::-webkit-scrollbar-thumb{background:#ba7517;border-radius:2px}
+#strip-wrap::-webkit-scrollbar-thumb:hover{background:#f0a442}
+.strip-row{display:flex;align-items:center;gap:0;white-space:nowrap;margin-bottom:6px}
+.strip-label{font-size:9px;color:#6e7681;font-weight:600;text-transform:uppercase;letter-spacing:.5px;min-width:55px;flex-shrink:0}
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:4px;font-size:10px;color:#6e7681;background:#1f2937;border:1px solid #30363d;cursor:pointer;transition:none;white-space:nowrap}
+.s-pill.t-active{background:#0a2a1e;border-color:#1d9e75;color:#4fc98f;font-weight:600}
+.s-pill.d-active{background:#2a1500;border-color:#ba7517;color:#f0a442;font-weight:600}
+.s-pill .step-badge{font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px;color:white}
+.s-pill.t-active .step-badge{background:#0f6e56}
+.s-pill.d-active .step-badge{background:#ba7517}
+.s-pill:not(.t-active):not(.d-active) .step-badge{background:#30363d}
+.s-arrow{color:#30363d;padding:0 3px;font-size:10px}
+
+/* ── Detail body ── */
+#detail-body{padding:14px 20px;overflow-y:auto;overflow-x:auto;flex:1}
+#detail-body::-webkit-scrollbar{width:5px}
+#detail-body::-webkit-scrollbar-track{background:#161b22;border-radius:2px}
+#detail-body::-webkit-scrollbar-thumb{background:#4a9ee6;border-radius:2px}
+#detail-body::-webkit-scrollbar-thumb:hover{background:#7ba7ff}
+.desc-box{font-size:12.5px;color:#8b949e;line-height:1.65;padding:11px 13px;background:#0d1117;border-radius:6px;margin-bottom:14px;border:1px solid #21262d}
+.section-label{font-size:10px;font-weight:600;color:#6e7681;text-transform:uppercase;letter-spacing:.7px;margin:14px 0 7px;display:flex;align-items:center;gap:6px}
+.section-label::after{content:'';flex:1;height:1px;background:#21262d}
+.conn-row{display:flex;gap:10px;margin-bottom:8px;padding:10px 12px;border-radius:6px;border-left:3px solid #30363d;background:#0d1117;min-width:460px}
+.conn-row.calls{border-left-color:#1d9e75}
+.conn-row.calledby{border-left-color:#185fa5}
+.conn-target{font-size:11.5px;font-weight:600;color:#e6edf3;min-width:160px;line-height:1.45;flex-shrink:0}
+.conn-reason{font-size:11.5px;color:#8b949e;line-height:1.55}
+.no-conn{font-size:12px;color:#6e7681;padding:3px 0}
+#placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#6e7681;font-size:13px;gap:10px;text-align:center;line-height:1.8}
+
+/* ── SVG clickable groups ── */
+.cbox{cursor:pointer}
+.cbox:hover>rect:first-of-type,.cbox:hover>rect:first-child{opacity:.82}
+.cbox.active>rect:first-of-type,.cbox.active>rect:first-child{stroke-width:2.8px!important}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ DIAGRAM ════════════════ -->
+<div id="diagram-area">
+<div id="diagram-toolbar">
+  <div class="tb-pill">
+    <button id="btn-expand" class="tb-btn active" title="Overview — show boundary boxes only">←</button>
+    <span class="tb-sep" id="tb-label">Overview</span>
+    <button id="btn-collapse" class="tb-btn" title="Detailed — show all components">→</button>
+  </div>
+</div>
+<div id="diagram-scroll">
+<svg viewBox="0 0 1080 1000" xmlns="http://www.w3.org/2000/svg">
+<style>
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11px;fill:#e6edf3}
+  .xs{font-size:11px;fill:#8b949e}
+  .ttl{font-size:13px;font-weight:700}
+  .bnd{font-size:16px;font-weight:700}
+  .bgt{font-size:8px;font-weight:700;fill:#fff}
+</style>
+<defs>
+  <marker id="ia" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4a9ee6"/></marker>
+  <marker id="pa" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#9b91e8"/></marker>
+  <marker id="ra" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b949e"/></marker>
+</defs>
+
+<!-- helper macro: step badge at top-left of a box -->
+<!-- D badge = amber #ba7517, T badge = teal #0f6e56 -->
+
+<!-- ══ CF ENV / SPACE ══ -->
+<g class="cbox" onclick="show('cf_space')">
+  <rect x="8" y="8" width="178" height="412" rx="10" fill="none" stroke="#3b6d11" stroke-width="1.5" stroke-dasharray="7,4"/>
+  <text x="97" y="26" text-anchor="middle" class="bnd" fill="#5ab347">CF Env → Space</text>
+  <!-- Purpose heading: why this section exists -->
+  <rect x="16" y="36" width="162" height="20" rx="3" fill="#0b200f" stroke="#3b6d11" stroke-width="0.8"/>
+  <text x="97" y="49" text-anchor="middle" font-size="7.5" font-weight="700" fill="#4fc98f" letter-spacing="0.4">IS SERVICE DEPENDENCIES</text>
+  <text x="97" y="66" text-anchor="middle" font-size="7" fill="#6e7681">IS binds these CF instances at startup</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('xsuaa_instance')">
+  <rect x="18" y="76" width="158" height="72" rx="7" fill="#0d1b35" stroke="#185fa5" stroke-width="1.3"/>
+  <text x="97" y="95" text-anchor="middle" class="ttl" fill="#4a9ee6">XSUAA Instance</text>
+  <text x="97" y="108" text-anchor="middle" class="xs">OAuth 2.0 / OIDC · issues tokens</text>
+  <text x="97" y="121" text-anchor="middle" class="xs">validates Bearer tokens</text>
+  <text x="97" y="134" text-anchor="middle" class="xs">IS binds to this CF instance</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('dest_instance')">
+  <rect x="18" y="160" width="158" height="72" rx="7" fill="#0d2010" stroke="#3b6d11" stroke-width="1.3"/>
+  <text x="97" y="179" text-anchor="middle" class="ttl" fill="#5ab347">Destination Instance</text>
+  <text x="97" y="192" text-anchor="middle" class="xs">named connection configs</text>
+  <text x="97" y="205" text-anchor="middle" class="xs">URL · auth · proxy settings</text>
+  <text x="97" y="218" text-anchor="middle" class="xs">IS calls by destination name</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('conn_instance')">
+  <rect x="18" y="244" width="158" height="72" rx="7" fill="#2a0d08" stroke="#993c1d" stroke-width="1.3"/>
+  <text x="97" y="263" text-anchor="middle" class="ttl" fill="#e06b3a">Connectivity Instance</text>
+  <text x="97" y="276" text-anchor="middle" class="xs">on-premise secure tunnel</text>
+  <text x="97" y="289" text-anchor="middle" class="xs">via Cloud Connector</text>
+  <text x="97" y="302" text-anchor="middle" class="xs">RFC · HTTP · LDAP</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('pi_runtime')">
+  <rect x="18" y="328" width="158" height="84" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.3"/>
+  <text x="97" y="347" text-anchor="middle" class="ttl" fill="#9b91e8">PI Runtime Instance</text>
+  <text x="97" y="360" text-anchor="middle" class="xs">CF service instance</text>
+  <text x="97" y="373" text-anchor="middle" class="xs">lets CF apps call IS APIs</text>
+  <text x="97" y="386" text-anchor="middle" class="xs">inbound: CF app → IS</text>
+  <text x="97" y="399" text-anchor="middle" class="xs">creds injected via binding</text>
+</g>
+
+<!-- External actors label -->
+<text x="85" y="458" text-anchor="middle" font-size="8" fill="#6e7681">— external actors —</text>
+
+<!-- External Caller -->
+<g class="cbox" onclick="show('external_caller')">
+  <rect x="8" y="464" width="158" height="64" rx="7" fill="#1a1f28" stroke="#5f5e5a" stroke-width="1.3"/>
+  <rect class="sub-box" x="14" y="470" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text class="sub-box bgt" x="25" y="480" text-anchor="middle">T1</text>
+  <rect class="sub-box" x="39" y="470" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text class="sub-box bgt" x="50" y="480" text-anchor="middle">T8</text>
+  <text x="85" y="488" text-anchor="middle" class="ttl">External Caller</text>
+  <text x="85" y="502" text-anchor="middle" class="xs">Postman / App / System</text>
+  <text x="85" y="516" text-anchor="middle" class="xs">HTTPS POST to iFlow endpoint</text>
+</g>
+
+<!-- ══ IS TENANT boundary ══ -->
+<rect x="198" y="8" width="874" height="975" rx="12" fill="none" stroke="#1d9e75" stroke-width="2" stroke-dasharray="8,4"/>
+<text x="635" y="27" text-anchor="middle" class="bnd" fill="#1d9e75">Integration Suite Tenant  (SAP managed · K8s pods)</text>
+<text x="635" y="42" text-anchor="middle" font-size="10" font-style="italic" fill="#1d9e75" opacity="0.75">SAP's managed integration platform — runs iFlows · exposes HTTPS endpoints · connects cloud and on-premise systems</text>
+
+<!-- DEVELOPER — top-centre of IS Tenant · D1 badge (y moved to 46 to give room for Why line) -->
+<g class="cbox" onclick="show('developer')">
+  <rect x="511" y="50" width="248" height="64" rx="8" fill="#1a1f28" stroke="#1d9e75" stroke-width="1.8"/>
+  <rect class="sub-box" x="517" y="55" width="22" height="14" rx="3" fill="#ba7517"/>
+  <text class="sub-box bgt" x="528" y="65" text-anchor="middle">D1</text>
+  <text x="635" y="74" text-anchor="middle" class="ttl">Developer (via Browser)</text>
+  <text x="635" y="87" text-anchor="middle" class="xs">accesses Integration Suite Web UI</text>
+  <text x="635" y="100" text-anchor="middle" class="xs">design · deploy · monitor iFlows</text>
+</g>
+
+<!-- ══ TMN ══ -->
+<g class="cbox" onclick="show('tmn')">
+  <rect x="212" y="102" width="248" height="260" rx="9" fill="#0a1f18" stroke="#0f6e56" stroke-width="1.5"/>
+  <text x="336" y="119" text-anchor="middle" class="ttl" fill="#4fc98f">TMN — Tenant Management Node</text>
+  <text x="336" y="133" text-anchor="middle" font-size="9.5" font-style="italic" fill="#4fc98f" opacity="0.75">developer entry point</text>
+  <text x="336" y="147" text-anchor="middle" font-size="9.5" font-style="italic" fill="#4fc98f" opacity="0.75">design · deploy · monitor iFlows via Web UI</text>
+</g>
+
+<!-- Integration Package · D2 badge -->
+<g class="sub-box cbox" onclick="show('integration_package')">
+  <rect x="222" y="158" width="228" height="68" rx="7" fill="#0d2920" stroke="#0f6e56" stroke-width="1.2"/>
+  <rect x="228" y="163" width="22" height="14" rx="3" fill="#ba7517"/>
+  <text x="239" y="173" text-anchor="middle" class="bgt">D2</text>
+  <text x="336" y="187" text-anchor="middle" class="ttl" fill="#4fc98f">Integration Package</text>
+  <text x="336" y="201" text-anchor="middle" class="xs">groups iFlow artifacts · versioned</text>
+  <text x="336" y="213" text-anchor="middle" class="xs">import / export / transport across envs</text>
+</g>
+
+<!-- iFlow Artifact · D3 badge -->
+<g class="sub-box cbox" onclick="show('iflow_artifact')">
+  <rect x="222" y="236" width="228" height="62" rx="7" fill="#0a1f18" stroke="#0f6e56" stroke-width="1.2"/>
+  <rect x="228" y="241" width="22" height="14" rx="3" fill="#ba7517"/>
+  <text x="239" y="251" text-anchor="middle" class="bgt">D3</text>
+  <text x="336" y="265" text-anchor="middle" class="ttl" fill="#4fc98f">iFlow Artifact</text>
+  <text x="336" y="279" text-anchor="middle" class="xs">XML definition: steps · adapters · mappings</text>
+  <text x="336" y="292" text-anchor="middle" class="xs">definition only — not running until deployed</text>
+</g>
+
+<!-- Deploy Action · D4 badge -->
+<g class="sub-box cbox" onclick="show('deploy_action')">
+  <rect x="222" y="310" width="228" height="44" rx="7" fill="#2a1500" stroke="#ba7517" stroke-width="1.8"/>
+  <rect x="228" y="315" width="22" height="14" rx="3" fill="#ba7517"/>
+  <text x="239" y="325" text-anchor="middle" class="bgt">D4</text>
+  <text x="336" y="335" text-anchor="middle" class="ttl" fill="#f0a442">Deploy Action</text>
+  <text x="336" y="348" text-anchor="middle" class="xs">user clicks Deploy → artifact pushed to Worker Node</text>
+</g>
+
+<!-- ══ MONITORING ══ -->
+<g class="cbox" onclick="show('monitoring')">
+  <rect x="212" y="376" width="248" height="603" rx="9" fill="#130e28" stroke="#534ab7" stroke-width="1.5"/>
+  <text x="336" y="393" text-anchor="middle" class="bnd" fill="#9b91e8">Monitoring / Operations</text>
+  <text x="336" y="405" text-anchor="middle" font-size="9.5" font-style="italic" fill="#9b91e8" opacity="0.75">visibility layer</text>
+  <text x="336" y="418" text-anchor="middle" font-size="9.5" font-style="italic" fill="#9b91e8" opacity="0.75">executions logged, traced and alerted</text>
+</g>
+
+<!-- MPL · T7 badge -->
+<g class="sub-box cbox" onclick="show('mpl')">
+  <rect x="222" y="430" width="228" height="68" rx="7" fill="#1e1640" stroke="#534ab7" stroke-width="1.2"/>
+  <rect x="228" y="435" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text x="239" y="445" text-anchor="middle" class="bgt">T7</text>
+  <text x="336" y="459" text-anchor="middle" class="ttl" fill="#9b91e8">MPL — Message Processing Log</text>
+  <text x="336" y="473" text-anchor="middle" class="xs">1 entry per message · status · duration</text>
+  <text x="336" y="486" text-anchor="middle" class="xs">sender · receiver · timestamp</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('data_store')">
+  <rect x="222" y="508" width="228" height="56" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.2"/>
+  <text x="336" y="525" text-anchor="middle" class="ttl" fill="#9b91e8">Data Store</text>
+  <text x="336" y="539" text-anchor="middle" class="xs">persist messages / variables across runs</text>
+  <text x="336" y="552" text-anchor="middle" class="xs">tenant-level temporary storage</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('jms_queue')">
+  <rect x="222" y="574" width="228" height="56" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.2"/>
+  <text x="336" y="591" text-anchor="middle" class="ttl" fill="#9b91e8">JMS Queue</text>
+  <text x="336" y="605" text-anchor="middle" class="xs">async messaging · decouples sender/receiver</text>
+  <text x="336" y="618" text-anchor="middle" class="xs">retry / dead-letter handling</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('trace_logs')">
+  <rect x="222" y="640" width="228" height="56" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.2"/>
+  <text x="336" y="657" text-anchor="middle" class="ttl" fill="#9b91e8">Trace / Debug Logs</text>
+  <text x="336" y="671" text-anchor="middle" class="xs">step-by-step payload trace</text>
+  <text x="336" y="684" text-anchor="middle" class="xs">enable per iFlow · temporary</text>
+</g>
+
+<!-- Deploy Status · D6 badge -->
+<g class="sub-box cbox" onclick="show('deploy_status')">
+  <rect x="222" y="706" width="228" height="56" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.2"/>
+  <rect x="228" y="711" width="22" height="14" rx="3" fill="#ba7517"/>
+  <text x="239" y="721" text-anchor="middle" class="bgt">D6</text>
+  <text x="336" y="734" text-anchor="middle" class="ttl" fill="#9b91e8">Deploy Status</text>
+  <text x="336" y="748" text-anchor="middle" class="xs">Started / Error / Undeployed</text>
+  <text x="336" y="761" text-anchor="middle" class="xs">visible in TMN Monitor tab</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('alerts')">
+  <rect x="222" y="772" width="228" height="56" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.2"/>
+  <text x="336" y="789" text-anchor="middle" class="ttl" fill="#9b91e8">Alerts / Error Handling</text>
+  <text x="336" y="803" text-anchor="middle" class="xs">notify on failure · retry policies</text>
+  <text x="336" y="816" text-anchor="middle" class="xs">dead-letter routing</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('security_monitor')">
+  <rect x="222" y="838" width="228" height="56" rx="7" fill="#130e28" stroke="#534ab7" stroke-width="1.2"/>
+  <text x="336" y="855" text-anchor="middle" class="ttl" fill="#9b91e8">Security Monitor</text>
+  <text x="336" y="869" text-anchor="middle" class="xs">audit log · user access log</text>
+  <text x="336" y="882" text-anchor="middle" class="xs">system log for tenant</text>
+</g>
+
+<!-- ══ WORKER NODE ══ -->
+<g class="cbox" onclick="show('worker')">
+  <rect x="474" y="120" width="588" height="858" rx="9" fill="#0d1f38" stroke="#185fa5" stroke-width="1.5"/>
+  <text x="768" y="140" text-anchor="middle" class="ttl" fill="#4a9ee6">Worker Node  (JVM · K8s pod · SAP managed · scales horizontally)</text>
+  <text x="768" y="154" text-anchor="middle" font-size="10" font-style="italic" fill="#4a9ee6" opacity="0.75">IS runtime host — Apache Camel executes all iFlow logic here, NOT on CF Diego Cells</text>
+</g>
+
+<!-- Integration Engine · D5 + T3 badges -->
+<g class="sub-box cbox" onclick="show('integration_engine')">
+  <rect x="486" y="162" width="564" height="92" rx="7" fill="#0d2040" stroke="#185fa5" stroke-width="1.3"/>
+  <rect x="492" y="167" width="22" height="14" rx="3" fill="#ba7517"/>
+  <text x="503" y="177" text-anchor="middle" class="bgt">D5</text>
+  <rect x="517" y="167" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text x="528" y="177" text-anchor="middle" class="bgt">T3</text>
+  <text x="768" y="192" text-anchor="middle" class="ttl" fill="#4a9ee6">Integration Engine  (Apache Camel runtime)</text>
+  <text x="768" y="207" text-anchor="middle" class="xs">compiles deployed iFlow → Camel routes + exchanges</text>
+  <text x="768" y="221" text-anchor="middle" class="xs">manages message lifecycle · routing · error handling · one engine per worker</text>
+  <text x="768" y="235" text-anchor="middle" class="xs">handles all deployed iFlows on this worker · scales to multiple workers for HA</text>
+</g>
+
+<!-- Deployed iFlow boundary -->
+<g class="sub-box cbox" onclick="show('deployed_iflow')">
+  <rect x="486" y="256" width="564" height="712" rx="8" fill="none" stroke="#378add" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="768" y="273" text-anchor="middle" font-size="10" fill="#4a9ee6" font-weight="600">Deployed iFlow  (Started · HTTPS endpoint: https://{tenant}/http/{path})</text>
+</g>
+
+<!-- Sender Adapter · T2 badge -->
+<g class="sub-box cbox" onclick="show('sender_adapter')">
+  <rect x="496" y="282" width="198" height="80" rx="7" fill="#0d1b35" stroke="#185fa5" stroke-width="1.3"/>
+  <rect x="502" y="287" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text x="513" y="297" text-anchor="middle" class="bgt">T2</text>
+  <text x="595" y="313" text-anchor="middle" class="ttl" fill="#4a9ee6">Sender Adapter  (HTTPS)</text>
+  <text x="595" y="327" text-anchor="middle" class="xs">exposes HTTPS endpoint URL</text>
+  <text x="595" y="340" text-anchor="middle" class="xs">validates Bearer token via XSUAA</text>
+  <text x="595" y="353" text-anchor="middle" class="xs">also: SOAP · SFTP · IDoc · JMS</text>
+</g>
+<!-- connector arrow inside iFlow -->
+<line class="sub-box" x1="595" y1="362" x2="595" y2="380" stroke="#4a9ee6" stroke-width="1.2" marker-end="url(#ia)"/>
+
+<!-- Processing Steps · T4 badge -->
+<g class="sub-box cbox" onclick="show('processing_steps')">
+  <rect x="496" y="382" width="198" height="118" rx="7" fill="#140f2a" stroke="#534ab7" stroke-width="1.3"/>
+  <rect x="502" y="387" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text x="513" y="397" text-anchor="middle" class="bgt">T4</text>
+  <text x="595" y="413" text-anchor="middle" class="ttl" fill="#9b91e8">Processing Steps</text>
+  <text x="595" y="427" text-anchor="middle" class="xs">Mapping · Script (Groovy/JS)</text>
+  <text x="595" y="440" text-anchor="middle" class="xs">Router · Filter · Splitter</text>
+  <text x="595" y="453" text-anchor="middle" class="xs">Content Enricher · Validator</text>
+  <text x="595" y="466" text-anchor="middle" class="xs">Exception Sub-process</text>
+  <text x="595" y="490" text-anchor="middle" class="xs">calls CF service instances as needed →</text>
+</g>
+<line class="sub-box" x1="595" y1="500" x2="595" y2="518" stroke="#9b91e8" stroke-width="1.2" marker-end="url(#pa)"/>
+
+<!-- Receiver Adapter · T5 badge -->
+<g class="sub-box cbox" onclick="show('receiver_adapter')">
+  <rect x="496" y="520" width="198" height="80" rx="7" fill="#0d1b35" stroke="#185fa5" stroke-width="1.3"/>
+  <rect x="502" y="525" width="22" height="14" rx="3" fill="#0f6e56"/>
+  <text x="513" y="535" text-anchor="middle" class="bgt">T5</text>
+  <text x="595" y="550" text-anchor="middle" class="ttl" fill="#4a9ee6">Receiver Adapter</text>
+  <text x="595" y="564" text-anchor="middle" class="xs">RFC · OData · REST · SOAP</text>
+  <text x="595" y="577" text-anchor="middle" class="xs">AS2 · Mail · JDBC · SFTP</text>
+  <text x="595" y="590" text-anchor="middle" class="xs">calls target using Destination + Connectivity</text>
+</g>
+
+<!-- CF Service Instances ref box -->
+<g class="sub-box cbox" onclick="show('cf_service_box')">
+  <rect x="710" y="282" width="330" height="266" rx="8" fill="none" stroke="#3b6d11" stroke-width="1.4" stroke-dasharray="5,3"/>
+  <text x="875" y="299" text-anchor="middle" font-size="10" fill="#5ab347" font-weight="600">CF Space Service Instances  (same subaccount)</text>
+  <text x="875" y="312" text-anchor="middle" class="xs">IS Worker binds to these at runtime</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('xsuaa_instance')">
+  <rect x="720" y="320" width="308" height="52" rx="6" fill="#0d1b35" stroke="#185fa5" stroke-width="1.2"/>
+  <text x="874" y="338" text-anchor="middle" class="ttl" fill="#4a9ee6">XSUAA Instance</text>
+  <text x="874" y="352" text-anchor="middle" class="xs">fetch OAuth token · validate inbound Bearer token</text>
+  <text x="874" y="364" text-anchor="middle" class="xs">Sender Adapter calls this for T2 validation</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('dest_instance')">
+  <rect x="720" y="382" width="308" height="52" rx="6" fill="#0d2010" stroke="#3b6d11" stroke-width="1.2"/>
+  <text x="874" y="400" text-anchor="middle" class="ttl" fill="#5ab347">Destination Instance</text>
+  <text x="874" y="414" text-anchor="middle" class="xs">lookup target URL + auth config by name</text>
+  <text x="874" y="426" text-anchor="middle" class="xs">used by Processing Steps / Receiver Adapter</text>
+</g>
+
+<g class="sub-box cbox" onclick="show('conn_instance')">
+  <rect x="720" y="444" width="308" height="52" rx="6" fill="#2a0d08" stroke="#993c1d" stroke-width="1.2"/>
+  <text x="874" y="462" text-anchor="middle" class="ttl" fill="#e06b3a">Connectivity Instance</text>
+  <text x="874" y="476" text-anchor="middle" class="xs">on-premise targets via Cloud Connector</text>
+  <text x="874" y="488" text-anchor="middle" class="xs">used when Receiver calls on-premise system</text>
+</g>
+
+<!-- Connector arrows: Steps/Sender → CF service boxes -->
+<line class="sub-box" x1="694" y1="346" x2="720" y2="346" stroke="#4a9ee6" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ia)"/>
+<line class="sub-box" x1="694" y1="408" x2="720" y2="408" stroke="#5ab347" stroke-width="1" stroke-dasharray="3,2"/>
+<line class="sub-box" x1="694" y1="470" x2="720" y2="470" stroke="#e06b3a" stroke-width="1" stroke-dasharray="3,2"/>
+<line class="sub-box" x1="694" y1="560" x2="710" y2="560" stroke="#8b949e" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ra)"/>
+
+<!-- Target System · T6 badge -->
+<g class="sub-box cbox" onclick="show('target_system')">
+  <rect x="710" y="560" width="330" height="72" rx="7" fill="#1a1f28" stroke="#5f5e5a" stroke-width="1.3"/>
+  <rect x="716" y="565" width="22" height="14" rx="3" fill="#5f5e5a"/>
+  <text x="727" y="575" text-anchor="middle" class="bgt">T6</text>
+  <text x="875" y="590" text-anchor="middle" class="ttl">Target System</text>
+  <text x="875" y="604" text-anchor="middle" class="xs">SAP S/4HANA · ECC · BTP services · 3rd party API</text>
+  <text x="875" y="617" text-anchor="middle" class="xs">on-premise via Connectivity · returns response → T6</text>
+</g>
+
+<!-- MPL Write-back -->
+<g class="sub-box cbox" onclick="show('mpl_writeback')">
+  <rect x="710" y="646" width="330" height="52" rx="6" fill="#1e1640" stroke="#534ab7" stroke-width="1.2"/>
+  <text x="875" y="665" text-anchor="middle" class="ttl" fill="#9b91e8">MPL Write-back</text>
+  <text x="875" y="679" text-anchor="middle" class="xs">after execution → status + log written to Monitoring MPL</text>
+  <text x="875" y="691" text-anchor="middle" class="xs">success / failed / retry → visible in MPL tab</text>
+</g>
+
+</svg>
+</div><!-- /diagram-scroll -->
+</div><!-- /diagram-area -->
+
+<!-- ════════════════ RESIZER ════════════════ -->
+<div id="resizer"></div>
+
+<!-- ════════════════ DETAIL PANEL ════════════════ -->
+<div id="detail-panel">
+  <!-- placeholder -->
+  <div id="placeholder">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#30363d" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+    Click any box to see details<br><span style="font-size:11px;color:#6e7681">calls · referred by · reasons</span>
+  </div>
+
+  <!-- detail content (hidden until click) -->
+  <div id="detail-content" style="display:none;flex:1;display:none;flex-direction:column;overflow:hidden">
+
+    <div id="detail-header">
+      <div id="detail-title"></div>
+      <div id="detail-subtitle"></div>
+    </div>
+
+    <!-- Flow sequence strip (horizontal scroll) -->
+    <div id="strip-wrap">
+      <div class="strip-row" id="trigger-strip-row">
+        <span class="strip-label">Trigger</span>
+      </div>
+      <div class="strip-row" id="deploy-strip-row" style="margin-top:4px">
+        <span class="strip-label">Deploy</span>
+      </div>
+    </div>
+
+    <div id="detail-body">
+      <div class="desc-box" id="detail-desc"></div>
+      <div class="section-label">Calls / Refers to</div>
+      <div id="calls-list"></div>
+      <div class="section-label">Called by / Receives from</div>
+      <div id="calledby-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── flow sequences ── */
+const TFLOW=[
+  {id:'external_caller',step:'T1',label:'External Caller'},
+  {id:'sender_adapter',step:'T2',label:'Sender Adapter'},
+  {id:'integration_engine',step:'T3',label:'Integration Engine'},
+  {id:'processing_steps',step:'T4',label:'Processing Steps'},
+  {id:'receiver_adapter',step:'T5',label:'Receiver Adapter'},
+  {id:'target_system',step:'T6',label:'Target System'},
+  {id:'mpl',step:'T7',label:'MPL'},
+  {id:'external_caller',step:'T8',label:'External Caller'},
+];
+const DFLOW=[
+  {id:'developer',step:'D1',label:'Developer'},
+  {id:'integration_package',step:'D2',label:'Integ. Package'},
+  {id:'iflow_artifact',step:'D3',label:'iFlow Artifact'},
+  {id:'deploy_action',step:'D4',label:'Deploy Action'},
+  {id:'integration_engine',step:'D5',label:'Integ. Engine'},
+  {id:'deploy_status',step:'D6',label:'Deploy Status'},
+];
+
+/* ── detail data ── */
+const D={
+  developer:{title:'Developer (via Browser)',sub:'D1 — Deploy flow entry point',
+    desc:'A human developer who opens the Integration Suite Web UI (the TMN) in a browser. This is the primary entry point into IS for designing, configuring, deploying, and monitoring iFlows.',
+    calls:[{t:'TMN — Tenant Management Node',r:'Opens the TMN Web UI in a browser to design iFlows, manage Integration Packages, click Deploy, and read Monitoring data.'}],
+    calledBy:[]},
+
+  tmn:{title:'TMN — Tenant Management Node',sub:'IS design-time and management layer',
+    desc:'The management and design-time layer of IS. Hosts the browser-based Web UI for developers. Stores iFlow artifacts in its design-time repository and controls deployment to Worker Nodes.',
+    calls:[
+      {t:'Worker Node',r:'Pushes the compiled iFlow artifact to the Worker Node when the developer clicks Deploy.'},
+      {t:'Monitoring / Operations',r:'Reads deploy status, MPL entries, trace logs, and alerts to display in the TMN Monitor tab.'}],
+    calledBy:[{t:'Developer (D1)',r:'Developer opens the TMN Web UI in a browser to design, configure, deploy, and monitor iFlows.'}]},
+
+  integration_package:{title:'Integration Package',sub:'D2 — Groups iFlow artifacts',
+    desc:'A versioned container grouping related iFlow artifacts. Supports import, export, and transport across landscapes (dev → test → prod). Stored in the TMN design-time repository.',
+    calls:[],
+    calledBy:[{t:'Developer (D2)',r:'Creates and organises packages to group related iFlows. Exports/imports packages for transport across environments.'}]},
+
+  iflow_artifact:{title:'iFlow Artifact',sub:'D3 — Definition stored in TMN',
+    desc:'An XML-based definition of the integration flow — including adapter configurations, processing steps, mappings, and routing logic. Exists as metadata only until deployed to a Worker Node.',
+    calls:[{t:'Deploy Action',r:'When the developer clicks Deploy, the artifact is compiled and sent to the Worker Node for runtime loading.'}],
+    calledBy:[
+      {t:'Developer (D3)',r:'Designs and edits the iFlow artifact in the TMN graphical editor.'},
+      {t:'Integration Package',r:'iFlow artifacts are stored and organised inside Integration Packages.'}]},
+
+  deploy_action:{title:'Deploy Action',sub:'D4 — Pushes artifact to Worker Node',
+    desc:'Triggered when the developer clicks Deploy in TMN. Compiles and packages the iFlow artifact and pushes it to the Worker Node for runtime execution.',
+    calls:[{t:'Worker Node → Integration Engine',r:'Sends the compiled iFlow artifact to the Worker Node. The Integration Engine loads it as a Camel route and sets status to Started.'}],
+    calledBy:[{t:'Developer (D4)',r:'Triggers deployment by clicking the Deploy button in TMN.'}]},
+
+  worker:{title:'Worker Node',sub:'JVM K8s pod — IS runtime host',
+    desc:'A JVM-based Kubernetes pod managed by SAP. Hosts the Apache Camel Integration Engine and all deployed iFlows. SAP manages scaling, availability, and patching. Can scale horizontally for HA.',
+    calls:[
+      {t:'XSUAA Instance (CF)',r:'Fetches OAuth tokens for outbound calls and validates inbound Bearer tokens.'},
+      {t:'Destination Instance (CF)',r:'Looks up named connection configs (URL, auth) to connect to target systems without hardcoding details in iFlows.'},
+      {t:'Connectivity Instance (CF)',r:'Accesses on-premise systems via Cloud Connector secure tunnel when target is not internet-reachable.'},
+      {t:'Monitoring / Operations',r:'Writes MPL entries, deploy status, trace logs, and alerts after each iFlow execution.'}],
+    calledBy:[
+      {t:'Deploy Action (D4)',r:'Receives the compiled iFlow artifact and loads it into the Integration Engine.'},
+      {t:'External Caller (T1)',r:'Inbound HTTPS requests from external callers arrive at the Sender Adapter inside the Worker Node.'}]},
+
+  integration_engine:{title:'Integration Engine (Apache Camel)',sub:'D5 loads route · T3 routes message',
+    desc:'The Apache Camel runtime inside the Worker Node. Compiles deployed iFlow artifacts into Camel routes. Manages message exchanges, routing, error handling, and retries. One engine handles all deployed iFlows on a worker.',
+    calls:[{t:'Deployed iFlow (Camel route)',r:'Routes each incoming message to the correct Camel route registered for the endpoint path, then executes the iFlow steps.'}],
+    calledBy:[
+      {t:'Deploy Action (D5)',r:'Receives the compiled artifact and loads it as a new Camel route (status: Started).'},
+      {t:'External Caller — inbound request (T3)',r:'An incoming HTTPS request triggers the Camel route registered for that endpoint path.'}]},
+
+  deployed_iflow:{title:'Deployed iFlow',sub:'Running Camel route in the Worker Node',
+    desc:'The running instance of an iFlow — loaded as a Camel route inside the Integration Engine. Exposes an HTTPS endpoint and processes messages end-to-end: Sender → Steps → Receiver.',
+    calls:[{t:'Sender Adapter',r:'Entry point for all inbound messages. Receives the request and passes it into the processing pipeline.'}],
+    calledBy:[{t:'Integration Engine',r:'Routes incoming messages to this iFlow\'s Camel route for processing.'}]},
+
+  sender_adapter:{title:'Sender Adapter (HTTPS)',sub:'T2 — Receives and validates inbound request',
+    desc:'Exposes the iFlow\'s inbound HTTPS endpoint URL. Receives the incoming request, validates the Bearer token via XSUAA (T2), and passes the authenticated message into Processing Steps. Also supports SOAP, SFTP, IDoc, JMS.',
+    calls:[
+      {t:'XSUAA Instance (CF)',r:'Calls XSUAA to validate the inbound Bearer JWT token. Rejects with 401 if invalid (T2 step).'},
+      {t:'Processing Steps',r:'Passes the authenticated and parsed message payload to Steps for transformation and routing.'}],
+    calledBy:[{t:'External Caller (T1)',r:'External caller sends HTTPS POST with a Bearer token to the iFlow endpoint URL.'}]},
+
+  processing_steps:{title:'Processing Steps',sub:'T4 — Transforms and routes the message',
+    desc:'The transformation and routing logic of the iFlow. Can include: Mapping (XSLT/Groovy), Script (Groovy/JS), Router, Filter, Splitter, Content Enricher, Validator, and Exception Sub-process.',
+    calls:[
+      {t:'XSUAA Instance (CF)',r:'Fetches an OAuth token to use as Authorization header for the outbound call to the target system.'},
+      {t:'Destination Instance (CF)',r:'Looks up a destination by name (e.g. S4H_PROD) to get the target URL, auth method, and proxy settings.'},
+      {t:'Connectivity Instance (CF)',r:'Uses the Connectivity tunnel when the target is an on-premise system reachable only via Cloud Connector.'},
+      {t:'Receiver Adapter',r:'Passes the fully transformed and enriched message to the Receiver Adapter for outbound delivery.'}],
+    calledBy:[{t:'Sender Adapter',r:'Sender Adapter passes the authenticated inbound message to Steps after validation.'}]},
+
+  receiver_adapter:{title:'Receiver Adapter',sub:'T5 — Makes outbound call to target system',
+    desc:'Makes the outbound call to the target system using connection details resolved from the Destination Service. Returns the response back through the iFlow pipeline before T8 returns the final response to the caller.',
+    calls:[
+      {t:'Target System (T5)',r:'Makes the actual API / RFC / OData / SOAP call to the target using URL and credentials from the Destination Service.'},
+      {t:'MPL Write-back',r:'After the target responds (T6), the result flows back and is eventually written to the MPL log (T7).'}],
+    calledBy:[{t:'Processing Steps',r:'Receives the processed/transformed message from Steps and performs the outbound call.'}]},
+
+  target_system:{title:'Target System',sub:'T6 — Returns HTTP response to Receiver Adapter',
+    desc:'The external system the iFlow calls — SAP S/4HANA, ECC, BTP services, 3rd party REST/SOAP APIs, or on-premise via Connectivity. Receives the request and returns an HTTP response (T6) back to the Receiver Adapter.',
+    calls:[{t:'Receiver Adapter (T6 — response)',r:'Returns HTTP 200 OK with payload back to the Receiver Adapter. T6 = target responding back into IS — NOT yet back to the original caller (that is T8).'}],
+    calledBy:[{t:'Receiver Adapter (T5)',r:'Receiver Adapter makes the outbound API call using URL and auth from the Destination Service.'}]},
+
+  xsuaa_instance:{title:'XSUAA Instance (CF Service)',sub:'OAuth 2.0 / OIDC · CF Space service instance',
+    desc:'An OAuth 2.0 / OIDC server hosted by SAP. A CF service instance created in the CF Space (same subaccount as IS). IS binds to it at runtime for all authentication — validating inbound tokens and fetching outbound tokens.',
+    calls:[],
+    calledBy:[
+      {t:'Sender Adapter (T2)',r:'Calls XSUAA to validate the inbound Bearer JWT token before accepting the message.'},
+      {t:'Processing Steps',r:'Fetches an OAuth token from XSUAA to use as Authorization header for the outbound call to the target.'}]},
+
+  dest_instance:{title:'Destination Instance (CF Service)',sub:'Named connection configs · CF Space service instance',
+    desc:'A CF service instance that stores named connection configurations (URL, auth method, client credentials, proxy). IS looks up destinations by name instead of hardcoding connection details inside iFlows — making them environment-portable.',
+    calls:[],
+    calledBy:[
+      {t:'Processing Steps',r:'Looks up a destination by name (e.g. S4H_PROD) to get the target URL and authentication config for the outbound call.'},
+      {t:'Receiver Adapter',r:'Uses the destination config (URL, credentials) to establish the connection to the target system.'}]},
+
+  conn_instance:{title:'Connectivity Instance (CF Service)',sub:'On-premise tunnel · CF Space service instance',
+    desc:'A CF service instance that enables secure tunneling to on-premise systems via the Cloud Connector agent installed in the customer\'s network. Without this, cloud apps cannot reach systems that are not internet-exposed.',
+    calls:[],
+    calledBy:[
+      {t:'Processing Steps',r:'Accesses Connectivity when the iFlow needs to reach an on-premise system (RFC, HTTP) via the Cloud Connector tunnel.'},
+      {t:'Receiver Adapter',r:'Routes the outbound call through the Connectivity tunnel instead of the public internet for on-premise targets.'}]},
+
+  pi_runtime:{title:'PI Runtime Service Instance',sub:'CF Space service · enables CF app → IS calls',
+    desc:'A CF service instance of type process-integration-runtime. Created in a CF Space to enable CF applications to call Integration Suite APIs — e.g. trigger iFlows, read MPL entries, or manage artifacts programmatically.',
+    calls:[{t:'Worker Node (IS APIs)',r:'CF apps use the PI Runtime service binding credentials (from VCAP_SERVICES) to call IS REST APIs.'}],
+    calledBy:[{t:'CF Application (via Service Binding)',r:'A CF app bound to this PI Runtime instance uses the injected credentials to authenticate and call IS APIs.'}]},
+
+  cf_space:{title:'CF Environment → Space',sub:'Same subaccount as IS · hosts service instances',
+    desc:'The Cloud Foundry environment within the same BTP subaccount. Contains CF service instances (XSUAA, Destination, Connectivity, PI Runtime) that IS binds to at runtime.',
+    calls:[],
+    calledBy:[{t:'Worker Node (IS runtime)',r:'IS Worker Node calls these CF service instances at runtime for OAuth tokens (XSUAA), connection configs (Destination), and on-premise tunneling (Connectivity).'}]},
+
+  cf_service_box:{title:'CF Space Service Instances (runtime refs)',sub:'Inside Worker — shows which CF services IS calls',
+    desc:'These boxes show the CF service instances IS calls at runtime. They live in the CF Space (same subaccount). IS binds to each at provisioning time — credentials are stored in the Worker at startup.',
+    calls:[
+      {t:'XSUAA Instance',r:'Called for OAuth token validation (inbound) and token fetch (outbound).'},
+      {t:'Destination Instance',r:'Called to look up named target connections by name.'},
+      {t:'Connectivity Instance',r:'Called to tunnel through Cloud Connector for on-premise targets.'}],
+    calledBy:[{t:'Processing Steps / Sender Adapter',r:'The iFlow steps and sender adapter call these services during message execution.'}]},
+
+  monitoring:{title:'Monitoring / Operations',sub:'IS operational visibility layer',
+    desc:'Provides MPL (execution logs), Data Store viewer, JMS Queue monitor, step-by-step Trace Logs, Deploy Status per iFlow, Alerts on failure, and a Security audit log. Accessed via the TMN Monitor tab.',
+    calls:[],
+    calledBy:[
+      {t:'Worker Node',r:'Writes MPL entries, deploy status, and trace logs automatically after each iFlow execution.'},
+      {t:'Developer',r:'Reads MPL entries, trace payloads, and deploy status via the TMN Monitor tab.'}]},
+
+  mpl:{title:'MPL — Message Processing Log',sub:'T7 — Written after every iFlow execution',
+    desc:'One entry per message execution. Records: status (Completed / Failed / Retry), duration (ms), sender address, receiver address, timestamp, and a link to the step-by-step trace if enabled.',
+    calls:[],
+    calledBy:[
+      {t:'Worker Node (T7)',r:'Written automatically after every iFlow run with the execution result and metadata.'},
+      {t:'Developer',r:'Reads MPL entries to check execution status, view payload trace, and diagnose failures.'}]},
+
+  data_store:{title:'Data Store',sub:'Persist messages / variables within IS',
+    desc:'Allows iFlows to persist message payloads or variables temporarily — within a single run or across multiple runs. Useful for storing intermediate state, split-gather patterns, or decoupling producer/consumer flows.',
+    calls:[],
+    calledBy:[{t:'Processing Steps',r:'iFlow steps read from and write to the Data Store using Write/Get/Delete Data Store steps.'}]},
+
+  jms_queue:{title:'JMS Queue',sub:'Async messaging within IS',
+    desc:'Provides asynchronous messaging within IS. A producer iFlow writes to the queue; a separate consumer iFlow processes messages later — decoupling sender and receiver, enabling retry and dead-letter handling.',
+    calls:[],
+    calledBy:[{t:'Processing Steps / Sender Adapter',r:'Producer iFlow writes messages to the JMS queue. A separate consumer iFlow picks them up asynchronously.'}]},
+
+  trace_logs:{title:'Trace / Debug Logs',sub:'Step-by-step payload trace for debugging',
+    desc:'When enabled for an iFlow, records the full message payload at each processing step. Very useful for debugging but must be disabled in production as it increases storage. Entries are stored temporarily.',
+    calls:[],
+    calledBy:[
+      {t:'Integration Engine (during execution)',r:'If trace is enabled, the engine records message state at every step.'},
+      {t:'Developer',r:'Reads trace logs to see exactly what the message looked like at each step for debugging.'}]},
+
+  deploy_status:{title:'Deploy Status',sub:'D6 — Updated on each deployment',
+    desc:'Shows the current runtime status of each deployed iFlow on the Worker Node: Started (running and accepting messages), Error (failed to start), or Undeployed (removed from runtime).',
+    calls:[],
+    calledBy:[
+      {t:'Worker Node (D6)',r:'Updates deploy status when an iFlow is deployed (Started), fails (Error), or is undeployed.'},
+      {t:'Developer',r:'Checks deploy status in TMN Monitor to confirm an iFlow is running before testing.'}]},
+
+  alerts:{title:'Alerts / Error Handling',sub:'Notifications on iFlow failures',
+    desc:'Configured notifications that fire when an iFlow execution fails, retries exceed a threshold, or a message reaches the dead-letter queue. Alerts can be sent via email or routed to an alert management tool.',
+    calls:[],
+    calledBy:[{t:'Worker Node (on failure)',r:'Triggers alerts when an iFlow execution results in an error or retry threshold is exceeded.'}]},
+
+  security_monitor:{title:'Security Monitor',sub:'Audit and access logs for the IS tenant',
+    desc:'Provides audit logs of user actions (who deployed what, who changed configurations), system logs for the IS tenant, and access logs. Used for compliance, governance, and security incident investigation.',
+    calls:[],
+    calledBy:[
+      {t:'IS Tenant platform',r:'Automatically records user and system actions within the IS tenant.'},
+      {t:'Developer / Ops',r:'Reads security audit logs for compliance audits or investigating unauthorized changes.'}]},
+
+  mpl_writeback:{title:'MPL Write-back',sub:'Post-execution log entry written to Monitoring',
+    desc:'After each iFlow execution completes (success or failure), the Worker Node writes an entry to the Monitoring MPL — capturing execution result, duration, sender/receiver metadata, and links to trace logs if enabled.',
+    calls:[{t:'MPL — Message Processing Log',r:'Writes the execution result entry — status, duration, sender address, and receiver address.'}],
+    calledBy:[{t:'Worker Node (post-execution)',r:'Triggered automatically at the end of every iFlow run, regardless of success or failure.'}]},
+
+  external_caller:{title:'External Caller',sub:'T1 · T8 — Initiates and receives the trigger flow',
+    desc:'Any external system or tool (Postman, SAP system, application) that triggers an iFlow by sending an HTTPS POST to the exposed endpoint URL. Must present a valid Bearer token obtained from XSUAA before calling.',
+    calls:[{t:'Sender Adapter (T1)',r:'Sends an HTTPS POST request to the iFlow endpoint URL with Authorization: Bearer {JWT} header.'}],
+    calledBy:[{t:'Sender Adapter (T8 — response)',r:'After iFlow completes processing, the Sender Adapter returns the final HTTPS response to the original caller.'}]},
+};
+
+/* ── state ── */
+let activeEl=null;
+
+function buildStrip(flow,activeId,kind){
+  let h='';
+  flow.forEach((s,i)=>{
+    const isActive=s.id===activeId;
+    const cls=isActive?(kind==='T'?'s-pill t-active':'s-pill d-active'):'s-pill';
+    h+=`<span class="${cls}" onclick="show('${s.id}')"><span class="step-badge">${s.step}</span>${s.label}</span>`;
+    if(i<flow.length-1) h+=`<span class="s-arrow">›</span>`;
+  });
+  return h;
+}
+
+function show(id){
+  const d=D[id]; if(!d) return;
+
+  /* highlight box */
+  if(activeEl) activeEl.querySelectorAll('.cbox').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll(`[onclick="show('${id}')"]`).forEach(el=>{
+    el.classList.add('active');
+    activeEl=el.closest('svg') || el;
+  });
+
+  /* show panel */
+  document.getElementById('placeholder').style.display='none';
+  const dc=document.getElementById('detail-content');
+  dc.style.display='flex'; dc.style.flexDirection='column'; dc.style.overflow='hidden'; dc.style.flex='1';
+
+  document.getElementById('detail-title').textContent=d.title;
+  document.getElementById('detail-subtitle').textContent=d.sub||'';
+  document.getElementById('detail-desc').textContent=d.desc;
+
+  /* strips */
+  document.getElementById('trigger-strip-row').innerHTML=
+    '<span class="strip-label">Trigger</span>'+buildStrip(TFLOW,id,'T');
+  document.getElementById('deploy-strip-row').innerHTML=
+    '<span class="strip-label">Deploy</span>'+buildStrip(DFLOW,id,'D');
+
+  /* calls */
+  const cl=document.getElementById('calls-list'); cl.innerHTML='';
+  if(!d.calls||d.calls.length===0){
+    cl.innerHTML='<p class="no-conn">No outbound calls from this component</p>';
+  } else {
+    d.calls.forEach(c=>{
+      cl.innerHTML+=`<div class="conn-row calls"><div class="conn-target">→ ${c.t}</div><div class="conn-reason">${c.r}</div></div>`;
+    });
+  }
+
+  /* called-by */
+  const cb=document.getElementById('calledby-list'); cb.innerHTML='';
+  if(!d.calledBy||d.calledBy.length===0){
+    cb.innerHTML='<p class="no-conn">Nothing calls this component directly</p>';
+  } else {
+    d.calledBy.forEach(c=>{
+      cb.innerHTML+=`<div class="conn-row calledby"><div class="conn-target">← ${c.t}</div><div class="conn-reason">${c.r}</div></div>`;
+    });
+  }
+}
+
+/* ── Collapse / Expand toggle ── */
+(function(){
+  const svgEl = document.querySelector('#diagram-scroll svg');
+  const btnExpand  = document.getElementById('btn-expand');
+  const btnCollapse= document.getElementById('btn-collapse');
+  const tbLabel    = document.getElementById('tb-label');
+
+  function setCollapsed(yes){
+    if(yes){
+      svgEl.classList.add('collapsed');
+      btnExpand.classList.add('active');    // ← active in Overview
+      btnCollapse.classList.remove('active');
+      tbLabel.textContent='Overview';
+    } else {
+      svgEl.classList.remove('collapsed');
+      btnCollapse.classList.add('active');  // → active in Detailed
+      btnExpand.classList.remove('active');
+      tbLabel.textContent='Detailed';
+    }
+  }
+
+  setCollapsed(true); // start in Overview
+  btnExpand.addEventListener('click',  ()=>setCollapsed(true));   // ← = Overview
+  btnCollapse.addEventListener('click', ()=>setCollapsed(false));  // → = Detailed
+})();
+
+/* ── Resizable panels ── */
+(function(){
+  const resizer = document.getElementById('resizer');
+  const diagramArea = document.getElementById('diagram-area');
+  let isResizing = false, startX = 0, startW = 0;
+
+  resizer.addEventListener('mousedown', e => {
+    isResizing = true;
+    startX = e.clientX;
+    startW = diagramArea.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isResizing) return;
+    const newW = Math.max(280, Math.min(startW + (e.clientX - startX), window.innerWidth - 310));
+    diagramArea.style.flex = `0 0 ${newW}px`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!isResizing) return;
+    isResizing = false;
+    resizer.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+})();
+
+/* ── Zoom ── */
+let zoomLevel = 1;
+const diagramScroll = document.getElementById('diagram-scroll');
+const svgEl = diagramScroll.querySelector('svg');
+
+function applyZoom(z) {
+  zoomLevel = Math.max(0.4, Math.min(4, z));
+  if (zoomLevel <= 1) {
+    zoomLevel = 1;
+    svgEl.style.width = '100%';
+    svgEl.style.height = 'auto';
+  } else {
+    const fitW = diagramScroll.clientWidth;
+    svgEl.style.width = Math.round(fitW * zoomLevel) + 'px';
+    svgEl.style.height = 'auto';
+  }
+  const zv = document.getElementById('zoom-val'); if(zv) zv.textContent = Math.round(zoomLevel * 100) + '%';
+}
+
+diagramScroll.addEventListener('wheel', e => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  e.preventDefault();
+  applyZoom(zoomLevel + (e.deltaY < 0 ? 0.1 : -0.1));
+}, { passive: false });
+</script>
+</body>
+</html>
