@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSH &amp; HTTPS — How Files Travel Securely</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0d1117;color:#e6edf3;font-family:sans-serif;overflow:hidden}
+
+#tab-bar{display:flex;gap:0;padding:10px 14px 0;background:#0d1117;border-bottom:1px solid #30363d;flex-shrink:0}
+.tab-btn{padding:6px 22px;font-size:13px;border:1px solid #30363d;background:transparent;cursor:pointer;color:#8b949e;font-family:sans-serif;transition:all .15s}
+.tab-btn:first-child{border-radius:6px 0 0 6px}
+.tab-btn:last-child{border-radius:0 6px 6px 0}
+.tab-btn[data-tab="ssh"].active{background:#0f6e56;color:#fff;border-color:#0f6e56}
+.tab-btn[data-tab="https"].active{background:#185fa5;color:#fff;border-color:#185fa5}
+
+#main{display:flex;height:calc(100vh - 41px);overflow:hidden}
+
+#diagram-area{flex:0 0 56%;min-width:280px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+#diagram-toolbar{display:flex;align-items:center;gap:8px;padding:5px 12px;background:#0d1117;border-bottom:1px solid #30363d;flex-shrink:0}
+.toolbar-pill{display:flex;border:1px solid #30363d;border-radius:20px;overflow:hidden}
+.t-seg{padding:3px 11px;font-size:11px;cursor:pointer;color:#8b949e;background:#161b22;user-select:none;transition:all .12s}
+.t-seg:hover{color:#e6edf3}
+.t-seg.active{background:#0a2a1e;color:#4fc98f}
+#toolbar-label{font-size:11px;color:#8b949e}
+#zoom-bar{position:absolute;top:38px;right:10px;z-index:20;display:flex;align-items:center;gap:4px;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:3px 7px}
+#zoom-pct{font-size:10px;color:#8b949e;min-width:32px;text-align:center}
+.zbtn{background:none;border:none;color:#8b949e;cursor:pointer;font-size:13px;padding:0 2px;line-height:1}
+.zbtn:hover{color:#e6edf3}
+#diagram-scroll{flex:1;overflow:auto;position:relative;padding:14px}
+#diagram-scroll::-webkit-scrollbar{width:7px;height:7px}
+#diagram-scroll::-webkit-scrollbar-track{background:#161b22}
+#diagram-scroll::-webkit-scrollbar-corner{background:#161b22}
+#diagram-scroll::-webkit-scrollbar-thumb:vertical{background:#1d6e5a;border-radius:3px}
+#diagram-scroll::-webkit-scrollbar-thumb:vertical:hover{background:#1d9e75}
+#diagram-scroll::-webkit-scrollbar-thumb:horizontal{background:#185fa5;border-radius:3px}
+#diagram-scroll::-webkit-scrollbar-thumb:horizontal:hover{background:#378add}
+
+#resizer{width:5px;background:#30363d;cursor:col-resize;flex-shrink:0;transition:background .15s}
+#resizer:hover,#resizer.dragging{background:#3b82f6}
+
+#detail-area{flex:1;min-width:280px;display:flex;flex-direction:column;overflow:hidden;padding:10px 10px 0 0}
+#detail-panel{flex:1;background:#161b22;border:1px solid #30363d;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+#det-header{padding:14px 16px 10px;border-bottom:1px solid #30363d;flex-shrink:0}
+#det-badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;margin-bottom:7px;background:#30363d;color:#8b949e}
+#det-title{font-size:17px;font-weight:700;color:#e6edf3;margin-bottom:3px}
+#det-sub{font-size:11px;color:#8b949e}
+
+#det-body{flex:1;overflow-y:auto;padding:12px 14px;min-height:0}
+#det-body::-webkit-scrollbar{width:5px}
+#det-body::-webkit-scrollbar-track{background:#161b22}
+#det-body::-webkit-scrollbar-thumb{background:#4a9ee6;border-radius:3px}
+#det-body::-webkit-scrollbar-thumb:hover{background:#7ba7ff}
+#det-body{scrollbar-width:thin;scrollbar-color:#4a9ee6 #161b22}
+
+.dsec{margin-bottom:14px}
+.dsec-title{font-size:10px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.desc-text{font-size:12.5px;color:#c9d1d9;line-height:1.75}
+.desc-text em{color:#e6edf3;font-style:normal;font-weight:600}
+
+/* sample data box */
+.sample-box{background:#0d1f12;border:1px solid #1d4a28;border-radius:7px;padding:10px 12px;margin-top:8px;font-size:11.5px;line-height:1.7}
+.sample-box .sample-title{font-size:10px;font-weight:700;color:#4fc98f;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.sample-line{color:#c9d1d9;margin-bottom:2px}
+.sample-line .lbl{color:#8b949e;font-size:10.5px}
+.sample-line .val{color:#e6edf3;font-family:monospace;font-size:11px}
+.sample-line .val.green{color:#97c459}
+.sample-line .val.amber{color:#fac775}
+.sample-line .val.blue{color:#85b7eb}
+.sample-line .val.red{color:#f09595}
+.sample-line .val.teal{color:#5dcaa5}
+.sample-line .val.muted{color:#8b949e}
+.sample-check{color:#97c459;font-weight:700}
+.sample-warn{color:#fac775;font-weight:700}
+
+.dcard{border-radius:6px;padding:8px 11px;margin-bottom:5px;font-size:11.5px;line-height:1.55;color:#c9d1d9}
+.dcard.out{border-left:3px solid #3b6d11;background:#0a1a04}
+.dcard.inp{border-left:3px solid #185fa5;background:#04112a}
+.dcard.note{border-left:3px solid #ba7517;background:#2a1500;color:#e6c680;font-size:12px;line-height:1.65}
+
+#steps-panel{border-top:1px solid #30363d;flex-shrink:0;padding:10px 14px;background:#0d1a12;max-height:40%}
+#steps-panel-title{font-size:10px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+#steps-list{overflow-y:auto;max-height:calc(100% - 22px)}
+#steps-list::-webkit-scrollbar{width:4px}
+#steps-list::-webkit-scrollbar-track{background:#0d1a12}
+#steps-list::-webkit-scrollbar-thumb{background:#ba7517;border-radius:3px}
+#steps-list::-webkit-scrollbar-thumb:hover{background:#f0a442}
+.spill{display:flex;align-items:flex-start;gap:7px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:11px;color:#8b949e;transition:background .1s;margin-bottom:2px}
+.spill:hover{background:#152010;color:#c9d1d9}
+.spill.active{background:#0a2a1e;color:#e6edf3}
+.sbadge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:15px;border-radius:3px;font-size:8px;font-weight:700;color:#fff;padding:0 3px;flex-shrink:0;margin-top:1px}
+
+#img-section{padding:6px 10px 6px 0;flex-shrink:0}
+.img-toggle-btn{background:none;border:1px solid #30363d;color:#8b949e;font-size:11px;padding:2px 9px;border-radius:4px;cursor:pointer}
+.img-toggle-btn:hover{border-color:#e6edf3;color:#e6edf3}
+#img-area{margin-top:6px}
+#img-gallery{display:flex;flex-wrap:wrap;gap:6px;max-height:100px;overflow-y:auto}
+#img-gallery img{height:72px;border-radius:4px;cursor:pointer;border:1px solid #30363d;object-fit:cover}
+#img-gallery img:hover{border-color:#1d9e75}
+#img-upload{margin-top:5px}
+#img-upload input{font-size:11px;color:#8b949e}
+</style>
+</head>
+<body>
+
+<div id="tab-bar">
+  <button class="tab-btn active" data-tab="ssh" onclick="switchTab('ssh')">&#x1F510; SSH — Secure File Transfer</button>
+  <button class="tab-btn" data-tab="https" onclick="switchTab('https')">&#x1F310; HTTPS — Safe Online Shopping</button>
+</div>
+
+<div id="main">
+  <div id="diagram-area">
+    <div id="diagram-toolbar">
+      <div class="toolbar-pill">
+        <div class="t-seg" id="seg-exp" onclick="setView('expand')">&#8592; Detailed</div>
+        <div class="t-seg active" id="seg-col" onclick="setView('collapse')">Overview &#8594;</div>
+      </div>
+      <span id="toolbar-label">Overview</span>
+    </div>
+    <div id="zoom-bar">
+      <button class="zbtn" onclick="applyZoom(-0.15)">&#xFF0D;</button>
+      <span id="zoom-pct">100%</span>
+      <button class="zbtn" onclick="applyZoom(+0.15)">&#xFF0B;</button>
+      <button class="zbtn" onclick="resetZoom()" title="Reset">&#8635;</button>
+    </div>
+    <div id="diagram-scroll"><div id="canvas"></div></div>
+  </div>
+
+  <div id="resizer"></div>
+
+  <div id="detail-area">
+    <div id="detail-panel">
+      <div id="det-header">
+        <div id="det-badge">Select a step</div>
+        <div id="det-title">Click any step to explore</div>
+        <div id="det-sub">How files and data travel securely across the internet</div>
+      </div>
+      <div id="det-body">
+        <div style="display:flex;align-items:center;justify-content:center;height:140px;color:#8b949e;font-size:13px;flex-direction:column;gap:8px">
+          <span style="font-size:22px">&#x1F446;</span>
+          <span>Click any step in the diagram</span>
+        </div>
+      </div>
+      <div id="steps-panel">
+        <div id="steps-panel-title">All Steps</div>
+        <div id="steps-list"></div>
+      </div>
+    </div>
+    <div id="img-section">
+      <button class="img-toggle-btn" onclick="toggleImgs()">&#x1F4CE; Images &#9660;</button>
+      <div id="img-area" style="display:none">
+        <div id="img-gallery"></div>
+        <div id="img-upload"><input type="file" accept="image/*" multiple onchange="addImgs(this)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Sample scenario labels ───
+// SSH:   Sarah uploads Q3_report.pdf to files.company.com
+// HTTPS: Alex buys a book on bookshop.com
+
+var DATA = {
+  ssh: {
+    color:'#0f6e56', colorLight:'#1d9e75', fillSel:'#0a2a1e', prefix:'S',
+    steps:[
+      // ── S0 ─────────────────────────────────────────
+      {
+        id:'s0', badge:'S0',
+        title:'Server Gets a Permanent ID Badge (One-Time Setup)',
+        subtitle:'Happens once when the server is first set up — not during your transfer',
+        role:'One-time setup — before you ever connect',
+        description:'Long before Sarah tries to transfer her file, someone set up the company server. During that setup, the server created two things: a <em>private key</em> (like a special pen — stays locked on the server forever, never shared) and a <em>public key</em> (like an official stamp anyone can verify). The public key is condensed into a short fingerprint — a unique identity number for that server. The first time Sarah ever connects, SSH shows her that fingerprint and asks her to confirm it is the right server. She says yes, and SSH notes it down in a trusted contact book on her laptop. Every future connection silently checks the fingerprint against that note — if it ever changes, SSH stops and warns her.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — What gets stored on first connection</div>'
+          +'<div class="sample-line"><span class="lbl">Server address: </span><span class="val">files.company.com</span></div>'
+          +'<div class="sample-line"><span class="lbl">Key type: </span><span class="val">Ed25519</span></div>'
+          +'<div class="sample-line"><span class="lbl">Fingerprint stored: </span><span class="val green">SHA256:uNiVztks+CsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">Contact book entry (known_hosts): </span></div>'
+          +'<div class="sample-line"><span class="val muted">files.company.com ssh-ed25519 AAAAC3Nza...uNiVztks</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="sample-check">&#10003;</span><span class="lbl"> Future connections: fingerprint checked silently every time</span></div>'
+          +'<div class="sample-line"><span class="sample-warn">&#9888;</span><span class="lbl"> Fingerprint changed? SSH stops immediately and warns Sarah</span></div>',
+        sends:[],
+        receives:[],
+        produces:'Server has a permanent identity. Sarah\'s laptop has the fingerprint saved. All future connections will be silently verified against it.',
+        note:'Think of this like writing down a shop\'s phone number in your contacts the first time you call them. Next time you ring, your phone confirms it is the same number before connecting.'
+      },
+      // ── S1 ─────────────────────────────────────────
+      {
+        id:'s1', badge:'S1',
+        title:'Agree on the Rules',
+        subtitle:'Sarah\'s laptop and the server decide how they will talk securely',
+        role:'Setup — nothing secret yet',
+        description:'Sarah opens her file transfer app and connects to files.company.com. Before anything secure happens, both sides introduce themselves and swap lists of every security method they support — like two offices calling each other: <em>"Which courier company do we both trust? What kind of lock do you accept?"</em> They pick the best option both sides know. Nothing is hidden yet — this part of the conversation is in the open.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — What they say to each other</div>'
+          +'<div class="sample-line"><span class="lbl">Sarah\'s laptop: </span><span class="val green">"I\'m OpenSSH 9.4. I support: curve25519 key exchange, Ed25519 keys, AES-256 encryption."</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Server replies: </span><span class="val blue">"I\'m OpenSSH 8.9. I support those too — let\'s use curve25519 + Ed25519 + AES-256."</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="sample-check">&#10003;</span><span class="lbl"> Agreed rulebook saved by both sides (used to detect tampering in step S3)</span></div>',
+        sends:['Greeting + list of supported security methods'],
+        receives:['Server\'s greeting + its list of supported security methods'],
+        produces:'Agreed rulebook: curve25519 key exchange, Ed25519 host keys, AES-256 encryption. Saved by both sides.',
+        note:'If someone tried to swap a weaker method into this list, it would be detected in Step S3 — both sides keep a full record of this conversation and cross-check it later.'
+      },
+      // ── S2 ─────────────────────────────────────────
+      {
+        id:'s2', badge:'S2',
+        title:'Create a Shared Secret — Without Saying It Out Loud',
+        subtitle:'Both arrive at the same lock combination without ever sending it',
+        role:'The magic key exchange',
+        description:'This is the cleverest part. Imagine you and a friend want to agree on a secret colour, but you are in a room full of strangers who can hear everything. Each of you picks a secret colour privately, mixes it with a shared public colour, and you swap only the mixed results. Then each of you adds your own secret back into what you received — and you both end up with the exact same final colour, <em>without ever saying your secret out loud</em>. Anyone listening heard only the mixed colours — useless without the secret ingredient. Sarah\'s laptop and the server do the exact same thing with numbers.',
+        sample:'<div class="sample-title">&#x1F3A8; Colour-mix example (simplified)</div>'
+          +'<div class="sample-line"><span class="lbl">Public colour (everyone sees): </span><span class="val amber">Yellow</span></div>'
+          +'<div class="sample-line"><span class="lbl">Sarah\'s secret colour: </span><span class="val blue">Blue</span>&nbsp;&nbsp;<span class="val muted">(stays on her laptop — never sent)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Sarah mixes Blue+Yellow, sends: </span><span class="val green">Green &#8594; server</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Server\'s secret colour: </span><span class="val red">Red</span>&nbsp;&nbsp;<span class="val muted">(stays on server — never sent)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Server mixes Red+Yellow, sends: </span><span class="val amber">Orange &#8594; Sarah</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">Sarah takes Orange + Blue = </span><span class="val teal">Brown (shared secret)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Server takes Green + Red = </span><span class="val teal">Brown (same result!)</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Eavesdropper saw: Yellow, Green, Orange — </span><span class="val red">cannot compute Brown.</span></div>',
+        sends:['Sarah\'s "mixed colour" — her public half of the key exchange'],
+        receives:['Server\'s "mixed colour" + server\'s ID badge + a signed document'],
+        produces:'Both sides independently know the shared secret (Brown). It was never transmitted. Nobody in between has it.',
+        note:'Best-case bonus: the shared secret is thrown away once this session ends. Even if someone recorded every byte today and stole the server\'s keys later — they still cannot unlock this session. The secret is gone.'
+      },
+      // ── S3 ─────────────────────────────────────────
+      {
+        id:'s3', badge:'S3',
+        title:'Server Shows Its ID Badge — and Signs a Document',
+        subtitle:'The server proves it is the real server, not an imposter',
+        role:'Server identity proof',
+        description:'The server now needs to prove it is genuinely files.company.com and not a fake. It sends its public ID badge (the key created in S0). Then it <em>signs a unique document</em> that references everything that has happened in this connection so far — including the shared secret from S2. The signature can only be made by whoever holds the server\'s private key. It is like the destination office sending back their official stamp along with a signed letter that mentions today\'s specific delivery reference.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — What the server sends</div>'
+          +'<div class="sample-line"><span class="lbl">ID badge (public key): </span><span class="val muted">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5...uNiVztks</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Signed document covers: </span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;&#8226; Agreed rules from S1 (curve25519, Ed25519, AES-256)</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;&#8226; Sarah\'s mix (Green) + Server\'s mix (Orange)</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;&#8226; Shared secret (Brown)</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;&#8226; Connection ref: #8472</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Signature (made with server\'s private key): </span><span class="val green">3aF9kP2mQr7...</span></div>',
+        sends:['Server\'s public ID badge', 'Signed document covering this entire connection so far'],
+        receives:['Nothing — server is doing the proving here'],
+        produces:'A signed document Sarah\'s laptop can verify in the next step.',
+        note:'The signed document covers the shared secret from S2. A fake server would need to forge a signature that includes a secret they cannot know — impossible without the real server\'s private key.'
+      },
+      // ── S4 ─────────────────────────────────────────
+      {
+        id:'s4', badge:'S4',
+        title:'Sarah\'s Laptop Checks the ID Badge',
+        subtitle:'Fingerprint verified against the contact book — then signature checked',
+        role:'Trust check — your computer\'s job',
+        description:'Sarah\'s laptop does two checks automatically. First, it takes the fingerprint of the received ID badge and looks it up in the contact book (from S0). Second, it verifies the signed document — confirming only the real server could have produced that signature. If either check fails, the connection drops immediately, before any file or password is ever sent. This is the moment the fake-server attack is caught.',
+        sample:'<div class="sample-title">&#x1F50D; Example — What Sarah\'s laptop checks</div>'
+          +'<div class="sample-line"><span class="lbl">Fingerprint of received badge: </span><span class="val green">SHA256:uNiVztks+CsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s</span></div>'
+          +'<div class="sample-line"><span class="lbl">Contact book entry: </span><span class="val green">SHA256:uNiVztks+CsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s</span></div>'
+          +'<div class="sample-line"><span class="sample-check">&#10003; Match</span><span class="lbl"> — same server Sarah connected to before</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">Signature check: </span><span class="val green">3aF9kP2mQr7...</span><span class="lbl"> verified with ID badge &#8594; </span><span class="sample-check">&#10003; Valid</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="sample-warn">&#9888; First-ever connection scenario:</span></div>'
+          +'<div class="sample-line"><span class="val muted">"The authenticity of \'files.company.com\' can\'t be established.</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;Fingerprint: SHA256:uNiVztks... Are you sure? (yes/no)"</span></div>',
+        sends:['Nothing — all verification happens privately on Sarah\'s laptop'],
+        receives:['ID badge and signed document from S3'],
+        produces:'Confirmed: this is the real files.company.com. Both sides share the same secret. Ready to lock the channel.',
+        note:'This is why SSH warns loudly when a server\'s fingerprint changes unexpectedly. A different fingerprint could mean someone is pretending to be the server — so SSH stops before anything sensitive is sent.'
+      },
+      // ── S5 ─────────────────────────────────────────
+      {
+        id:'s5', badge:'S5',
+        title:'Lock the Channel',
+        subtitle:'Everything from this point is scrambled — unreadable to anyone in between',
+        role:'Encryption switched on',
+        description:'Both sides use the shared secret (Brown) from S2 to create session keys — unique lock-and-key pairs for this transfer only. Think of it as both offices sealing an armoured van with a combination that only they know. The doors click shut. From this moment, every byte that travels between Sarah\'s laptop and the server is scrambled into meaningless noise for anyone else watching — her internet provider, the office router, anyone on the network. The combination is fresh every session, so recordings from past transfers are useless.',
+        sample:'<div class="sample-title">&#x1F511; Example — Keys created from the shared secret</div>'
+          +'<div class="sample-line"><span class="lbl">Shared secret (Brown) + connection ref #8472 &#8594;</span></div>'
+          +'<div class="sample-line"><span class="lbl">Key A (Sarah &#8594; server): </span><span class="val green">xK92mP4f-LqRt7wBn</span><span class="val muted"> (scrambles what Sarah sends)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Key B (server &#8594; Sarah): </span><span class="val blue">pL3nQr8j-VzMs2cDk</span><span class="val muted"> (scrambles what server sends back)</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">Sarah\'s laptop signals: </span><span class="val green">"Switching to encrypted mode now."</span></div>'
+          +'<div class="sample-line"><span class="lbl">Server signals: </span><span class="val blue">"Received — switching too."</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="sample-check">&#10003;</span><span class="lbl"> Armoured van doors locked. Channel is live.</span></div>',
+        sends:['"Switching to encrypted mode" signal'],
+        receives:['"Switching too" signal from server'],
+        produces:'Fully encrypted channel. Separate keys for each direction. Files are ready to travel safely.',
+        note:'Separate keys per direction (A and B) mean that even a partial problem with one direction does not expose the other. Each key is unique to this session and discarded when it ends.'
+      },
+      // ── S6 ─────────────────────────────────────────
+      {
+        id:'s6', badge:'S6',
+        title:'Sarah Proves Who She Is — Then the File Transfers',
+        subtitle:'She shows her pass at the gate, the door opens, Q3_report.pdf moves',
+        role:'Identity check + file transfer',
+        description:'The channel is locked and the server is verified — but the server still needs to know <em>Sarah is authorised</em> to put files here. It is like arriving at a secure facility in the armoured van: the building is verified, the van is locked, but the guard at the gate still checks your ID before opening the door. Sarah proves her identity with either a <em>digital key card</em> (no password ever crosses the network) or a <em>password</em> sent safely inside the already-locked channel. Once confirmed, Q3_report.pdf travels scrambled through the channel, arriving intact at the server.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — Key card method (most secure)</div>'
+          +'<div class="sample-line"><span class="lbl">Sarah sends: </span><span class="val green">"I am user \'sarah\'. Here is my public key card. Here is my signature on challenge #8472."</span></div>'
+          +'<div class="sample-line"><span class="lbl">Server checks authorised list: </span><span class="val muted">sarah&#8217;s key card found &#8594; </span><span class="sample-check">&#10003; Access granted</span></div>'
+          +'<div class="sample-title" style="margin-top:10px">&#x1F4CB; File transfer</div>'
+          +'<div class="sample-line"><span class="lbl">File: </span><span class="val green">Q3_report.pdf (2.3 MB)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Travels as: </span><span class="val red">Xk92mP4fLqRtBn3w&#8230; (scrambled — unreadable in transit)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Server receives: </span><span class="val green">Q3_report.pdf — intact, identical to the original</span></div>'
+          +'<div class="sample-line"><span class="lbl">ISP sees: </span><span class="val muted">"Encrypted data to files.company.com" — cannot read the file</span></div>',
+        sends:['Proof of identity (digital key signature or password) — inside the encrypted channel', 'File: Q3_report.pdf, scrambled with Key A'],
+        receives:['Access granted confirmation', 'Upload success acknowledgement, scrambled with Key B'],
+        produces:'File uploaded securely. The server has Q3_report.pdf. Nobody in between could read it.',
+        note:'Real-world speed: all 6 steps — S0\'s fingerprint check included — complete in under one second before the first byte of the file moves. You see it as just "connected".'
+      }
+    ]
+  },
+
+  https: {
+    color:'#185fa5', colorLight:'#3b82f6', fillSel:'#0d1f38', prefix:'H',
+    steps:[
+      // ── H1 ─────────────────────────────────────────
+      {
+        id:'h1', badge:'H1',
+        title:'You Walk Up to the Shop',
+        subtitle:'Your browser says hello and announces what security it supports',
+        role:'Starting the conversation',
+        description:'Alex types bookshop.com and presses Enter. His browser walks up to the shop counter. Before anything sensitive is shared, the browser introduces itself: <em>"Hello! I would like to connect securely. Here are the security methods I understand."</em> It also sends a one-time reference code — like writing today\'s date and a unique number on a piece of paper — so that this exact conversation cannot be copied and reused later by someone else.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — What Alex\'s browser sends</div>'
+          +'<div class="sample-line"><span class="lbl">To: </span><span class="val green">www.bookshop.com</span></div>'
+          +'<div class="sample-line"><span class="lbl">Security methods supported: </span><span class="val muted">TLS 1.3, AES-256-GCM, ChaCha20</span></div>'
+          +'<div class="sample-line"><span class="lbl">One-time reference code: </span><span class="val amber">4F2A8C91</span><span class="val muted"> (random, never repeats)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Alex\'s colour-mix value: </span><span class="val green">X25519-Green</span><span class="val muted"> (his public half for the key exchange)</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="val muted">Nothing sensitive sent yet. Shop has not responded yet.</span></div>',
+        sends:['Hello + supported security methods', 'One-time reference code: 4F2A8C91', 'Alex\'s colour-mix value for the key exchange'],
+        receives:['Nothing yet'],
+        produces:'Conversation started. The shop knows what Alex\'s browser supports.',
+        note:'This is why your browser can connect securely to millions of different websites — it negotiates the right security method on the spot, every single time, for every site visited.'
+      },
+      // ── H2 ─────────────────────────────────────────
+      {
+        id:'h2', badge:'H2',
+        title:'The Shop Shows Its Trading Licence',
+        subtitle:'bookshop.com proves it is real — and you quietly agree a private code',
+        role:'Website identity + shared secret',
+        description:'bookshop.com responds with two things at once. First, its <em>trading licence</em> — a digital certificate showing who they are, what domain they own, and a stamp from a trusted authority (like a government business registry for websites). Second, it shares its colour-mix value so both sides can independently compute the same private session code — without saying it out loud. A third party watching cannot figure out the code from the mixed values alone.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — The shop\'s trading licence (certificate)</div>'
+          +'<div class="sample-line"><span class="lbl">Domain: </span><span class="val green">www.bookshop.com</span></div>'
+          +'<div class="sample-line"><span class="lbl">Owner: </span><span class="val green">Bookshop Ltd.</span></div>'
+          +'<div class="sample-line"><span class="lbl">Valid: </span><span class="val green">Jan 2025 – Jan 2026</span></div>'
+          +'<div class="sample-line"><span class="lbl">Signed by: </span><span class="val green">DigiCert Global Root CA</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">Shop\'s colour-mix value: </span><span class="val amber">X25519-Orange</span></div>'
+          +'<div class="sample-line"><span class="lbl">Both sides compute session code: </span><span class="val teal">Brown = Green + Orange</span><span class="val muted"> (same result, independently)</span></div>'
+          +'<div class="sample-line"><span class="lbl">Shop\'s signature on this handshake: </span><span class="val green">7cQm3Rp9...</span></div>',
+        sends:['Trading licence (domain, owner, dates, authority stamp)', 'Colour-mix value for the key exchange', 'Signature proving the shop holds the matching private key'],
+        receives:['Alex\'s hello and colour-mix value from H1'],
+        produces:'Both sides independently know the same session code (Brown). Shop identity sent for Alex\'s browser to verify.',
+        note:'Your credit card details are never used to create the encryption key. The session code is generated fresh every visit — payment details only travel inside the already-locked channel.'
+      },
+      // ── H3 ─────────────────────────────────────────
+      {
+        id:'h3', badge:'H3',
+        title:'Alex\'s Browser Checks the Trading Licence',
+        subtitle:'Three automatic checks before the shop is trusted',
+        role:'Browser trust check',
+        description:'Alex\'s browser inspects the trading licence in under a millisecond — just like checking a shop\'s credentials before handing over a card. Three checks run automatically. If any one of them fails, a red warning appears and the connection stops. If all three pass, the shop is trusted and shopping can begin.',
+        sample:'<div class="sample-title">&#x2705; Example — Three checks Alex\'s browser runs</div>'
+          +'<div class="sample-line"><span class="lbl">Check 1 — Is the authority stamp real?</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;DigiCert Global Root CA &#8594; </span><span class="sample-check">&#10003; In browser\'s trusted list</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Check 2 — Does the shop name match?</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;Licence says "www.bookshop.com", Alex typed "bookshop.com" &#8594; </span><span class="sample-check">&#10003; Match</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Check 3 — Is the licence still valid?</span></div>'
+          +'<div class="sample-line"><span class="val muted">&nbsp;Expiry: Jan 2026, today is Jun 2025 &#8594; </span><span class="sample-check">&#10003; Valid</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">Signature 7cQm3Rp9... verified with shop\'s public key &#8594; </span><span class="sample-check">&#10003; Genuine</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="sample-check">&#10003; All checks passed. This is the real bookshop.com.</span></div>',
+        sends:['Nothing — all checking happens privately inside Alex\'s browser'],
+        receives:['Trading licence and signature from H2'],
+        produces:'Confirmed: Alex is talking to the real bookshop.com — not a copy, not an imposter.',
+        note:'This is the key difference from SSH. Instead of a personal contact book, browsers trust a global list of around 150 Certificate Authorities — the same way you trust a passport because a recognised government issued it.'
+      },
+      // ── H4 ─────────────────────────────────────────
+      {
+        id:'h4', badge:'H4',
+        title:'Tear Up the Original — Keep Only the Session Key',
+        subtitle:'A one-time key is made for this visit, then the recipe is destroyed',
+        role:'Creating the disposable session key',
+        description:'Both sides now use the shared session code (Brown) to make a <em>one-time encryption key</em> — unique to this exact visit. Think of it like mixing a one-use safe combination from a secret recipe, writing it on a sticky note, using it to open the safe, then <em>immediately burning the sticky note and the recipe</em>. The values that were combined to create the key are thrown away. This means: even if someone broke into bookshop.com\'s servers next year and stole everything, they cannot go back and decrypt Alex\'s session today — because the key no longer exists anywhere.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — Session key created and destroyed</div>'
+          +'<div class="sample-line"><span class="lbl">Inputs combined: </span><span class="val teal">Brown</span><span class="lbl"> + Alex ref </span><span class="val amber">4F2A8C91</span><span class="lbl"> + shop ref </span><span class="val amber">9B3E7D42</span></div>'
+          +'<div class="sample-line"><span class="lbl">Session key created: </span><span class="val green">AES-K7m2P9xQ</span><span class="val muted"> (exists only in memory)</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">Original values after key is made: </span><span class="val red">Discarded immediately</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="val muted">Someone who records today\'s session and steals bookshop\'s keys next year...</span></div>'
+          +'<div class="sample-line"><span class="val red">&#10007; Cannot decrypt — AES-K7m2P9xQ is gone. It never existed on any disk.</span></div>',
+        sends:['Nothing — derived silently inside both computers at the same moment'],
+        receives:['Nothing — both sides derive the same key independently'],
+        produces:'Disposable one-session key: AES-K7m2P9xQ. Original inputs destroyed. Session locked with something that will never exist again.',
+        note:'This property is called Perfect Forward Secrecy. A future breach cannot unlock past sessions — like shredding the safe combination immediately after opening the safe.'
+      },
+      // ── H5 ─────────────────────────────────────────
+      {
+        id:'h5', badge:'H5',
+        title:'Quick Final Check — Confirm Nobody Tampered',
+        subtitle:'Both sides read back the conversation summary before shopping begins',
+        role:'Integrity check before shopping begins',
+        description:'Before Alex\'s card details are sent, both sides create a <em>fingerprint</em> of the entire setup conversation — every step from H1 to now — and check it matches on both sides. It is like a buyer and seller both reading back a summary of their agreement before signing: if any word was changed by someone in the middle, the summaries will not match and the deal stops. Only when both fingerprints agree does real shopping begin.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — The fingerprint exchange</div>'
+          +'<div class="sample-line"><span class="lbl">Alex\'s browser fingerprints steps H1+H2+H3+H4:</span></div>'
+          +'<div class="sample-line"><span class="val green">SHA256: 3A9F2C7E-D4B8-11EF-A3F2...</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="lbl">bookshop.com fingerprints the same conversation:</span></div>'
+          +'<div class="sample-line"><span class="val green">SHA256: 3A9F2C7E-D4B8-11EF-A3F2...</span></div>'
+          +'<div class="sample-line" style="margin-top:4px"><span class="sample-check">&#10003; Match — nobody changed anything. Safe to shop.</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="sample-warn">&#9888; If tampered:</span><span class="val muted"> fingerprints differ &#8594; connection dropped, no data sent.</span></div>',
+        sends:['Fingerprint of the entire setup conversation, sealed with the session key'],
+        receives:['bookshop.com\'s fingerprint of the same conversation'],
+        produces:'Both sides certain: same key, clean setup, nobody tampered. Shopping can begin.',
+        note:'This step also catches "downgrade attacks" — where a bad actor forces weaker security into the negotiation. Any change to any step alters the fingerprint, and the mismatch is caught here before data flows.'
+      },
+      // ── H6 ─────────────────────────────────────────
+      {
+        id:'h6', badge:'H6',
+        title:'Your Order Travels in a Sealed Box',
+        subtitle:'Card details, address, login — scrambled end to end. Only the real shop can open it.',
+        role:'Secure shopping in progress',
+        description:'The setup is done. Alex picks his book and checks out. Every detail he types — card number, delivery address, login password — is scrambled with the session key before it leaves his device. His internet provider, Wi-Fi router, the café network — everyone in between sees only a sealed box. They cannot read what is inside. bookshop.com is the only party with the matching key. Because the key is unique to this session and already gone from memory after the session ends, even a recording of today\'s traffic is unreadable to anyone who captures it.',
+        sample:'<div class="sample-title">&#x1F4CB; Example — What travels vs what anyone else sees</div>'
+          +'<div class="sample-line"><span class="lbl">Alex types card: </span><span class="val green">4532 1234 5678 9012</span></div>'
+          +'<div class="sample-line"><span class="lbl">Scrambled with AES-K7m2P9xQ:</span></div>'
+          +'<div class="sample-line"><span class="val red">Xk92mP4fLqRtBn3wVzMs9cDkY7eR...</span><span class="val muted"> (travels across internet)</span></div>'
+          +'<div class="sample-line"><span class="lbl">bookshop.com decrypts: </span><span class="val green">4532 1234 5678 9012</span><span class="val muted"> &#10003; Real number received</span></div>'
+          +'<div class="sample-line" style="margin-top:6px"><span class="lbl">What Alex\'s ISP sees in their logs:</span></div>'
+          +'<div class="sample-line"><span class="val muted">"14:32 — Customer visited www.bookshop.com"</span></div>'
+          +'<div class="sample-line"><span class="val red">&#10007; Cannot see: card number, book title, address, or anything typed.</span></div>',
+        sends:['Order details, card number, address — all scrambled inside the sealed box'],
+        receives:['Order confirmation, page content — all scrambled inside the sealed box'],
+        produces:'Secure, private shopping session complete. Data reached only the real shop. Nobody in between could read it.',
+        note:'Every time you see the padlock icon in your browser, all 6 of these steps completed in under 100 milliseconds before you even saw the page. The padlock means: shop is verified, your data is sealed, nobody in between can read it.'
+      }
+    ]
+  }
+};
+
+// ─── State ───
+var activeTab = 'ssh';
+var selectedId = null;
+var viewMode = 'collapse';
+var zoomLevel = 1.0;
+var imgExpanded = false;
+
+// ─── Diagram ───
+var BOX_W = 490, BOX_H_COL = 54, BOX_H_EXP = 92, GAP = 16, PAD = 18;
+
+function renderDiagram() {
+  var d = DATA[activeTab];
+  var isExp = viewMode === 'expand';
+  var BH = isExp ? BOX_H_EXP : BOX_H_COL;
+  var SVG_H = PAD + d.steps.length * BH + (d.steps.length - 1) * GAP + PAD;
+  var SVG_W = BOX_W + PAD * 2;
+
+  var s = '<svg id="diag-svg" width="100%" viewBox="0 0 ' + SVG_W + ' ' + SVG_H + '" style="min-width:360px;display:block">';
+  s += '<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">';
+  s += '<path d="M2 2L8 5L2 8" fill="none" stroke="' + d.color + '" stroke-width="1.8" stroke-linecap="round"/>';
+  s += '</marker></defs>';
+
+  d.steps.forEach(function(step, i) {
+    var x = PAD, y = PAD + i * (BH + GAP);
+    var isSel = selectedId === step.id;
+    // S0 gets a slightly different visual treatment (amber tint = one-time setup)
+    var isSetup = step.id === 's0';
+    var fill   = isSel ? d.fillSel : (isSetup ? '#1a1500' : '#161b22');
+    var stroke = isSel ? d.colorLight : (isSetup ? '#ba7517' : d.color);
+    var sw     = isSel ? 2 : (isSetup ? 1 : 0.75);
+
+    if (i > 0) {
+      var prevY = PAD + (i - 1) * (BH + GAP) + BH;
+      var lineColor = (step.id === 's1' && DATA[activeTab].steps[0].id === 's0') ? '#ba7517' : d.color;
+      s += '<line x1="' + (x + BOX_W/2) + '" y1="' + (prevY + 1) + '" x2="' + (x + BOX_W/2) + '" y2="' + (y - 5) + '"';
+      s += ' stroke="' + d.color + '" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr)" opacity="0.45"/>';
+    }
+
+    s += '<g onclick="selectStep(\'' + step.id + '\')" style="cursor:pointer">';
+    s += '<rect x="' + x + '" y="' + y + '" width="' + BOX_W + '" height="' + BH + '" rx="8" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>';
+
+    var badgeColor = isSetup ? '#ba7517' : d.color;
+    var bx = x + 10, by = y + BH/2 - 8;
+    s += '<rect x="' + bx + '" y="' + by + '" width="22" height="15" rx="3" fill="' + badgeColor + '"/>';
+    s += '<text x="' + (bx+11) + '" y="' + (by+7.5) + '" text-anchor="middle" dominant-baseline="central"';
+    s += ' style="font-size:8px;font-weight:700;fill:#fff;font-family:sans-serif">' + step.badge + '</text>';
+
+    var tx = x + 42;
+    var ty1 = isExp ? y + 20 : y + BH/2 - 8;
+    s += '<text x="' + tx + '" y="' + ty1 + '" dominant-baseline="central"';
+    s += ' style="font-size:13px;font-weight:700;fill:#e6edf3;font-family:sans-serif">' + step.title + '</text>';
+
+    var ty2 = isExp ? y + 37 : y + BH/2 + 9;
+    s += '<text x="' + tx + '" y="' + ty2 + '" dominant-baseline="central"';
+    s += ' style="font-size:10px;fill:#8b949e;font-family:sans-serif">' + step.subtitle + '</text>';
+
+    if (isExp) {
+      var prod = step.produces.length > 78 ? step.produces.substring(0,78)+'...' : step.produces;
+      s += '<text x="' + tx + '" y="' + (y+55) + '" dominant-baseline="central"';
+      s += ' style="font-size:10px;fill:' + (isSetup ? '#fac775' : d.colorLight) + ';font-family:sans-serif">&#8594; ' + prod + '</text>';
+      s += '<text x="' + tx + '" y="' + (y+72) + '" dominant-baseline="central"';
+      s += ' style="font-size:10px;fill:#8b949e;font-family:sans-serif;font-style:italic">' + step.role + '</text>';
+    }
+
+    s += '</g>';
+  });
+  s += '</svg>';
+  applyZoomToSvg(s);
+}
+
+function applyZoomToSvg(svgHtml) {
+  var container = document.getElementById('canvas');
+  if (svgHtml !== undefined) container.innerHTML = svgHtml;
+  var svg = container.querySelector('svg');
+  if (!svg) return;
+  if (zoomLevel === 1.0) {
+    svg.style.width = '100%'; svg.style.height = 'auto';
+  } else {
+    var cw = document.getElementById('diagram-scroll').clientWidth - 28;
+    svg.style.width = (cw * zoomLevel) + 'px'; svg.style.height = 'auto';
+  }
+  document.getElementById('zoom-pct').textContent = Math.round(zoomLevel * 100) + '%';
+}
+
+function applyZoom(delta) { zoomLevel = Math.max(0.4, Math.min(4.0, zoomLevel + delta)); applyZoomToSvg(); }
+function resetZoom() { zoomLevel = 1.0; applyZoomToSvg(); }
+
+document.getElementById('diagram-scroll').addEventListener('wheel', function(e) {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  applyZoom(e.deltaY < 0 ? 0.1 : -0.1);
+}, {passive:false});
+
+// ─── Detail panel ───
+function selectStep(id) {
+  var d = DATA[activeTab];
+  var step = null;
+  for (var i = 0; i < d.steps.length; i++) { if (d.steps[i].id === id) { step = d.steps[i]; break; } }
+  if (!step) return;
+  selectedId = id;
+
+  var isSetup = id === 's0';
+  var badgeColor = isSetup ? '#ba7517' : d.color;
+  var badgeBg   = isSetup ? '#2a1500' : d.fillSel;
+  var badgeText = isSetup ? '#fac775' : d.colorLight;
+
+  var badge = document.getElementById('det-badge');
+  badge.textContent = step.badge + ' — ' + step.role;
+  badge.style.cssText = 'background:' + badgeBg + ';color:' + badgeText + ';border:1px solid ' + badgeColor
+    + ';display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;margin-bottom:7px';
+
+  document.getElementById('det-title').textContent = step.title;
+  document.getElementById('det-sub').textContent = step.subtitle;
+
+  var html = '';
+  html += '<div class="dsec"><div class="dsec-title">What happens</div><div class="desc-text">' + step.description + '</div></div>';
+
+  if (step.sample) {
+    html += '<div class="dsec"><div class="dsec-title">Worked example</div><div class="sample-box">' + step.sample + '</div></div>';
+  }
+
+  if (step.sends && step.sends.length) {
+    html += '<div class="dsec"><div class="dsec-title">What is sent</div>';
+    step.sends.forEach(function(s) { html += '<div class="dcard out">' + s + '</div>'; });
+    html += '</div>';
+  }
+  if (step.receives && step.receives.length) {
+    html += '<div class="dsec"><div class="dsec-title">What is received</div>';
+    step.receives.forEach(function(r) { html += '<div class="dcard inp">' + r + '</div>'; });
+    html += '</div>';
+  }
+
+  html += '<div class="dsec"><div class="dsec-title">Result of this step</div><div class="dcard out">' + step.produces + '</div></div>';
+
+  if (step.note) {
+    html += '<div class="dsec"><div class="dsec-title">Key insight</div><div class="dcard note">' + step.note + '</div></div>';
+  }
+
+  document.getElementById('det-body').innerHTML = html;
+  document.getElementById('det-body').scrollTop = 0;
+  renderStepsList();
+  renderDiagram();
+}
+
+// ─── Steps list ───
+function renderStepsList() {
+  var d = DATA[activeTab];
+  var html = '';
+  d.steps.forEach(function(step) {
+    var active = selectedId === step.id;
+    var isSetup = step.id === 's0';
+    var bc = isSetup ? '#ba7517' : d.color;
+    html += '<div class="spill' + (active ? ' active' : '') + '" onclick="selectStep(\'' + step.id + '\')">';
+    html += '<span class="sbadge" style="background:' + bc + '">' + step.badge + '</span>';
+    html += '<span>' + step.title + '</span></div>';
+  });
+  document.getElementById('steps-list').innerHTML = html;
+}
+
+// ─── Tab switch ───
+function switchTab(tab) {
+  activeTab = tab; selectedId = null;
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === tab); });
+  var badge = document.getElementById('det-badge');
+  badge.textContent = 'Select a step'; badge.style.cssText = '';
+  document.getElementById('det-title').textContent = 'Click any step to explore';
+  document.getElementById('det-sub').textContent = tab === 'ssh'
+    ? 'Follow Sarah uploading Q3_report.pdf to her company server via SSH'
+    : 'Follow Alex buying a book safely on bookshop.com';
+  document.getElementById('det-body').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:140px;color:#8b949e;font-size:13px;flex-direction:column;gap:8px"><span style="font-size:22px">&#x1F446;</span><span>Click a step in the diagram</span></div>';
+  renderDiagram(); renderStepsList();
+}
+
+// ─── Collapse / Expand ───
+function setView(mode) {
+  viewMode = mode;
+  document.getElementById('seg-exp').classList.toggle('active', mode === 'expand');
+  document.getElementById('seg-col').classList.toggle('active', mode === 'collapse');
+  document.getElementById('toolbar-label').textContent = mode === 'expand' ? 'Detailed' : 'Overview';
+  renderDiagram();
+}
+
+// ─── Resizer ───
+(function(){
+  var resizer = document.getElementById('resizer');
+  var left    = document.getElementById('diagram-area');
+  var dragging = false, startX = 0, startW = 0;
+  resizer.addEventListener('mousedown', function(e) {
+    dragging = true; startX = e.clientX; startW = left.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.cssText = 'cursor:col-resize;user-select:none';
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    var nw = Math.max(280, Math.min(window.innerWidth - 310, startW + e.clientX - startX));
+    left.style.flex = '0 0 ' + nw + 'px';
+    applyZoomToSvg();
+  });
+  document.addEventListener('mouseup', function() {
+    if (!dragging) return;
+    dragging = false; resizer.classList.remove('dragging');
+    document.body.style.cssText = '';
+  });
+})();
+
+window.addEventListener('resize', function() { applyZoomToSvg(); });
+
+// ─── Images ───
+function toggleImgs() {
+  imgExpanded = !imgExpanded;
+  document.getElementById('img-area').style.display = imgExpanded ? 'block' : 'none';
+}
+function addImgs(input) {
+  var gallery = document.getElementById('img-gallery');
+  Array.from(input.files).forEach(function(file) {
+    var url = URL.createObjectURL(file);
+    var img = document.createElement('img');
+    img.src = url; img.title = file.name;
+    img.onclick = function() { window.open(url, '_blank'); };
+    gallery.appendChild(img);
+  });
+  input.value = '';
+}
+
+// ─── Init ───
+renderDiagram();
+renderStepsList();
+</script>
+</body>
+</html>
